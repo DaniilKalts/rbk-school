@@ -57,4 +57,4 @@ go run . input.txt output.txt
 - [ ] Использовать только стандартные пакеты Go
 
 ### Проверка
-- [ ] Прогнать программу на примере из `examples/sample.txt` и сверить результат с `examples/result.txt`
+- [ ] Прогнать программу на примере из [`examples/sample.txt`](examples/sample.txt) и сверить результат с [`examples/result.txt`](examples/result.txt)
