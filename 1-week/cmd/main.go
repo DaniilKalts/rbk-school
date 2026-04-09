@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/DaniilKalts/rbk-school/1-week/internal/domain"
 	"github.com/DaniilKalts/rbk-school/1-week/internal/utils"
 )
 
@@ -34,7 +35,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := utils.WriteOutputFile(outputPath, inputData); err != nil {
+	result := domain.TransformText(string(inputData))
+
+	if err := utils.WriteOutputFile(outputPath, []byte(result)); err != nil {
 		fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
 		os.Exit(1)
 	}
