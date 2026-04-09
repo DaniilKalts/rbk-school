@@ -1,8 +1,13 @@
-package domain
+package articles
 
-import "strings"
+import (
+	"strings"
+	"unicode/utf8"
 
-func applyArticles(tokens []Token) []Token {
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+)
+
+func Apply(tokens []model.Token) []model.Token {
 	for i := range tokens {
 		if !tokens[i].IsWord() || !isArticleA(tokens[i].Value) {
 			continue
@@ -25,14 +30,14 @@ func isArticleA(word string) bool {
 	return word == "a" || word == "A"
 }
 
-func nextWordToken(tokens []Token, start int) (Token, bool) {
+func nextWordToken(tokens []model.Token, start int) (model.Token, bool) {
 	for i := start; i < len(tokens); i++ {
 		if tokens[i].IsWord() {
 			return tokens[i], true
 		}
 	}
 
-	return Token{}, false
+	return model.Token{}, false
 }
 
 func startsWithVowelOrH(word string) bool {
@@ -40,9 +45,9 @@ func startsWithVowelOrH(word string) bool {
 		return false
 	}
 
-	firstRune := []rune(strings.ToLower(word))[0]
+	r, _ := utf8.DecodeRuneInString(strings.ToLower(word))
 
-	switch firstRune {
+	switch r {
 	case 'a', 'e', 'i', 'o', 'u', 'h':
 		return true
 	default:

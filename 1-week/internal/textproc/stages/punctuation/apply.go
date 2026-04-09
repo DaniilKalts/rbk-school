@@ -1,7 +1,11 @@
-package domain
+package punctuation
 
-func formatPunctuation(tokens []Token) string {
-	result := make([]Token, 0, len(tokens))
+import (
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+)
+
+func Apply(tokens []model.Token) []model.Token {
+	result := make([]model.Token, 0, len(tokens))
 	quoteOpen := false
 
 	for i, token := range tokens {
@@ -61,10 +65,10 @@ func formatPunctuation(tokens []Token) string {
 		result = append(result, token)
 	}
 
-	return joinTokens(result)
+	return result
 }
 
-func isTightPunctuationToken(token Token) bool {
+func isTightPunctuationToken(token model.Token) bool {
 	if !token.IsPunctuation() || len(token.Value) != 1 {
 		return false
 	}
@@ -77,7 +81,7 @@ func isTightPunctuationToken(token Token) bool {
 	}
 }
 
-func needsSpaceAfterTightPunctuation(result []Token, current Token, quoteOpen bool) bool {
+func needsSpaceAfterTightPunctuation(result []model.Token, current model.Token, quoteOpen bool) bool {
 	prevToken, ok := lastNonSpaceToken(result)
 	if !ok || !isTightPunctuationToken(prevToken) {
 		return false
@@ -96,7 +100,7 @@ func needsSpaceAfterTightPunctuation(result []Token, current Token, quoteOpen bo
 	return true
 }
 
-func shouldSkipSpace(prev Token, next Token, quoteOpen bool) bool {
+func shouldSkipSpace(prev model.Token, next model.Token, quoteOpen bool) bool {
 	if next.IsPunctuation() {
 		if isTightPunctuationToken(next) {
 			return true
@@ -114,7 +118,7 @@ func shouldSkipSpace(prev Token, next Token, quoteOpen bool) bool {
 	return false
 }
 
-func shouldForceSingleSpace(prev Token, next Token, quoteOpen bool) bool {
+func shouldForceSingleSpace(prev model.Token, next model.Token, quoteOpen bool) bool {
 	if !isTightPunctuationToken(prev) {
 		return false
 	}
@@ -132,7 +136,51 @@ func shouldForceSingleSpace(prev Token, next Token, quoteOpen bool) bool {
 	return true
 }
 
-func isApostropheInWord(tokens []Token, index int) bool {
+func nextNonSpaceTokenIndex(tokens []model.Token, start int) int {
+	for i := start; i < len(tokens); i++ {
+		if !tokens[i].IsSpace() {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func appendSpaceToken(tokens *[]model.Token) {
+	if len(*tokens) == 0 {
+		return
+	}
+
+	if (*tokens)[len(*tokens)-1].IsSpace() {
+		(*tokens)[len(*tokens)-1].Value = " "
+		return
+	}
+
+	*tokens = append(*tokens, model.Token{Kind: model.KindSpace, Value: " "})
+}
+
+func trimTrailingSpaces(tokens *[]model.Token) {
+	for len(*tokens) > 0 {
+		lastIndex := len(*tokens) - 1
+		if !(*tokens)[lastIndex].IsSpace() {
+			break
+		}
+
+		*tokens = (*tokens)[:lastIndex]
+	}
+}
+
+func lastNonSpaceToken(tokens []model.Token) (model.Token, bool) {
+	for i := len(tokens) - 1; i >= 0; i-- {
+		if !tokens[i].IsSpace() {
+			return tokens[i], true
+		}
+	}
+
+	return model.Token{}, false
+}
+
+func isApostropheInWord(tokens []model.Token, index int) bool {
 	if index <= 0 || index >= len(tokens)-1 {
 		return false
 	}

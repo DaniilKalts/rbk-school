@@ -1,8 +1,8 @@
-package domain
+package render
 
 import "strings"
 
-func wrapText(text string, width int) string {
+func Wrap(text string, width int) string {
 	if width <= 0 || text == "" {
 		return text
 	}

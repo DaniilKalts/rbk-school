@@ -1,14 +1,16 @@
-package domain
+package tokenizer
 
 import (
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/stages/commands"
 )
 
-func Tokenize(input string) []Token {
-	tokens := make([]Token, 0)
+func Tokenize(input string) []model.Token {
+	tokens := make([]model.Token, 0)
 
 	for len(input) > 0 {
 		r, size := utf8.DecodeRuneInString(input)
@@ -16,24 +18,24 @@ func Tokenize(input string) []Token {
 		switch {
 		case unicode.IsSpace(r):
 			value := readSpace(input)
-			tokens = append(tokens, Token{Kind: KindSpace, Value: value})
+			tokens = append(tokens, model.Token{Kind: model.KindSpace, Value: value})
 			input = input[len(value):]
 		case isPunctuation(r):
-			tokens = append(tokens, Token{Kind: KindPunctuation, Value: input[:size]})
+			tokens = append(tokens, model.Token{Kind: model.KindPunctuation, Value: input[:size]})
 			input = input[size:]
 		case r == '(':
 			if value, ok := readCommand(input); ok {
-				tokens = append(tokens, Token{Kind: KindCommand, Value: value})
+				tokens = append(tokens, model.Token{Kind: model.KindCommand, Value: value})
 				input = input[len(value):]
 				continue
 			}
 
 			value := readTextToken(input)
-			tokens = append(tokens, Token{Kind: KindWord, Value: value})
+			tokens = append(tokens, model.Token{Kind: model.KindWord, Value: value})
 			input = input[len(value):]
 		default:
 			value := readTextToken(input)
-			tokens = append(tokens, Token{Kind: KindWord, Value: value})
+			tokens = append(tokens, model.Token{Kind: model.KindWord, Value: value})
 			input = input[len(value):]
 		}
 	}
@@ -87,59 +89,11 @@ func readCommand(input string) (string, bool) {
 	}
 
 	raw := input[:end+1]
-	if !isValidCommand(raw) {
+	if _, ok := commands.ParseSpec(raw); !ok {
 		return "", false
 	}
 
 	return raw, true
-}
-
-func isValidCommand(raw string) bool {
-	n := len(raw)
-	if n < 3 || raw[0] != '(' || raw[n-1] != ')' {
-		return false
-	}
-
-	inner := raw[1 : n-1]
-	if inner == "" || inner != strings.TrimSpace(inner) {
-		return false
-	}
-
-	switch inner {
-	case "up", "low", "cap", "hex", "bin":
-		return true
-	}
-
-	parts := strings.Split(inner, ",")
-	if len(parts) != 2 {
-		return false
-	}
-
-	command := parts[0]
-	if !isCountCommandName(command) {
-		return false
-	}
-
-	count := strings.TrimSpace(parts[1])
-	if count == "" {
-		return false
-	}
-
-	n, err := strconv.Atoi(count)
-	if err != nil || n <= 0 {
-		return false
-	}
-
-	return true
-}
-
-func isCountCommandName(command string) bool {
-	switch command {
-	case "up", "low", "cap":
-		return true
-	}
-
-	return false
 }
 
 func isPunctuation(r rune) bool {
