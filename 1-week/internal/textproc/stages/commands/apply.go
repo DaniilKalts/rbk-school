@@ -5,21 +5,23 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/grammar"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/stages"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/token"
 )
 
-func Apply(tokens []model.Token) []model.Token {
-	result := make([]model.Token, 0, len(tokens))
+func Apply(tokens []token.Token) []token.Token {
+	result := make([]token.Token, 0, len(tokens))
 
-	for _, token := range tokens {
-		if !token.IsCommand() {
-			result = append(result, token)
+	for _, tok := range tokens {
+		if !tok.IsCommand() {
+			result = append(result, tok)
 			continue
 		}
 
-		spec, ok := ParseSpec(token.Value)
+		spec, ok := grammar.ParseCommandSpec(tok.Value)
 		if !ok {
-			result = append(result, token)
+			result = append(result, tok)
 			continue
 		}
 
@@ -30,13 +32,20 @@ func Apply(tokens []model.Token) []model.Token {
 	return result
 }
 
-func findPreviousWordIndexes(tokens []model.Token, count int) []int {
+func findPreviousWordIndexes(tokens []token.Token, count int) []int {
 	indexes := make([]int, 0, count)
+	searchStart := len(tokens) - 1
 
-	for i := len(tokens) - 1; i >= 0 && len(indexes) < count; i-- {
-		if tokens[i].IsWord() {
-			indexes = append(indexes, i)
+	for len(indexes) < count {
+		index, ok := stages.FindPrevIndex(tokens, searchStart, func(tok token.Token) bool {
+			return tok.IsWord()
+		})
+		if !ok {
+			break
 		}
+
+		indexes = append(indexes, index)
+		searchStart = index - 1
 	}
 
 	for left, right := 0, len(indexes)-1; left < right; left, right = left+1, right-1 {
@@ -46,7 +55,7 @@ func findPreviousWordIndexes(tokens []model.Token, count int) []int {
 	return indexes
 }
 
-func applyWordTransformation(tokens []model.Token, wordIndexes []int, commandName string) {
+func applyWordTransformation(tokens []token.Token, wordIndexes []int, commandName string) {
 	for _, index := range wordIndexes {
 		tokens[index].Value = transformWord(tokens[index].Value, commandName)
 	}
@@ -54,15 +63,15 @@ func applyWordTransformation(tokens []model.Token, wordIndexes []int, commandNam
 
 func transformWord(word, commandName string) string {
 	switch commandName {
-	case "up":
+	case grammar.CommandUp:
 		return strings.ToUpper(word)
-	case "low":
+	case grammar.CommandLow:
 		return strings.ToLower(word)
-	case "cap":
+	case grammar.CommandCap:
 		return capitalizeWord(word)
-	case "hex":
+	case grammar.CommandHex:
 		return convertBaseToDecimal(word, 16)
-	case "bin":
+	case grammar.CommandBin:
 		return convertBaseToDecimal(word, 2)
 	default:
 		return word

@@ -15,36 +15,41 @@ var (
 	errSamePaths       = errors.New("входной и выходной файлы должны быть разными")
 )
 
-func ParseArgs(args []string) (string, string, error) {
-	n := len(args)
-	if n != 2 {
-		return "", "", fmt.Errorf("ожидалось 2 аргумента, получено %d: %w", n, ErrUsage)
+type Paths struct {
+	InputPath  string
+	OutputPath string
+}
+
+func ParseArgs(args []string) (Paths, error) {
+	argCount := len(args)
+	if argCount != 2 {
+		return Paths{}, fmt.Errorf("ожидалось 2 аргумента, получено %d: %w", argCount, ErrUsage)
 	}
 
 	inputPath := args[0]
 	outputPath := args[1]
 
 	if inputPath == "" {
-		return "", "", errInputPathEmpty
+		return Paths{}, errInputPathEmpty
 	}
 
 	if outputPath == "" {
-		return "", "", errOutputPathEmpty
+		return Paths{}, errOutputPathEmpty
 	}
 
 	if inputPath == outputPath {
-		return "", "", errSamePaths
+		return Paths{}, errSamePaths
 	}
 
 	if err := validateInputPath(inputPath); err != nil {
-		return "", "", err
+		return Paths{}, err
 	}
 
 	if err := validateOutputPath(outputPath); err != nil {
-		return "", "", err
+		return Paths{}, err
 	}
 
-	return inputPath, outputPath, nil
+	return Paths{InputPath: inputPath, OutputPath: outputPath}, nil
 }
 
 func validateInputPath(inputPath string) error {

@@ -17,7 +17,7 @@ const (
 func main() {
 	args := os.Args[1:]
 
-	inputPath, outputPath, err := utils.ParseArgs(args)
+	paths, err := utils.ParseArgs(args)
 	if err != nil {
 		if errors.Is(err, utils.ErrUsage) {
 			fmt.Fprintf(os.Stderr, "%s ожидалось 2 аргумента, получено %d\n", msgErrorPrefix, len(args))
@@ -25,15 +25,21 @@ func main() {
 			os.Exit(2)
 		}
 
-		fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
-		os.Exit(1)
+		fail(err, 1)
 	}
 
+	inputPath := paths.InputPath
+	outputPath := paths.OutputPath
+
 	if err := app.Run(inputPath, outputPath); err != nil {
-		fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
-		os.Exit(1)
+		fail(err, 1)
 	}
 
 	fmt.Println("Входной файл:", inputPath)
 	fmt.Println("Выходной файл:", outputPath)
+}
+
+func fail(err error, code int) {
+	fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
+	os.Exit(code)
 }

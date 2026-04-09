@@ -4,10 +4,11 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/stages"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/token"
 )
 
-func Apply(tokens []model.Token) []model.Token {
+func Apply(tokens []token.Token) []token.Token {
 	for i := range tokens {
 		if !tokens[i].IsWord() || !isArticleA(tokens[i].Value) {
 			continue
@@ -30,14 +31,15 @@ func isArticleA(word string) bool {
 	return word == "a" || word == "A"
 }
 
-func nextWordToken(tokens []model.Token, start int) (model.Token, bool) {
-	for i := start; i < len(tokens); i++ {
-		if tokens[i].IsWord() {
-			return tokens[i], true
-		}
+func nextWordToken(tokens []token.Token, start int) (token.Token, bool) {
+	index, ok := stages.FindNextIndex(tokens, start, func(tok token.Token) bool {
+		return tok.IsWord()
+	})
+	if !ok {
+		return token.Token{}, false
 	}
 
-	return model.Token{}, false
+	return tokens[index], true
 }
 
 func startsWithVowelOrH(word string) bool {

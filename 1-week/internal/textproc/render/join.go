@@ -3,14 +3,14 @@ package render
 import (
 	"strings"
 
-	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/token"
 )
 
-func Join(tokens []model.Token) string {
+func Join(tokens []token.Token) string {
 	var builder strings.Builder
 
-	for _, token := range tokens {
-		builder.WriteString(token.Value)
+	for _, tok := range tokens {
+		builder.WriteString(tok.Value)
 	}
 
 	return builder.String()

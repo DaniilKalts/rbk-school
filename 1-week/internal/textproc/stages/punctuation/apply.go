@@ -1,114 +1,114 @@
 package punctuation
 
 import (
-	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/grammar"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/stages"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/token"
 )
 
-func Apply(tokens []model.Token) []model.Token {
-	result := make([]model.Token, 0, len(tokens))
+func Apply(tokens []token.Token) []token.Token {
+	result := make([]token.Token, 0, len(tokens))
 	quoteOpen := false
 
-	for i, token := range tokens {
-		if token.IsSpace() {
-			nextIndex := nextNonSpaceTokenIndex(tokens, i+1)
-			if nextIndex == -1 || len(result) == 0 {
-				continue
-			}
-
-			nextToken := tokens[nextIndex]
-			prevToken, ok := lastNonSpaceToken(result)
-			if !ok {
-				continue
-			}
-
-			if shouldSkipSpace(prevToken, nextToken, quoteOpen) {
-				continue
-			}
-
-			if shouldForceSingleSpace(prevToken, nextToken, quoteOpen) {
-				appendSpaceToken(&result)
-				continue
-			}
-
-			appendSpaceToken(&result)
+	for i, tok := range tokens {
+		if tok.IsSpace() {
+			handleSpaceToken(&result, tokens, i, quoteOpen)
 			continue
 		}
 
-		if needsSpaceAfterTightPunctuation(result, token, quoteOpen) {
-			appendSpaceToken(&result)
+		handled, nextQuoteOpen := handleNonSpaceToken(&result, tokens, i, quoteOpen)
+		quoteOpen = nextQuoteOpen
+		if handled {
+			continue
 		}
 
-		if token.IsPunctuation() {
-			if token.Value == "'" {
-				if isApostropheInWord(tokens, i) {
-					result = append(result, token)
-					continue
-				}
-
-				if quoteOpen {
-					trimTrailingSpaces(&result)
-					result = append(result, token)
-					quoteOpen = false
-					continue
-				}
-
-				result = append(result, token)
-				quoteOpen = true
-				continue
-			}
-
-			if isTightPunctuationToken(token) {
-				trimTrailingSpaces(&result)
-			}
-		}
-
-		result = append(result, token)
+		result = append(result, tok)
 	}
 
 	return result
 }
 
-func isTightPunctuationToken(token model.Token) bool {
-	if !token.IsPunctuation() || len(token.Value) != 1 {
-		return false
+func handleNonSpaceToken(result *[]token.Token, tokens []token.Token, index int, quoteOpen bool) (bool, bool) {
+	tok := tokens[index]
+
+	if shouldInsertSpaceAfterTightPunctuation(*result, tok, quoteOpen) {
+		appendSpaceToken(result)
 	}
 
-	switch token.Value[0] {
-	case '.', ',', '!', '?', ':', ';':
-		return true
-	default:
-		return false
-	}
+	return preprocessPunctuationToken(result, tokens, index, quoteOpen)
 }
 
-func needsSpaceAfterTightPunctuation(result []model.Token, current model.Token, quoteOpen bool) bool {
+func handleSpaceToken(result *[]token.Token, tokens []token.Token, index int, quoteOpen bool) {
+	nextIndex, ok := nextNonSpaceTokenIndex(tokens, index+1)
+	if !ok || len(*result) == 0 {
+		return
+	}
+
+	nextToken := tokens[nextIndex]
+	prevToken, ok := lastNonSpaceToken(*result)
+	if !ok {
+		return
+	}
+
+	if shouldSkipSpace(prevToken, nextToken, quoteOpen) {
+		return
+	}
+
+	appendSpaceToken(result)
+}
+
+func preprocessPunctuationToken(result *[]token.Token, tokens []token.Token, index int, quoteOpen bool) (bool, bool) {
+	tok := tokens[index]
+	if !tok.IsPunctuation() {
+		return false, quoteOpen
+	}
+
+	if tok.Value != "'" {
+		if isTightPunctuationToken(tok) {
+			trimTrailingSpaces(result)
+		}
+
+		return false, quoteOpen
+	}
+
+	if isApostropheInWord(tokens, index) {
+		return false, quoteOpen
+	}
+
+	if quoteOpen {
+		trimTrailingSpaces(result)
+		*result = append(*result, tok)
+		return true, false
+	}
+
+	*result = append(*result, tok)
+	return true, true
+}
+
+func isTightPunctuationToken(tok token.Token) bool {
+	if !tok.IsPunctuation() || len(tok.Value) != 1 {
+		return false
+	}
+
+	return grammar.IsTightPunctuationRune(rune(tok.Value[0]))
+}
+
+func shouldInsertSpaceAfterTightPunctuation(result []token.Token, current token.Token, quoteOpen bool) bool {
 	prevToken, ok := lastNonSpaceToken(result)
 	if !ok || !isTightPunctuationToken(prevToken) {
 		return false
 	}
 
-	if current.IsPunctuation() {
-		if isTightPunctuationToken(current) {
-			return false
-		}
-
-		if current.Value == "'" && quoteOpen {
-			return false
-		}
+	if isNoSpaceSuccessor(current, quoteOpen) {
+		return false
 	}
 
 	return true
 }
 
-func shouldSkipSpace(prev model.Token, next model.Token, quoteOpen bool) bool {
-	if next.IsPunctuation() {
-		if isTightPunctuationToken(next) {
-			return true
-		}
-
-		if next.Value == "'" && quoteOpen {
-			return true
-		}
+func shouldSkipSpace(prev token.Token, next token.Token, quoteOpen bool) bool {
+	if isNoSpaceSuccessor(next, quoteOpen) {
+		return true
 	}
 
 	if prev.IsPunctuation() && prev.Value == "'" && quoteOpen {
@@ -118,35 +118,25 @@ func shouldSkipSpace(prev model.Token, next model.Token, quoteOpen bool) bool {
 	return false
 }
 
-func shouldForceSingleSpace(prev model.Token, next model.Token, quoteOpen bool) bool {
-	if !isTightPunctuationToken(prev) {
+func isNoSpaceSuccessor(tok token.Token, quoteOpen bool) bool {
+	if !tok.IsPunctuation() {
 		return false
 	}
 
-	if next.IsPunctuation() {
-		if isTightPunctuationToken(next) {
-			return false
-		}
-
-		if next.Value == "'" && quoteOpen {
-			return false
-		}
+	if isTightPunctuationToken(tok) {
+		return true
 	}
 
-	return true
+	return tok.Value == "'" && quoteOpen
 }
 
-func nextNonSpaceTokenIndex(tokens []model.Token, start int) int {
-	for i := start; i < len(tokens); i++ {
-		if !tokens[i].IsSpace() {
-			return i
-		}
-	}
-
-	return -1
+func nextNonSpaceTokenIndex(tokens []token.Token, start int) (int, bool) {
+	return stages.FindNextIndex(tokens, start, func(tok token.Token) bool {
+		return !tok.IsSpace()
+	})
 }
 
-func appendSpaceToken(tokens *[]model.Token) {
+func appendSpaceToken(tokens *[]token.Token) {
 	if len(*tokens) == 0 {
 		return
 	}
@@ -156,10 +146,10 @@ func appendSpaceToken(tokens *[]model.Token) {
 		return
 	}
 
-	*tokens = append(*tokens, model.Token{Kind: model.KindSpace, Value: " "})
+	*tokens = append(*tokens, token.Token{Kind: token.KindSpace, Value: " "})
 }
 
-func trimTrailingSpaces(tokens *[]model.Token) {
+func trimTrailingSpaces(tokens *[]token.Token) {
 	for len(*tokens) > 0 {
 		lastIndex := len(*tokens) - 1
 		if !(*tokens)[lastIndex].IsSpace() {
@@ -170,17 +160,18 @@ func trimTrailingSpaces(tokens *[]model.Token) {
 	}
 }
 
-func lastNonSpaceToken(tokens []model.Token) (model.Token, bool) {
-	for i := len(tokens) - 1; i >= 0; i-- {
-		if !tokens[i].IsSpace() {
-			return tokens[i], true
-		}
+func lastNonSpaceToken(tokens []token.Token) (token.Token, bool) {
+	index, ok := stages.FindPrevIndex(tokens, len(tokens)-1, func(tok token.Token) bool {
+		return !tok.IsSpace()
+	})
+	if !ok {
+		return token.Token{}, false
 	}
 
-	return model.Token{}, false
+	return tokens[index], true
 }
 
-func isApostropheInWord(tokens []model.Token, index int) bool {
+func isApostropheInWord(tokens []token.Token, index int) bool {
 	if index <= 0 || index >= len(tokens)-1 {
 		return false
 	}

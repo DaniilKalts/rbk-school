@@ -1,16 +1,15 @@
-package tokenizer
+package token
 
 import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/model"
-	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/stages/commands"
+	"github.com/DaniilKalts/rbk-school/1-week/internal/textproc/grammar"
 )
 
-func Tokenize(input string) []model.Token {
-	tokens := make([]model.Token, 0)
+func Tokenize(input string) []Token {
+	tokens := make([]Token, 0)
 
 	for len(input) > 0 {
 		r, size := utf8.DecodeRuneInString(input)
@@ -18,24 +17,24 @@ func Tokenize(input string) []model.Token {
 		switch {
 		case unicode.IsSpace(r):
 			value := readSpace(input)
-			tokens = append(tokens, model.Token{Kind: model.KindSpace, Value: value})
+			tokens = append(tokens, Token{Kind: KindSpace, Value: value})
 			input = input[len(value):]
-		case isPunctuation(r):
-			tokens = append(tokens, model.Token{Kind: model.KindPunctuation, Value: input[:size]})
+		case grammar.IsPunctuationRune(r):
+			tokens = append(tokens, Token{Kind: KindPunctuation, Value: input[:size]})
 			input = input[size:]
 		case r == '(':
 			if value, ok := readCommand(input); ok {
-				tokens = append(tokens, model.Token{Kind: model.KindCommand, Value: value})
+				tokens = append(tokens, Token{Kind: KindCommand, Value: value})
 				input = input[len(value):]
 				continue
 			}
 
 			value := readTextToken(input)
-			tokens = append(tokens, model.Token{Kind: model.KindWord, Value: value})
+			tokens = append(tokens, Token{Kind: KindWord, Value: value})
 			input = input[len(value):]
 		default:
 			value := readTextToken(input)
-			tokens = append(tokens, model.Token{Kind: model.KindWord, Value: value})
+			tokens = append(tokens, Token{Kind: KindWord, Value: value})
 			input = input[len(value):]
 		}
 	}
@@ -61,7 +60,7 @@ func readTextToken(input string) string {
 	end := 0
 
 	for i, r := range input {
-		if unicode.IsSpace(r) || isPunctuation(r) {
+		if unicode.IsSpace(r) || grammar.IsPunctuationRune(r) {
 			break
 		}
 
@@ -89,18 +88,9 @@ func readCommand(input string) (string, bool) {
 	}
 
 	raw := input[:end+1]
-	if _, ok := commands.ParseSpec(raw); !ok {
+	if _, ok := grammar.ParseCommandSpec(raw); !ok {
 		return "", false
 	}
 
 	return raw, true
-}
-
-func isPunctuation(r rune) bool {
-	switch r {
-	case '.', ',', '!', '?', ':', ';', '\'':
-		return true
-	default:
-		return false
-	}
 }
