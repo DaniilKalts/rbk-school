@@ -35,9 +35,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	result := domain.TransformText(string(inputData))
+	result := domain.TransformText(inputData)
 
-	if err := utils.WriteOutputFile(outputPath, []byte(result)); err != nil {
+	if err := utils.WriteOutputFile(outputPath, result); err != nil {
 		fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
 		os.Exit(1)
 	}
