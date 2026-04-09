@@ -32,6 +32,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	inputData, err := readInputFile(inputPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
+		os.Exit(1)
+	}
+
+	if err := writeOutputFile(inputData, outputPath); err != nil {
+		fmt.Fprintln(os.Stderr, msgErrorPrefix, err)
+		os.Exit(1)
+	}
+
 	fmt.Println("Входной файл:", inputPath)
 	fmt.Println("Выходной файл:", outputPath)
 }
@@ -111,6 +122,23 @@ func validateOutputPath(outputPath string) error {
 
 	if !outputDirInfo.IsDir() {
 		return fmt.Errorf("путь к директории выходного файла не является директорией: %s", outputDir)
+	}
+
+	return nil
+}
+
+func readInputFile(inputPath string) ([]byte, error) {
+	data, err := os.ReadFile(inputPath)
+	if err != nil {
+		return nil, fmt.Errorf("не удалось прочитать входной файл: %w", err)
+	}
+
+	return data, nil
+}
+
+func writeOutputFile(inputData []byte, outputPath string) error {
+	if err := os.WriteFile(outputPath, inputData, 0o644); err != nil {
+		return fmt.Errorf("не удалось записать выходной файл: %w", err)
 	}
 
 	return nil
