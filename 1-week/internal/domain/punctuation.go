@@ -26,7 +26,7 @@ func formatPunctuation(tokens []Token) string {
 				continue
 			}
 
-			result = append(result, token)
+			appendSpaceToken(&result)
 			continue
 		}
 
