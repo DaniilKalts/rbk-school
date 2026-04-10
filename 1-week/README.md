@@ -19,7 +19,7 @@
 Пример запуска:
 
 ```bash
-go run . input.txt output.txt
+go run ./cmd examples/sample.txt examples/result.txt
 ```
 
 ## TODO
