@@ -83,9 +83,9 @@ curl http://localhost:8080/weather/Almaty
 
 ### 1. Подготовка проекта
 
-- [ ] Создать точку входа `cmd/api/main.go`.
+- [x] Создать точку входа `cmd/api/main.go`.
 - [ ] Создать базовую структуру проекта: `internal/handler`, `internal/service`, `internal/client`.
-- [ ] Подключить `chi` и настроить HTTP-сервер.
+- [x] Подключить `chi` и настроить HTTP-сервер.
 
 ### 2. Интеграция с Weather API
 
