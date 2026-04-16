@@ -84,7 +84,7 @@ curl http://localhost:8080/weather/Almaty
 ### 1. Подготовка проекта
 
 - [x] Создать точку входа `cmd/api/main.go`.
-- [ ] Создать базовую структуру проекта: `internal/handler`, `internal/service`, `internal/client`.
+- [x] Создать базовую структуру проекта: `internal/handler`, `internal/service`, `internal/client`.
 - [x] Подключить `chi` и настроить HTTP-сервер.
 
 ### 2. Интеграция с Weather API
@@ -95,15 +95,15 @@ curl http://localhost:8080/weather/Almaty
 ### 3. Бизнес-логика
 
 - [ ] Добавить рекомендацию по одежде на основе температуры.
-- [ ] Реализовать получение погоды по городам страны.
-- [ ] Реализовать сортировку и выбор топ-3 самых теплых городов.
+- [x] Реализовать получение погоды по городам страны.
+- [x] Реализовать сортировку и выбор топ-3 самых теплых городов.
 
 ### 4. HTTP endpoints
 
-- [ ] Реализовать `GET /weather/{city}`.
-- [ ] Реализовать `GET /weather/country/{country}`.
-- [ ] Реализовать `GET /weather/country/{country}/top`.
-- [ ] Настроить JSON-ответы для успешных и ошибочных сценариев.
+- [x] Реализовать `GET /weather/{city}`.
+- [x] Реализовать `GET /weather/country/{country}`.
+- [x] Реализовать `GET /weather/country/{country}/top`.
+- [x] Настроить JSON-ответы для успешных и ошибочных сценариев.
 
 ### 5. Проверка
 
