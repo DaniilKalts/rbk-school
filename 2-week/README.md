@@ -14,6 +14,7 @@ API должно получать данные из Open-Meteo, обрабаты
 
 Точка входа HTTP-сервера находится в `cmd/api/main.go`.
 HTTP transport находится в `internal/transport/http/v1`.
+Swagger UI статика находится в `web/swagger`.
 
 Для получения погоды нужно использовать Open-Meteo:
 
@@ -59,17 +60,29 @@ go run ./cmd/api
 
 После запуска сервер должен быть доступен на `http://localhost:8080`.
 
+Swagger UI доступен по адресу `http://localhost:8080/swagger/`.
+
+OpenAPI spec доступна по адресу `http://localhost:8080/api/v1/openapi.yaml`.
+
 Пример запроса:
 
 ```bash
 curl http://localhost:8080/api/v1/weather/Almaty
 ```
 
-## Endpoints
+## Ручки
 
 ### `GET /health`
 
 Проверка, что сервис запущен и отвечает.
+
+### `GET /swagger/`
+
+Открывает Swagger UI в браузере.
+
+### `GET /api/v1/openapi.yaml`
+
+Возвращает OpenAPI spec в формате YAML.
 
 ### `GET /api/v1/weather/{city}`
 
@@ -107,6 +120,20 @@ curl http://localhost:8080/health
 
 ```text
 ok
+```
+
+### Swagger UI
+
+Открыть Swagger UI в браузере:
+
+```text
+http://localhost:8080/swagger/
+```
+
+Получить OpenAPI spec:
+
+```bash
+curl http://localhost:8080/api/v1/openapi.yaml
 ```
 
 ### Погода По Городу
@@ -149,7 +176,7 @@ curl "http://localhost:8080/api/v1/weather/Shymkent"
 curl "http://localhost:8080/api/v1/weather/country/KZ"
 ```
 
-Тот же endpoint с кодом страны в нижнем регистре тоже работает:
+Та же ручка с кодом страны в нижнем регистре тоже работает:
 
 ```bash
 curl "http://localhost:8080/api/v1/weather/country/kz"
@@ -309,7 +336,7 @@ curl "http://localhost:8080/api/v1/weather/country/"
 - Использовать `net/http` и `chi`.
 - Все ответы возвращать в формате JSON.
 - Разделить код на слои:
-  - `internal/transport/http/v1` - HTTP endpoints, чтение параметров запроса, запись ответа.
+  - `internal/transport/http/v1` - HTTP ручки, чтение параметров запроса, запись ответа.
   - `internal/service` - бизнес-логика, сортировка, рекомендации по одежде.
   - `internal/client` - работа с Open-Meteo.
 - Добавить обработку ошибок.
@@ -334,7 +361,7 @@ curl "http://localhost:8080/api/v1/weather/country/"
 - [x] Реализовать получение погоды по городам страны.
 - [x] Реализовать сортировку и выбор топ-3 самых теплых городов.
 
-### 4. HTTP endpoints
+### 4. HTTP ручки
 
 - [x] Реализовать `GET /weather/{city}`.
 - [x] Реализовать `GET /weather/country/{country}`.
@@ -344,5 +371,5 @@ curl "http://localhost:8080/api/v1/weather/country/"
 ### 5. Проверка
 
 - [x] Проверить запуск приложения через `go run ./cmd/api`.
-- [x] Проверить основные endpoints через `curl`.
+- [x] Проверить основные ручки через `curl`.
 - [x] Проверить сценарии ошибок.

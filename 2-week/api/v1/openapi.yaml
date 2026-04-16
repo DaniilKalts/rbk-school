@@ -1,0 +1,300 @@
+openapi: 3.1.0
+info:
+  title: "Weather API ☀️"
+  version: 1.0.0
+  description: |
+    HTTP API для получения погоды по городу, погоды по городам страны и топа самых теплых городов в стране.
+
+    API получает координаты через Open-Meteo Geocoding и данные о погоде через Open-Meteo Forecast.
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+tags:
+  - name: "Сервис ⚙️"
+    description: Служебные ручки
+  - name: "Погода 🌦️"
+    description: Ручки для получения данных о погоде
+paths:
+  /health:
+    get:
+      tags: ["Сервис ⚙️"]
+      summary: Проверка сервиса
+      description: Проверяет, что сервис запущен и отвечает.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Сервис работает корректно.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ok
+  /api/v1/weather/{city}:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: Погода по городу
+      description: |
+        Возвращает текущую погоду по названию города.
+
+        Название города в ответе приводится к нормализованному виду.
+      operationId: getWeatherByCity
+      parameters:
+        - $ref: '#/components/parameters/City'
+      responses:
+        '200':
+          description: Погода для запрошенного города.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherResponse'
+              examples:
+                almaty:
+                  summary: Погода в Алматы
+                  value:
+                    city: Almaty
+                    conditions:
+                      temperature: 10.1
+                      feelsLike: 9.3
+                    recommendation: It is cool outside, a jacket will help.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          description: Не удалось получить погоду по городу.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: Could not get weather for the city.
+  /api/v1/weather/country/{country}:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: Погода по стране
+      description: Возвращает погоду по городам запрошенной страны.
+      operationId: getWeatherByCountry
+      parameters:
+        - $ref: '#/components/parameters/Country'
+      responses:
+        '200':
+          description: Погода по городам страны.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherResponse'
+              examples:
+                kazakhstan:
+                  summary: Погода по городам Казахстана
+                  value:
+                    - city: Abai
+                      conditions:
+                        temperature: -2.3
+                        feelsLike: -7.9
+                      recommendation: It is cold outside, wear warm clothes.
+                    - city: Almaty
+                      conditions:
+                        temperature: 11.5
+                        feelsLike: 10.9
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Shymkent
+                      conditions:
+                        temperature: 11.8
+                        feelsLike: 8.4
+                      recommendation: It is cool outside, a jacket will help.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          description: Не удалось получить погоду по стране.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: Could not get weather for the country.
+  /api/v1/weather/country/{country}/top:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: Самые теплые города
+      description: |
+        Возвращает самые теплые города в запрошенной стране.
+
+        По умолчанию API возвращает топ-3 города.
+        Можно передать необязательный query-параметр `limit`, чтобы изменить количество результатов.
+      operationId: getTopWarmestCities
+      parameters:
+        - $ref: '#/components/parameters/Country'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Самые теплые города в стране.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherResponse'
+              examples:
+                defaultTop3:
+                  summary: Топ-3 самых теплых городов Казахстана
+                  value:
+                    - city: Jambyl
+                      conditions:
+                        temperature: 15.9
+                        feelsLike: 10.3
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Atyrau
+                      conditions:
+                        temperature: 13.9
+                        feelsLike: 10.4
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Turkistan
+                      conditions:
+                        temperature: 12.5
+                        feelsLike: 8.6
+                      recommendation: It is cool outside, a jacket will help.
+                limit5:
+                  summary: Топ-5 самых теплых городов Казахстана
+                  value:
+                    - city: Jambyl
+                      conditions:
+                        temperature: 15.9
+                        feelsLike: 10.3
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Atyrau
+                      conditions:
+                        temperature: 13.9
+                        feelsLike: 10.4
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Turkistan
+                      conditions:
+                        temperature: 12.5
+                        feelsLike: 8.6
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Shymkent
+                      conditions:
+                        temperature: 11.8
+                        feelsLike: 8.4
+                      recommendation: It is cool outside, a jacket will help.
+                    - city: Almaty
+                      conditions:
+                        temperature: 11.5
+                        feelsLike: 10.9
+                      recommendation: It is cool outside, a jacket will help.
+        '400':
+          description: Некорректный запрос.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidLimit:
+                  summary: Некорректное значение limit
+                  value:
+                    error: Limit must be a positive number.
+                countryRequired:
+                  summary: Не указан код страны
+                  value:
+                    error: Country code is required.
+        '500':
+          description: Не удалось получить самые теплые города страны.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: Could not get the warmest cities for the country.
+components:
+  parameters:
+    City:
+      name: city
+      in: path
+      required: true
+      description: "Название города. Пример: Almaty." 
+      schema:
+        type: string
+      examples:
+        almaty:
+          value: Almaty
+        lowerCase:
+          value: almaty
+    Country:
+      name: country
+      in: path
+      required: true
+      description: "Двухбуквенный код страны. Пример: KZ." 
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 2
+      examples:
+        kazakhstan:
+          value: KZ
+        lowerCase:
+          value: kz
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Количество городов в ответе. Должно быть положительным числом.
+      schema:
+        type: integer
+        minimum: 1
+        default: 3
+      examples:
+        five:
+          value: 5
+  responses:
+    BadRequest:
+      description: Некорректный запрос.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: City is required.
+  schemas:
+    WeatherResponse:
+      type: object
+      description: Ответ с погодой по одному городу.
+      required:
+        - conditions
+        - recommendation
+      properties:
+        city:
+          type: string
+          description: Нормализованное название города.
+          example: Almaty
+        conditions:
+          $ref: '#/components/schemas/Conditions'
+        recommendation:
+          type: string
+          description: Рекомендация, что лучше надеть по текущей температуре.
+          example: It is cool outside, a jacket will help.
+    Conditions:
+      type: object
+      description: Текущие погодные условия.
+      required:
+        - temperature
+        - feelsLike
+      properties:
+        temperature:
+          type: number
+          format: double
+          description: Температура воздуха в градусах Цельсия.
+          example: 10.1
+        feelsLike:
+          type: number
+          format: double
+          description: Ощущаемая температура в градусах Цельсия.
+          example: 9.3
+    ErrorResponse:
+      type: object
+      description: Ответ с текстом ошибки.
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Понятное сообщение об ошибке.
+          example: Limit must be a positive number.

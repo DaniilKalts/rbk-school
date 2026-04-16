@@ -12,6 +12,7 @@ import (
 	"github.com/DaniilKalts/rbk-school/2-week/internal/client/openmeteo"
 	"github.com/DaniilKalts/rbk-school/2-week/internal/config"
 	weatherService "github.com/DaniilKalts/rbk-school/2-week/internal/service/weather"
+	docsHandler "github.com/DaniilKalts/rbk-school/2-week/internal/transport/http/docs"
 	weatherHandler "github.com/DaniilKalts/rbk-school/2-week/internal/transport/http/v1/weather"
 )
 
@@ -53,6 +54,8 @@ func newRouter(cfg *config.Config, weatherHandler *weatherHandler.Handler) *chi.
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(cfg.Server.HTTPTimeout))
+
+	docsHandler.RegisterRoutes(r)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
