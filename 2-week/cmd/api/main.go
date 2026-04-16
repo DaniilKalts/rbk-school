@@ -1,30 +1,34 @@
 package main
 
 import (
-	"net/http"
-	"time"
+	"flag"
+	"log"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/DaniilKalts/rbk-school/2-week/internal/app"
+	"github.com/DaniilKalts/rbk-school/2-week/internal/config"
 )
 
 func main() {
-	r := chi.NewRouter()
+	configPath := flag.String("config-path", ".env", "path to config file")
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	flag.Parse()
 
-	r.Use(middleware.Timeout(15 * time.Second))
+	cfg, err := config.Load(*configPath)
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
 
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
-	})
+	container, err := app.NewContainer(cfg)
+	if err != nil {
+		log.Fatalf("failed to build app container: %v", err)
+	}
 
-	if err := http.ListenAndServe(":8080", r); err != nil {
-		panic(err)
+	application, err := app.New(container)
+	if err != nil {
+		log.Fatalf("failed to build app: %v", err)
+	}
+
+	if err := application.Run(); err != nil {
+		log.Fatalf("failed to run app: %v", err)
 	}
 }

@@ -29,9 +29,16 @@ API должно получать данные из Open-Meteo, обрабаты
 
 ```env
 COUNTRY_STATE_CITY_API_KEY=ВАШ_КЛЮЧ
+SERVER_ADDR=:8080
+SERVER_HTTP_TIMEOUT=15s
 ```
 
 Создайте на его основе файл `.env` и подставьте ваш API key для CountryStateCity.
+
+Дополнительно можно настроить параметры HTTP-сервера:
+
+- `SERVER_ADDR` - адрес сервера, по умолчанию `:8080`;
+- `SERVER_HTTP_TIMEOUT` - timeout для HTTP-клиента и HTTP-сервера, по умолчанию `15s`.
 
 Получить ключ и ознакомиться с инструкцией можно здесь:
 
