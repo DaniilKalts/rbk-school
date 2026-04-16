@@ -13,6 +13,7 @@
 API должно получать данные из Open-Meteo, обрабатывать их на стороне сервиса и отдавать клиенту JSON-ответ.
 
 Точка входа HTTP-сервера находится в `cmd/api/main.go`.
+HTTP transport находится в `internal/transport/http/v1`.
 
 Для получения погоды нужно использовать Open-Meteo:
 
@@ -61,7 +62,7 @@ go run ./cmd/api
 Пример запроса:
 
 ```bash
-curl http://localhost:8080/weather/Almaty
+curl http://localhost:8080/api/v1/weather/Almaty
 ```
 
 ## Endpoints
@@ -70,7 +71,7 @@ curl http://localhost:8080/weather/Almaty
 
 Проверка, что сервис запущен и отвечает.
 
-### `GET /weather/{city}`
+### `GET /api/v1/weather/{city}`
 
 Возвращает погоду по названию города.
 
@@ -80,11 +81,11 @@ curl http://localhost:8080/weather/Almaty
 - прохладно - куртка;
 - тепло - легкая одежда.
 
-### `GET /weather/country/{country}`
+### `GET /api/v1/weather/country/{country}`
 
 Возвращает информацию о погоде по городам страны.
 
-### `GET /weather/country/{country}/top`
+### `GET /api/v1/weather/country/{country}/top`
 
 Возвращает топ-3 самых теплых городов в стране.
 
@@ -113,7 +114,7 @@ ok
 Запрос погоды по городу:
 
 ```bash
-curl "http://localhost:8080/weather/almaty"
+curl "http://localhost:8080/api/v1/weather/almaty"
 ```
 
 Пример ответа:
@@ -137,7 +138,7 @@ curl "http://localhost:8080/weather/almaty"
 Дополнительный пример:
 
 ```bash
-curl "http://localhost:8080/weather/Shymkent"
+curl "http://localhost:8080/api/v1/weather/Shymkent"
 ```
 
 ### Погода По Стране
@@ -145,13 +146,13 @@ curl "http://localhost:8080/weather/Shymkent"
 Запрос погоды по городам страны:
 
 ```bash
-curl "http://localhost:8080/weather/country/KZ"
+curl "http://localhost:8080/api/v1/weather/country/KZ"
 ```
 
 Тот же endpoint с кодом страны в нижнем регистре тоже работает:
 
 ```bash
-curl "http://localhost:8080/weather/country/kz"
+curl "http://localhost:8080/api/v1/weather/country/kz"
 ```
 
 Пример ответа:
@@ -185,14 +186,14 @@ curl "http://localhost:8080/weather/country/kz"
 ]
 ```
 
-`/weather/country/KZ` возвращает полный список найденных городов страны. В примере выше показан только фрагмент ответа.
+`/api/v1/weather/country/KZ` возвращает полный список найденных городов страны. В примере выше показан только фрагмент ответа.
 
 ### Топ Самых Теплых Городов В Стране
 
 Топ-3 самых теплых городов в стране:
 
 ```bash
-curl "http://localhost:8080/weather/country/KZ/top"
+curl "http://localhost:8080/api/v1/weather/country/KZ/top"
 ```
 
 Пример ответа:
@@ -231,7 +232,7 @@ curl "http://localhost:8080/weather/country/KZ/top"
 Можно передать query-параметр `limit`:
 
 ```bash
-curl "http://localhost:8080/weather/country/KZ/top?limit=5"
+curl "http://localhost:8080/api/v1/weather/country/KZ/top?limit=5"
 ```
 
 Пример ответа:
@@ -286,7 +287,7 @@ curl "http://localhost:8080/weather/country/KZ/top?limit=5"
 Невалидный `limit`:
 
 ```bash
-curl "http://localhost:8080/weather/country/KZ/top?limit=0"
+curl "http://localhost:8080/api/v1/weather/country/KZ/top?limit=0"
 ```
 
 Ответ:
@@ -300,7 +301,7 @@ curl "http://localhost:8080/weather/country/KZ/top?limit=0"
 Пустой `country` path parameter не совпадает с маршрутом, поэтому такой запрос вернет `404 Not Found`:
 
 ```bash
-curl "http://localhost:8080/weather/country/"
+curl "http://localhost:8080/api/v1/weather/country/"
 ```
 
 ## Требования
@@ -308,7 +309,7 @@ curl "http://localhost:8080/weather/country/"
 - Использовать `net/http` и `chi`.
 - Все ответы возвращать в формате JSON.
 - Разделить код на слои:
-  - `internal/handler` - HTTP endpoints, чтение параметров запроса, запись ответа.
+  - `internal/transport/http/v1` - HTTP endpoints, чтение параметров запроса, запись ответа.
   - `internal/service` - бизнес-логика, сортировка, рекомендации по одежде.
   - `internal/client` - работа с Open-Meteo.
 - Добавить обработку ошибок.

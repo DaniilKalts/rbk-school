@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -41,6 +42,8 @@ func (a *App) Run() error {
 	defer stop()
 
 	errCh := make(chan error, 1)
+	log.Printf("server is running on %s", a.server.Addr)
+
 	go func() {
 		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errCh <- fmt.Errorf("app: run server: %w", err)
@@ -64,6 +67,8 @@ func (a *App) Run() error {
 	if err := <-errCh; err != nil {
 		return err
 	}
+
+	log.Print("server is stopped")
 
 	return nil
 }

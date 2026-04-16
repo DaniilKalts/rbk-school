@@ -11,8 +11,8 @@ import (
 	"github.com/DaniilKalts/rbk-school/2-week/internal/client/geocoding"
 	"github.com/DaniilKalts/rbk-school/2-week/internal/client/openmeteo"
 	"github.com/DaniilKalts/rbk-school/2-week/internal/config"
-	weatherHandler "github.com/DaniilKalts/rbk-school/2-week/internal/handler/weather"
 	weatherService "github.com/DaniilKalts/rbk-school/2-week/internal/service/weather"
+	weatherHandler "github.com/DaniilKalts/rbk-school/2-week/internal/transport/http/v1/weather"
 )
 
 type Container struct {
@@ -60,7 +60,7 @@ func newRouter(cfg *config.Config, weatherHandler *weatherHandler.Handler) *chi.
 		_, _ = w.Write([]byte("ok"))
 	})
 
-	r.Route("/weather", weatherHandler.RegisterRoutes)
+	r.Route("/api/v1/weather", weatherHandler.RegisterRoutes)
 
 	return r
 }

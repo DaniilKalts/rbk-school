@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/DaniilKalts/rbk-school/2-week/internal/domain"
-	handlerDTO "github.com/DaniilKalts/rbk-school/2-week/internal/handler/weather/dto"
+	handlerDTO "github.com/DaniilKalts/rbk-school/2-week/internal/transport/http/v1/weather/dto"
 	"github.com/go-chi/chi/v5"
 )
 
