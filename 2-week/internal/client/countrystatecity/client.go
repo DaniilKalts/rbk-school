@@ -37,27 +37,27 @@ func (c *Client) GetStatesByCountry(countryCode string) ([]dto.StateResponse, er
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("countrystatecity: create request: %w", err)
 	}
 	req.Header.Set("X-CSCAPI-KEY", c.apiKey)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("countrystatecity: failed to get states: %w", err)
+		return nil, fmt.Errorf("countrystatecity: do request: %w", err)
 	}
 	defer func() {
 		if closeErr := res.Body.Close(); closeErr != nil && err == nil {
-			err = fmt.Errorf("countrystatecity: failed to close response body: %w", closeErr)
+			err = fmt.Errorf("countrystatecity: close response body: %w", closeErr)
 		}
 	}()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("countrystatecity: unexpected status code: %d", res.StatusCode)
+		return nil, fmt.Errorf("countrystatecity: unexpected status code %d", res.StatusCode)
 	}
 
 	var states []dto.StateResponse
 	if err = json.NewDecoder(res.Body).Decode(&states); err != nil {
-		return nil, fmt.Errorf("countrystatecity: failed to decode response body: %w", err)
+		return nil, fmt.Errorf("countrystatecity: decode response body: %w", err)
 	}
 
 	return states, nil

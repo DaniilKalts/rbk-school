@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/caarlos0/env/v11"
@@ -10,12 +11,12 @@ import (
 
 func Load(path string) (*Config, error) {
 	if err := godotenv.Load(path); err != nil && !errors.Is(err, os.ErrNotExist) {
-		return nil, err
+		return nil, fmt.Errorf("config: load env file: %w", err)
 	}
 
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("config: parse env: %w", err)
 	}
 
 	return cfg, nil

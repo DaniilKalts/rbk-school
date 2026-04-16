@@ -1,25 +1,26 @@
 package weather
 
 import (
+	"fmt"
 	"sort"
 	"strconv"
-	"strings"
 
-	cscDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/countrystatecity/dto"
-	geoDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/geocoding/dto"
-	weatherDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/openmeteo/dto"
+	countryStateCityDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/countrystatecity/dto"
+	geocodingDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/geocoding/dto"
+	openMeteoDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/openmeteo/dto"
+	"github.com/DaniilKalts/rbk-school/2-week/internal/domain"
 )
 
 type CityListClient interface {
-	GetStatesByCountry(countryCode string) ([]cscDTO.StateResponse, error)
+	GetStatesByCountry(countryCode string) ([]countryStateCityDTO.StateResponse, error)
 }
 
 type GeocodingClient interface {
-	GetCoordsByState(countryCode string) (geoDTO.CoordsResponse, error)
+	GetCoordsByState(countryCode string) (geocodingDTO.CoordsResponse, error)
 }
 
 type WeatherClient interface {
-	GetWeatherByCoords(latitude, longitude float64) (weatherDTO.WeatherResponse, error)
+	GetWeatherByCoords(latitude, longitude float64) (openMeteoDTO.WeatherResponse, error)
 }
 
 type Service struct {
@@ -28,7 +29,11 @@ type Service struct {
 	weatherClient   WeatherClient
 }
 
-func NewService(cityListClient CityListClient, geocodingClient GeocodingClient, weatherClient WeatherClient) *Service {
+func NewService(
+	cityListClient CityListClient,
+	geocodingClient GeocodingClient,
+	weatherClient WeatherClient,
+) *Service {
 	return &Service{
 		cityListClient:  cityListClient,
 		geocodingClient: geocodingClient,
@@ -36,43 +41,63 @@ func NewService(cityListClient CityListClient, geocodingClient GeocodingClient, 
 	}
 }
 
-func (s *Service) GetWeatherByCity(city string) (weatherDTO.WeatherResponse, error) {
+func (s *Service) GetWeatherByCity(city string) (domain.Weather, error) {
 	coords, err := s.geocodingClient.GetCoordsByState(city)
 	if err != nil {
-		return weatherDTO.WeatherResponse{}, err
+		return domain.Weather{}, fmt.Errorf("get coordinates for city %q: %w", city, err)
 	}
 
-	weather, err := s.weatherClient.GetWeatherByCoords(coords.Latitude, coords.Longitude)
+	weatherResponse, err := s.weatherClient.GetWeatherByCoords(coords.Latitude, coords.Longitude)
 	if err != nil {
-		return weatherDTO.WeatherResponse{}, err
+		return domain.Weather{}, fmt.Errorf("get weather for city %q: %w", city, err)
 	}
-	weather.City = normalizeCityName(city)
+
+	conditions := domain.Conditions{
+		Temperature: weatherResponse.Current.Temperature2M,
+		FeelsLike:   weatherResponse.Current.ApparentTemperature,
+	}
+
+	weather, err := domain.NewWeather(city, coords.Latitude, coords.Longitude, conditions)
+	if err != nil {
+		return domain.Weather{}, fmt.Errorf("build weather for city %q: %w", city, err)
+	}
 
 	return weather, nil
 }
 
-func (s *Service) GetWeatherByCountry(countryCode string) ([]weatherDTO.WeatherResponse, error) {
+func (s *Service) GetWeatherByCountry(countryCode string) ([]domain.Weather, error) {
 	states, err := s.cityListClient.GetStatesByCountry(countryCode)
 	if err != nil {
-		return []weatherDTO.WeatherResponse{}, err
+		return nil, fmt.Errorf("get states for country %q: %w", countryCode, err)
 	}
 
-	weathers := make([]weatherDTO.WeatherResponse, 0, len(states))
+	weathers := make([]domain.Weather, 0, len(states))
+
 	for _, state := range states {
-		lat, err := strconv.ParseFloat(state.Latitude, 64)
+		latitude, err := strconv.ParseFloat(state.Latitude, 64)
 		if err != nil {
-			return []weatherDTO.WeatherResponse{}, err
-		}
-		lon, err := strconv.ParseFloat(state.Longitude, 64)
-		if err != nil {
-			return []weatherDTO.WeatherResponse{}, err
+			return nil, fmt.Errorf("parse latitude for city %q: %w", state.Name, err)
 		}
 
-		weather, err := s.weatherClient.GetWeatherByCoords(lat, lon)
+		longitude, err := strconv.ParseFloat(state.Longitude, 64)
+		if err != nil {
+			return nil, fmt.Errorf("parse longitude for city %q: %w", state.Name, err)
+		}
+
+		weatherResponse, err := s.weatherClient.GetWeatherByCoords(latitude, longitude)
 		if err != nil {
 			continue
 		}
-		weather.City = normalizeCityName(state.Name)
+
+		conditions := domain.Conditions{
+			Temperature: weatherResponse.Current.Temperature2M,
+			FeelsLike:   weatherResponse.Current.ApparentTemperature,
+		}
+
+		weather, err := domain.NewWeather(state.Name, latitude, longitude, conditions)
+		if err != nil {
+			return nil, fmt.Errorf("build weather for city %q: %w", state.Name, err)
+		}
 
 		weathers = append(weathers, weather)
 	}
@@ -80,29 +105,23 @@ func (s *Service) GetWeatherByCountry(countryCode string) ([]weatherDTO.WeatherR
 	return weathers, nil
 }
 
-func (s *Service) GetTopWarmestCities(countryCode string, limit int) ([]weatherDTO.WeatherResponse, error) {
+func (s *Service) GetTopWarmestCities(countryCode string, limit int) ([]domain.Weather, error) {
 	weathers, err := s.GetWeatherByCountry(countryCode)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get weather for country %q: %w", countryCode, err)
+	}
+
+	if limit < 0 {
+		return nil, fmt.Errorf("limit must be non-negative")
 	}
 
 	sort.Slice(weathers, func(i, j int) bool {
-		return weathers[i].Current.Temperature2M > weathers[j].Current.Temperature2M
+		return weathers[i].Conditions.Temperature > weathers[j].Conditions.Temperature
 	})
 
-	if len(weathers) < limit {
+	if limit > len(weathers) {
 		limit = len(weathers)
 	}
 
 	return weathers[:limit], nil
-}
-
-func normalizeCityName(city string) string {
-	city = strings.TrimSpace(city)
-	if city == "" {
-		return city
-	}
-
-	city = strings.ToLower(city)
-	return strings.ToUpper(city[:1]) + city[1:]
 }

@@ -6,19 +6,23 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/DaniilKalts/rbk-school/2-week/internal/domain"
+	handlerDTO "github.com/DaniilKalts/rbk-school/2-week/internal/handler/weather/dto"
 	"github.com/go-chi/chi/v5"
-
-	weatherDTO "github.com/DaniilKalts/rbk-school/2-week/internal/client/openmeteo/dto"
 )
 
 type Service interface {
-	GetWeatherByCity(city string) (weatherDTO.WeatherResponse, error)
-	GetWeatherByCountry(countryCode string) ([]weatherDTO.WeatherResponse, error)
-	GetTopWarmestCities(countryCode string, limit int) ([]weatherDTO.WeatherResponse, error)
+	GetWeatherByCity(city string) (domain.Weather, error)
+	GetWeatherByCountry(countryCode string) ([]domain.Weather, error)
+	GetTopWarmestCities(countryCode string, limit int) ([]domain.Weather, error)
 }
 
 type Handler struct {
 	service Service
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
 }
 
 func NewWeatherHandler(service Service) *Handler {
@@ -30,39 +34,39 @@ func NewWeatherHandler(service Service) *Handler {
 func (h *Handler) GetWeatherByCity(w http.ResponseWriter, r *http.Request) {
 	city := strings.TrimSpace(chi.URLParam(r, "city"))
 	if city == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"message": "city is required"})
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "City is required."})
 		return
 	}
 
 	weather, err := h.service.GetWeatherByCity(city)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "failed to get weather"})
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Could not get weather for the city."})
 		return
 	}
 
-	writeJSON(w, http.StatusOK, weather)
+	writeJSON(w, http.StatusOK, handlerDTO.FromDomainWeather(weather))
 }
 
 func (h *Handler) GetWeatherByCountry(w http.ResponseWriter, r *http.Request) {
 	countryCode := strings.ToUpper(strings.TrimSpace(chi.URLParam(r, "country")))
 	if countryCode == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"message": "country code is required"})
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Country code is required."})
 		return
 	}
 
 	weathers, err := h.service.GetWeatherByCountry(countryCode)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "failed to get country weather"})
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Could not get weather for the country."})
 		return
 	}
 
-	writeJSON(w, http.StatusOK, weathers)
+	writeJSON(w, http.StatusOK, handlerDTO.FromDomainWeathers(weathers))
 }
 
 func (h *Handler) GetTopWarmestCities(w http.ResponseWriter, r *http.Request) {
 	countryCode := strings.ToUpper(strings.TrimSpace(chi.URLParam(r, "country")))
 	if countryCode == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"message": "country code is required"})
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Country code is required."})
 		return
 	}
 
@@ -72,7 +76,7 @@ func (h *Handler) GetTopWarmestCities(w http.ResponseWriter, r *http.Request) {
 	if limitParam != "" {
 		parsedLimit, err := strconv.Atoi(limitParam)
 		if err != nil || parsedLimit <= 0 {
-			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "limit must be a positive integer"})
+			writeJSON(w, http.StatusBadRequest, ErrorResponse{Error: "Limit must be a positive number."})
 			return
 		}
 
@@ -81,11 +85,11 @@ func (h *Handler) GetTopWarmestCities(w http.ResponseWriter, r *http.Request) {
 
 	weathers, err := h.service.GetTopWarmestCities(countryCode, limit)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "failed to get warmest cities"})
+		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Could not get the warmest cities for the country."})
 		return
 	}
 
-	writeJSON(w, http.StatusOK, weathers)
+	writeJSON(w, http.StatusOK, handlerDTO.FromDomainWeathers(weathers))
 }
 
 func writeJSON(w http.ResponseWriter, status int, data any) {

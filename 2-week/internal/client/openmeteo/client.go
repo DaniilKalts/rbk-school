@@ -47,26 +47,26 @@ func (c *Client) GetWeatherByCoords(latitude, longitude float64) (dto.WeatherRes
 
 	req, err := http.NewRequest(http.MethodGet, parsedURL.String(), nil)
 	if err != nil {
-		return dto.WeatherResponse{}, err
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: create request: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return dto.WeatherResponse{}, err
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: do request: %w", err)
 	}
 	defer func() {
-		if closeErr := res.Body.Close(); closeErr != nil {
-			err = fmt.Errorf("openmeteo: failed to close response body: %w", closeErr)
+		if closeErr := res.Body.Close(); closeErr != nil && err == nil {
+			err = fmt.Errorf("openmeteo: close response body: %w", closeErr)
 		}
 	}()
 
 	if res.StatusCode != http.StatusOK {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: unexpected status code: %d", res.StatusCode)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: unexpected status code %d", res.StatusCode)
 	}
 
 	var weather dto.WeatherResponse
 	if err := json.NewDecoder(res.Body).Decode(&weather); err != nil {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: failed to decode response: %w", err)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: decode response body: %w", err)
 	}
 
 	return weather, nil
