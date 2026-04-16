@@ -1,6 +1,7 @@
 package weather
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -12,15 +13,15 @@ import (
 )
 
 type CityListClient interface {
-	GetStatesByCountry(countryCode string) ([]countryStateCityDTO.StateResponse, error)
+	GetStatesByCountry(ctx context.Context, countryCode string) ([]countryStateCityDTO.StateResponse, error)
 }
 
 type GeocodingClient interface {
-	GetCoordsByState(countryCode string) (geocodingDTO.CoordsResponse, error)
+	GetCoordsByState(ctx context.Context, countryCode string) (geocodingDTO.CoordsResponse, error)
 }
 
 type WeatherClient interface {
-	GetWeatherByCoords(latitude, longitude float64) (openMeteoDTO.WeatherResponse, error)
+	GetWeatherByCoords(ctx context.Context, latitude, longitude float64) (openMeteoDTO.WeatherResponse, error)
 }
 
 type Service struct {
@@ -41,13 +42,13 @@ func NewService(
 	}
 }
 
-func (s *Service) GetWeatherByCity(city string) (domain.Weather, error) {
-	coords, err := s.geocodingClient.GetCoordsByState(city)
+func (s *Service) GetWeatherByCity(ctx context.Context, city string) (domain.Weather, error) {
+	coords, err := s.geocodingClient.GetCoordsByState(ctx, city)
 	if err != nil {
 		return domain.Weather{}, fmt.Errorf("get coordinates for city %q: %w", city, err)
 	}
 
-	weatherResponse, err := s.weatherClient.GetWeatherByCoords(coords.Latitude, coords.Longitude)
+	weatherResponse, err := s.weatherClient.GetWeatherByCoords(ctx, coords.Latitude, coords.Longitude)
 	if err != nil {
 		return domain.Weather{}, fmt.Errorf("get weather for city %q: %w", city, err)
 	}
@@ -65,8 +66,8 @@ func (s *Service) GetWeatherByCity(city string) (domain.Weather, error) {
 	return weather, nil
 }
 
-func (s *Service) GetWeatherByCountry(countryCode string) ([]domain.Weather, error) {
-	states, err := s.cityListClient.GetStatesByCountry(countryCode)
+func (s *Service) GetWeatherByCountry(ctx context.Context, countryCode string) ([]domain.Weather, error) {
+	states, err := s.cityListClient.GetStatesByCountry(ctx, countryCode)
 	if err != nil {
 		return nil, fmt.Errorf("get states for country %q: %w", countryCode, err)
 	}
@@ -84,7 +85,7 @@ func (s *Service) GetWeatherByCountry(countryCode string) ([]domain.Weather, err
 			return nil, fmt.Errorf("parse longitude for city %q: %w", state.Name, err)
 		}
 
-		weatherResponse, err := s.weatherClient.GetWeatherByCoords(latitude, longitude)
+		weatherResponse, err := s.weatherClient.GetWeatherByCoords(ctx, latitude, longitude)
 		if err != nil {
 			continue
 		}
@@ -105,8 +106,8 @@ func (s *Service) GetWeatherByCountry(countryCode string) ([]domain.Weather, err
 	return weathers, nil
 }
 
-func (s *Service) GetTopWarmestCities(countryCode string, limit int) ([]domain.Weather, error) {
-	weathers, err := s.GetWeatherByCountry(countryCode)
+func (s *Service) GetTopWarmestCities(ctx context.Context, countryCode string, limit int) ([]domain.Weather, error) {
+	weathers, err := s.GetWeatherByCountry(ctx, countryCode)
 	if err != nil {
 		return nil, fmt.Errorf("get weather for country %q: %w", countryCode, err)
 	}

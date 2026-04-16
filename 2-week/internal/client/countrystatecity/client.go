@@ -1,6 +1,7 @@
 package countrystatecity
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,10 +33,10 @@ func NewClient(httpClient *http.Client, apiKey string) *Client {
 	}
 }
 
-func (c *Client) GetStatesByCountry(countryCode string) ([]dto.StateResponse, error) {
+func (c *Client) GetStatesByCountry(ctx context.Context, countryCode string) ([]dto.StateResponse, error) {
 	url := fmt.Sprintf("%s/countries/%s/states", c.baseURL, countryCode)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("countrystatecity: create request: %w", err)
 	}

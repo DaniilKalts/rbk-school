@@ -1,6 +1,7 @@
 package weather
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -12,9 +13,9 @@ import (
 )
 
 type Service interface {
-	GetWeatherByCity(city string) (domain.Weather, error)
-	GetWeatherByCountry(countryCode string) ([]domain.Weather, error)
-	GetTopWarmestCities(countryCode string, limit int) ([]domain.Weather, error)
+	GetWeatherByCity(ctx context.Context, city string) (domain.Weather, error)
+	GetWeatherByCountry(ctx context.Context, countryCode string) ([]domain.Weather, error)
+	GetTopWarmestCities(ctx context.Context, countryCode string, limit int) ([]domain.Weather, error)
 }
 
 type Handler struct {
@@ -38,7 +39,7 @@ func (h *Handler) GetWeatherByCity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	weather, err := h.service.GetWeatherByCity(city)
+	weather, err := h.service.GetWeatherByCity(r.Context(), city)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Could not get weather for the city."})
 		return
@@ -54,7 +55,7 @@ func (h *Handler) GetWeatherByCountry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	weathers, err := h.service.GetWeatherByCountry(countryCode)
+	weathers, err := h.service.GetWeatherByCountry(r.Context(), countryCode)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Could not get weather for the country."})
 		return
@@ -83,7 +84,7 @@ func (h *Handler) GetTopWarmestCities(w http.ResponseWriter, r *http.Request) {
 		limit = parsedLimit
 	}
 
-	weathers, err := h.service.GetTopWarmestCities(countryCode, limit)
+	weathers, err := h.service.GetTopWarmestCities(r.Context(), countryCode, limit)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, ErrorResponse{Error: "Could not get the warmest cities for the country."})
 		return

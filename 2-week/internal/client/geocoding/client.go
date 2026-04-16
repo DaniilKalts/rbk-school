@@ -1,6 +1,7 @@
 package geocoding
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -30,10 +31,10 @@ func NewClient(httpClient *http.Client) *Client {
 	}
 }
 
-func (c *Client) GetCoordsByState(state string) (dto.CoordsResponse, error) {
+func (c *Client) GetCoordsByState(ctx context.Context, state string) (dto.CoordsResponse, error) {
 	url := fmt.Sprintf("%s/search?name=%s&count=1&language=en&format=json", c.baseURL, state)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return dto.CoordsResponse{}, fmt.Errorf("geocoding: create request: %w", err)
 	}

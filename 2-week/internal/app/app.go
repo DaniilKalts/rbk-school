@@ -1,8 +1,11 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os/signal"
+	"syscall"
 )
 
 type App struct {
@@ -34,8 +37,32 @@ func (a *App) Run() error {
 		return fmt.Errorf("app: server is not initialized")
 	}
 
-	if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		return fmt.Errorf("app: run server: %w", err)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	errCh := make(chan error, 1)
+	go func() {
+		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errCh <- fmt.Errorf("app: run server: %w", err)
+		}
+		close(errCh)
+	}()
+
+	select {
+	case err := <-errCh:
+		return err
+	case <-ctx.Done():
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.server.ReadTimeout)
+	defer cancel()
+
+	if err := a.server.Shutdown(shutdownCtx); err != nil {
+		return fmt.Errorf("app: shutdown server: %w", err)
+	}
+
+	if err := <-errCh; err != nil {
+		return err
 	}
 
 	return nil

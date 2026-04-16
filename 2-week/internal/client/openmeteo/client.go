@@ -1,6 +1,7 @@
 package openmeteo
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,7 +33,7 @@ func NewClient(httpClient *http.Client) *Client {
 	}
 }
 
-func (c *Client) GetWeatherByCoords(latitude, longitude float64) (dto.WeatherResponse, error) {
+func (c *Client) GetWeatherByCoords(ctx context.Context, latitude, longitude float64) (dto.WeatherResponse, error) {
 	parsedURL, err := url.Parse(c.baseURL)
 	if err != nil {
 		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: parse base url: %w", err)
@@ -45,7 +46,7 @@ func (c *Client) GetWeatherByCoords(latitude, longitude float64) (dto.WeatherRes
 
 	parsedURL.RawQuery = queryParams.Encode()
 
-	req, err := http.NewRequest(http.MethodGet, parsedURL.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsedURL.String(), nil)
 	if err != nil {
 		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: create request: %w", err)
 	}
