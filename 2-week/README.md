@@ -21,43 +21,21 @@ API должно получать данные из Open-Meteo, обрабаты
 
 Схема работы: название города -> координаты через Geocoding API -> текущая температура через Forecast API -> JSON-ответ приложения.
 
-## Требования
+## Запуск
 
-- Использовать `net/http` и `chi`.
-- Все ответы возвращать в формате JSON.
-- Разделить код на слои:
-  - `internal/handler` - HTTP endpoints, чтение параметров запроса, запись ответа.
-  - `internal/service` - бизнес-логика, сортировка, рекомендации по одежде.
-  - `internal/client` - работа с Open-Meteo.
-- Добавить обработку ошибок.
-- Использовать Open-Meteo для получения погодных данных.
+Перед запуском нужно подготовить файл окружения.
 
-### Endpoints
+В проекте есть шаблон `2-week/.env.example`:
 
-#### `GET /weather/{city}`
+```env
+COUNTRY_STATE_CITY_API_KEY=ВАШ_КЛЮЧ
+```
 
-Возвращает погоду по названию города.
+Создайте на его основе файл `.env` и подставьте ваш API key для CountryStateCity.
 
-Дополнительно в ответе должна быть рекомендация, что надеть в зависимости от температуры:
+Получить ключ и ознакомиться с инструкцией можно здесь:
 
-- холодно - теплая одежда;
-- прохладно - куртка;
-- тепло - легкая одежда.
-
-#### `GET /weather/country/{country}`
-
-Возвращает информацию о погоде по городам страны.
-
-#### `GET /weather/country/{country}/top`
-
-Возвращает топ-3 самых теплых городов в стране.
-
-Требования к endpoint:
-
-- отсортировать города по температуре;
-- вернуть только 3 города с самой высокой температурой.
-
-## Формат запуска
+`https://app.countrystatecity.in/`
 
 Установить зависимости:
 
@@ -78,6 +56,256 @@ go run ./cmd/api
 ```bash
 curl http://localhost:8080/weather/Almaty
 ```
+
+## Endpoints
+
+### `GET /health`
+
+Проверка, что сервис запущен и отвечает.
+
+### `GET /weather/{city}`
+
+Возвращает погоду по названию города.
+
+Дополнительно в ответе возвращается рекомендация, что надеть в зависимости от температуры:
+
+- холодно - теплая одежда;
+- прохладно - куртка;
+- тепло - легкая одежда.
+
+### `GET /weather/country/{country}`
+
+Возвращает информацию о погоде по городам страны.
+
+### `GET /weather/country/{country}/top`
+
+Возвращает топ-3 самых теплых городов в стране.
+
+Дополнительно можно передать query-параметр `limit`, чтобы получить больше или меньше результатов.
+
+## Примеры API
+
+Ниже приведены `curl`-примеры, которые показывают возможности текущего API.
+
+Примечание: значения температуры меняются со временем, потому что API запрашивает живые погодные данные.
+
+### Проверка Сервиса
+
+```bash
+curl http://localhost:8080/health
+```
+
+Ожидаемый ответ:
+
+```text
+ok
+```
+
+### Погода По Городу
+
+Запрос погоды по городу:
+
+```bash
+curl "http://localhost:8080/weather/almaty"
+```
+
+Пример ответа:
+
+```json
+{
+  "city": "Almaty",
+  "conditions": {
+    "temperature": 10.1,
+    "feelsLike": 9.3
+  },
+  "recommendation": "It is cool outside, a jacket will help."
+}
+```
+
+Что важно:
+
+- можно передавать город в любом регистре, например `almaty`, `ALMATY`, `Almaty`;
+- в ответе название города нормализуется.
+
+Дополнительный пример:
+
+```bash
+curl "http://localhost:8080/weather/Shymkent"
+```
+
+### Погода По Стране
+
+Запрос погоды по городам страны:
+
+```bash
+curl "http://localhost:8080/weather/country/KZ"
+```
+
+Тот же endpoint с кодом страны в нижнем регистре тоже работает:
+
+```bash
+curl "http://localhost:8080/weather/country/kz"
+```
+
+Пример ответа:
+
+```json
+[
+  {
+    "city": "Abai",
+    "conditions": {
+      "temperature": -2.3,
+      "feelsLike": -7.9
+    },
+    "recommendation": "It is cold outside, wear warm clothes."
+  },
+  {
+    "city": "Almaty",
+    "conditions": {
+      "temperature": 11.5,
+      "feelsLike": 10.9
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Shymkent",
+    "conditions": {
+      "temperature": 11.8,
+      "feelsLike": 8.4
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  }
+]
+```
+
+`/weather/country/KZ` возвращает полный список найденных городов страны. В примере выше показан только фрагмент ответа.
+
+### Топ Самых Теплых Городов В Стране
+
+Топ-3 самых теплых городов в стране:
+
+```bash
+curl "http://localhost:8080/weather/country/KZ/top"
+```
+
+Пример ответа:
+
+```json
+[
+  {
+    "city": "Jambyl",
+    "conditions": {
+      "temperature": 15.9,
+      "feelsLike": 10.3
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Atyrau",
+    "conditions": {
+      "temperature": 13.9,
+      "feelsLike": 10.4
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Turkistan",
+    "conditions": {
+      "temperature": 12.5,
+      "feelsLike": 8.6
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  }
+]
+```
+
+### Топ Городов С Пользовательским Limit
+
+Можно передать query-параметр `limit`:
+
+```bash
+curl "http://localhost:8080/weather/country/KZ/top?limit=5"
+```
+
+Пример ответа:
+
+```json
+[
+  {
+    "city": "Jambyl",
+    "conditions": {
+      "temperature": 15.9,
+      "feelsLike": 10.3
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Atyrau",
+    "conditions": {
+      "temperature": 13.9,
+      "feelsLike": 10.4
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Turkistan",
+    "conditions": {
+      "temperature": 12.5,
+      "feelsLike": 8.6
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Shymkent",
+    "conditions": {
+      "temperature": 11.8,
+      "feelsLike": 8.4
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  },
+  {
+    "city": "Almaty",
+    "conditions": {
+      "temperature": 11.5,
+      "feelsLike": 10.9
+    },
+    "recommendation": "It is cool outside, a jacket will help."
+  }
+]
+```
+
+### Примеры Ошибок
+
+Невалидный `limit`:
+
+```bash
+curl "http://localhost:8080/weather/country/KZ/top?limit=0"
+```
+
+Ответ:
+
+```json
+{
+  "error": "Limit must be a positive number."
+}
+```
+
+Пустой `country` path parameter не совпадает с маршрутом, поэтому такой запрос вернет `404 Not Found`:
+
+```bash
+curl "http://localhost:8080/weather/country/"
+```
+
+## Требования
+
+- Использовать `net/http` и `chi`.
+- Все ответы возвращать в формате JSON.
+- Разделить код на слои:
+  - `internal/handler` - HTTP endpoints, чтение параметров запроса, запись ответа.
+  - `internal/service` - бизнес-логика, сортировка, рекомендации по одежде.
+  - `internal/client` - работа с Open-Meteo.
+- Добавить обработку ошибок.
+- Использовать Open-Meteo для получения погодных данных.
 
 ## TODO
 
