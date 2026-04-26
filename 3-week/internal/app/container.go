@@ -9,13 +9,13 @@ import (
 	redisclient "github.com/redis/go-redis/v9"
 
 	cacheredis "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/cache/redis"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/geocoding"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/openmeteo"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
 	docshttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/docs"
 	cityhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/city"
 	userhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/user"
 	weatherhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/weather"
+	"github.com/DaniilKalts/rbk-school/3-week/internal/clients/geocoding"
+	"github.com/DaniilKalts/rbk-school/3-week/internal/clients/openmeteo"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/config"
 	cityrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/city"
 	userrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/user"
@@ -52,19 +52,11 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 
 	httpClient := &http.Client{Timeout: cfg.Server.HTTPTimeout}
 
-	userRepository := userrepo.New(db)
-	userService := userservice.New(userRepository)
+	repos := initRepositories(db)
+	clients := initClients(httpClient, redisClient, cfg)
+	services := initServices(repos, clients)
 
-	cityRepository := cityrepo.New(db)
-	cityService := cityservice.New(cityRepository, userRepository)
-
-	weatherRepository := weatherrepo.New(db)
-	geocodingClient := geocoding.NewClient(httpClient)
-	openMeteoClient := openmeteo.NewClient(httpClient)
-	weatherCache := cacheredis.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL)
-	weatherService := weatherservice.New(userRepository, cityRepository, weatherRepository, geocodingClient, openMeteoClient, weatherCache)
-
-	router := newRouter(userService, cityService, weatherService)
+	router := newRouter(services.user, services.city, services.weather)
 
 	return &Container{
 		Config:     cfg,
@@ -85,6 +77,48 @@ func (c *Container) Close() {
 	}
 	if c.Redis != nil {
 		_ = c.Redis.Close()
+	}
+}
+
+type repositories struct {
+	user    *userrepo.Repository
+	city    *cityrepo.Repository
+	weather *weatherrepo.Repository
+}
+
+func initRepositories(db *pgxpool.Pool) *repositories {
+	return &repositories{
+		user:    userrepo.New(db),
+		city:    cityrepo.New(db),
+		weather: weatherrepo.New(db),
+	}
+}
+
+type clients struct {
+	geocoding    *geocoding.Client
+	openMeteo    *openmeteo.Client
+	weatherCache *cacheredis.WeatherCache
+}
+
+func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *config.Config) *clients {
+	return &clients{
+		geocoding:    geocoding.NewClient(httpClient),
+		openMeteo:    openmeteo.NewClient(httpClient),
+		weatherCache: cacheredis.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL),
+	}
+}
+
+type services struct {
+	user    *userservice.Service
+	city    *cityservice.Service
+	weather *weatherservice.Service
+}
+
+func initServices(repos *repositories, clients *clients) *services {
+	return &services{
+		user:    userservice.New(repos.user),
+		city:    cityservice.New(repos.city, repos.user),
+		weather: weatherservice.New(repos.user, repos.city, repos.weather, clients.geocoding, clients.openMeteo, clients.weatherCache),
 	}
 }
 

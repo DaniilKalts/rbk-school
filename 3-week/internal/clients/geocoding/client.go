@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/geocoding/dto"
+	"github.com/DaniilKalts/rbk-school/3-week/internal/clients/geocoding/dto"
 )
 
 const (

@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	geocodingdto "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/geocoding/dto"
-	openmeteodto "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/openmeteo/dto"
+	geocodingdto "github.com/DaniilKalts/rbk-school/3-week/internal/clients/geocoding/dto"
+	openmeteodto "github.com/DaniilKalts/rbk-school/3-week/internal/clients/openmeteo/dto"
 	domaincity "github.com/DaniilKalts/rbk-school/3-week/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"

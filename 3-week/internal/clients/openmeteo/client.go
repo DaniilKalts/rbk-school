@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/openmeteo/dto"
+	"github.com/DaniilKalts/rbk-school/3-week/internal/clients/openmeteo/dto"
 )
 
 const (
