@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/weather/dto"
+	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
 	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
@@ -18,7 +19,7 @@ import (
 
 type Service interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainweather.Weather, error)
-	GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainweather.History, error)
+	GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error)
 }
 
 type Handler struct {

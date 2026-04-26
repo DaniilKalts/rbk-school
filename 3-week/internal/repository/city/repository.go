@@ -67,12 +67,3 @@ func (r *Repository) Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID)
 
 	return nil
 }
-
-func toDomain(c sqlc.UserCity) domaincity.City {
-	return domaincity.City{
-		ID:        c.ID,
-		UserID:    c.UserID,
-		Name:      c.City,
-		CreatedAt: c.CreatedAt,
-	}
-}

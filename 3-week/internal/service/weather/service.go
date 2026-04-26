@@ -10,6 +10,7 @@ import (
 	geocodingdto "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/geocoding/dto"
 	openmeteodto "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/openmeteo/dto"
 	domaincity "github.com/DaniilKalts/rbk-school/3-week/internal/domain/city"
+	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
 	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
 )
@@ -23,8 +24,8 @@ type CityRepository interface {
 }
 
 type HistoryRepository interface {
-	CreateHistory(ctx context.Context, history domainweather.History) (*domainweather.History, error)
-	ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainweather.History, error)
+	CreateHistory(ctx context.Context, history domainhistory.History) (*domainhistory.History, error)
+	ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error)
 }
 
 type GeocodingClient interface {
@@ -97,7 +98,7 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 				return
 			}
 
-			history, err := s.historyRepository.CreateHistory(ctx, domainweather.History{
+			history, err := s.historyRepository.CreateHistory(ctx, domainhistory.History{
 				ID:          uuid.New(),
 				UserID:      userID,
 				City:        weather.City,
@@ -123,7 +124,7 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 	return weathers, nil
 }
 
-func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainweather.History, error) {
+func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error) {
 	if userID == uuid.Nil {
 		return nil, domainuser.ErrInvalidID
 	}

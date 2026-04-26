@@ -3,6 +3,7 @@ package dto
 import (
 	"github.com/google/uuid"
 
+	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
 	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
 )
 
@@ -28,7 +29,7 @@ func ToWeatherResponse(weather domainweather.Weather) WeatherResponse {
 	}
 }
 
-func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domainweather.History) UserWeatherHistoryResponse {
+func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domainhistory.History) UserWeatherHistoryResponse {
 	responses := make([]WeatherHistoryResponse, 0, len(history))
 	includeCity := city == ""
 	for _, item := range history {
@@ -42,7 +43,7 @@ func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domai
 	}
 }
 
-func ToWeatherHistoryResponse(history domainweather.History, includeCity bool) WeatherHistoryResponse {
+func ToWeatherHistoryResponse(history domainhistory.History, includeCity bool) WeatherHistoryResponse {
 	response := WeatherHistoryResponse{
 		Temperature: history.Temperature,
 		Description: history.Description,

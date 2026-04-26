@@ -4,23 +4,12 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Weather struct {
 	City        string
 	Temperature float64
 	FeelsLike   float64
-	Description string
-	RequestedAt time.Time
-}
-
-type History struct {
-	ID          uuid.UUID
-	UserID      uuid.UUID
-	City        string
-	Temperature float64
 	Description string
 	RequestedAt time.Time
 }

@@ -103,17 +103,6 @@ func (r *Repository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func toDomain(u sqlc.User) domainuser.User {
-	return domainuser.User{
-		ID:        u.ID,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Email:     u.Email,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt,
-	}
-}
-
 func isEmailUniqueViolation(err error) bool {
 	return postgres.IsUniqueViolation(err, emailUniqueIndex)
 }
