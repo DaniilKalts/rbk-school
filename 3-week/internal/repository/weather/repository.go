@@ -33,14 +33,15 @@ func (r *Repository) CreateHistory(ctx context.Context, history domainweather.Hi
 	return new(toDomain(row)), nil
 }
 
-func (r *Repository) ListHistoryByUserAndCity(ctx context.Context, userID uuid.UUID, city string, limit int) ([]domainweather.History, error) {
-	rows, err := r.queries.ListWeatherHistoryByUserAndCity(ctx, sqlc.ListWeatherHistoryByUserAndCityParams{
+func (r *Repository) ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainweather.History, error) {
+	rows, err := r.queries.ListWeatherHistory(ctx, sqlc.ListWeatherHistoryParams{
 		UserID: userID,
 		City:   city,
 		Limit:  int32(limit),
+		Offset: int32(offset),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("list weather history by user and city: %w", err)
+		return nil, fmt.Errorf("list weather history: %w", err)
 	}
 
 	history := make([]domainweather.History, 0, len(rows))

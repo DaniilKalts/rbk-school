@@ -6,7 +6,9 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	redisclient "github.com/redis/go-redis/v9"
 
+	cacheredis "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/cache/redis"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/geocoding"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/client/openmeteo"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
@@ -27,6 +29,7 @@ type Container struct {
 	Config *config.Config
 
 	DB         *pgxpool.Pool
+	Redis      *redisclient.Client
 	HTTPClient *http.Client
 	Router     *http.ServeMux
 }
@@ -41,6 +44,12 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 		return nil, fmt.Errorf("container: create postgres client: %w", err)
 	}
 
+	redisClient, err := cacheredis.New(context.Background(), &cfg.Redis)
+	if err != nil {
+		db.Close()
+		return nil, fmt.Errorf("container: create redis client: %w", err)
+	}
+
 	httpClient := &http.Client{Timeout: cfg.Server.HTTPTimeout}
 
 	userRepository := userrepo.New(db)
@@ -52,24 +61,31 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 	weatherRepository := weatherrepo.New(db)
 	geocodingClient := geocoding.NewClient(httpClient)
 	openMeteoClient := openmeteo.NewClient(httpClient)
-	weatherService := weatherservice.New(userRepository, cityRepository, weatherRepository, geocodingClient, openMeteoClient)
+	weatherCache := cacheredis.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL)
+	weatherService := weatherservice.New(userRepository, cityRepository, weatherRepository, geocodingClient, openMeteoClient, weatherCache)
 
 	router := newRouter(userService, cityService, weatherService)
 
 	return &Container{
 		Config:     cfg,
 		DB:         db,
+		Redis:      redisClient,
 		HTTPClient: httpClient,
 		Router:     router,
 	}, nil
 }
 
 func (c *Container) Close() {
-	if c == nil || c.DB == nil {
+	if c == nil {
 		return
 	}
 
-	c.DB.Close()
+	if c.DB != nil {
+		c.DB.Close()
+	}
+	if c.Redis != nil {
+		_ = c.Redis.Close()
+	}
 }
 
 func newRouter(userService userhttp.Service, cityService cityhttp.Service, weatherService weatherhttp.Service) *http.ServeMux {

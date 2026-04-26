@@ -30,8 +30,9 @@ func ToWeatherResponse(weather domainweather.Weather) WeatherResponse {
 
 func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domainweather.History) UserWeatherHistoryResponse {
 	responses := make([]WeatherHistoryResponse, 0, len(history))
+	includeCity := city == ""
 	for _, item := range history {
-		responses = append(responses, ToWeatherHistoryResponse(item))
+		responses = append(responses, ToWeatherHistoryResponse(item, includeCity))
 	}
 
 	return UserWeatherHistoryResponse{
@@ -41,10 +42,15 @@ func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domai
 	}
 }
 
-func ToWeatherHistoryResponse(history domainweather.History) WeatherHistoryResponse {
-	return WeatherHistoryResponse{
+func ToWeatherHistoryResponse(history domainweather.History, includeCity bool) WeatherHistoryResponse {
+	response := WeatherHistoryResponse{
 		Temperature: history.Temperature,
 		Description: history.Description,
 		RequestedAt: history.RequestedAt,
 	}
+	if includeCity {
+		response.City = history.City
+	}
+
+	return response
 }

@@ -18,7 +18,7 @@ import (
 
 type Service interface {
 	GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainweather.Weather, error)
-	GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int) ([]domainweather.History, error)
+	GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainweather.History, error)
 }
 
 type Handler struct {
@@ -51,17 +51,17 @@ func (h *Handler) GetHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	city := strings.TrimSpace(r.URL.Query().Get("city"))
-	if city == "" {
-		utils.Error(w, http.StatusBadRequest, "city is required")
-		return
-	}
-
 	limit, ok := parseLimit(w, r.URL.Query().Get("limit"))
 	if !ok {
 		return
 	}
 
-	history, err := h.service.GetHistory(r.Context(), userID, city, limit)
+	offset, ok := parseOffset(w, r.URL.Query().Get("offset"))
+	if !ok {
+		return
+	}
+
+	history, err := h.service.GetHistory(r.Context(), userID, city, limit, offset)
 	if err != nil {
 		writeServiceError(w, err)
 		return
@@ -95,13 +95,29 @@ func parseLimit(w http.ResponseWriter, value string) (int, bool) {
 	return limit, true
 }
 
+func parseOffset(w http.ResponseWriter, value string) (int, bool) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, true
+	}
+
+	offset, err := strconv.Atoi(value)
+	if err != nil || offset < 0 || offset > math.MaxInt32 {
+		utils.Error(w, http.StatusBadRequest, "offset must be a non-negative number")
+		return 0, false
+	}
+
+	return offset, true
+}
+
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, domainuser.ErrNotFound):
 		utils.Error(w, http.StatusNotFound, err.Error())
 	case errors.Is(err, domainuser.ErrInvalidID),
 		errors.Is(err, domainweather.ErrInvalidCity),
-		errors.Is(err, domainweather.ErrInvalidLimit):
+		errors.Is(err, domainweather.ErrInvalidLimit),
+		errors.Is(err, domainweather.ErrInvalidOffset):
 		utils.Error(w, http.StatusBadRequest, err.Error())
 	default:
 		utils.Error(w, http.StatusInternalServerError, "internal server error")
