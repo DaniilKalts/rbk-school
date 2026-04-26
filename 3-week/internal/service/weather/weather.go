@@ -43,13 +43,13 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 				return
 			}
 
-			history, err := s.historyRepository.CreateHistory(ctx, domainhistory.History{
-				ID:          uuid.New(),
-				UserID:      userID,
-				City:        weather.City,
-				Temperature: weather.Temperature,
-				Description: weather.Description,
-			})
+			historyModel, err := domainhistory.New(uuid.New(), userID, weather.City, weather.Temperature, weather.Description)
+			if err != nil {
+				errCh <- err
+				return
+			}
+
+			history, err := s.historyRepository.CreateHistory(ctx, *historyModel)
 			if err != nil {
 				errCh <- err
 				return
