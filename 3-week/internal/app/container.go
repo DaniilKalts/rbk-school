@@ -9,9 +9,12 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
 	docshttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/docs"
+	cityhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/city"
 	userhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/user"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/config"
+	cityrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/city"
 	userrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/user"
+	cityservice "github.com/DaniilKalts/rbk-school/3-week/internal/service/city"
 	userservice "github.com/DaniilKalts/rbk-school/3-week/internal/service/user"
 )
 
@@ -34,8 +37,10 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 
 	userRepository := userrepo.New(db)
 	userService := userservice.New(userRepository)
+	cityRepository := cityrepo.New(db)
+	cityService := cityservice.New(cityRepository, userRepository)
 
-	router := newRouter(userService)
+	router := newRouter(userService, cityService)
 
 	return &Container{
 		Config: cfg,
@@ -52,7 +57,7 @@ func (c *Container) Close() {
 	c.DB.Close()
 }
 
-func newRouter(userService userhttp.Service) *http.ServeMux {
+func newRouter(userService userhttp.Service, cityService cityhttp.Service) *http.ServeMux {
 	mux := http.NewServeMux()
 	docshttp.RegisterRoutes(mux)
 
@@ -63,6 +68,7 @@ func newRouter(userService userhttp.Service) *http.ServeMux {
 	})
 
 	userhttp.RegisterRoutes(mux, userService)
+	cityhttp.RegisterRoutes(mux, cityService)
 
 	return mux
 }

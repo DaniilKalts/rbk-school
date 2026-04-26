@@ -1,19 +1,22 @@
 openapi: 3.1.0
 info:
-  title: "Users API 👥"
+  title: "Users & Cities API 👥🏙️"
   version: 1.0.0
   description: |
-    HTTP API для управления пользователями: создание, получение списка, получение пользователя по UUID, обновление данных и мягкое удаление.
+    HTTP API для управления пользователями и городами, за которыми они следят.
 
-    API хранит пользователей в PostgreSQL и не возвращает записи, которые были помечены как удаленные.
+    Сервис хранит данные в PostgreSQL: пользователи удаляются мягко через `deleted_at`, а города удаляются из списка отслеживания обычным удалением.
+    В следующих шагах эти города используются для получения погоды и сохранения истории погодных запросов.
 servers:
   - url: http://localhost:8080
     description: Локальный сервер разработки
 tags:
   - name: "Сервис ⚙️"
-    description: Служебные ручки
+    description: Служебные ручки для проверки состояния API
   - name: "Пользователи 👥"
-    description: Ручки для управления пользователями
+    description: Создание, чтение, обновление и мягкое удаление пользователей
+  - name: "Города 🏙️"
+    description: Управление городами, за которыми следит пользователь
 paths:
   /health:
     get:
@@ -32,11 +35,11 @@ paths:
   /api/v1/users:
     post:
       tags: ["Пользователи 👥"]
-      summary: Создать пользователя
+      summary: Новый пользователь
       description: |
-        Создает нового пользователя по имени, фамилии и email.
+        Создает пользователя по имени, фамилии и email.
 
-        Email должен быть уникальным среди активных пользователей.
+        Email должен быть уникальным среди активных пользователей. Если пользователь был мягко удален, его email можно использовать повторно.
       operationId: createUser
       requestBody:
         required: true
@@ -76,8 +79,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     get:
       tags: ["Пользователи 👥"]
-      summary: Список пользователей
-      description: Возвращает список активных пользователей, которые не были мягко удалены.
+      summary: Активные пользователи
+      description: Возвращает только активных пользователей, у которых `deleted_at IS NULL`.
       operationId: listUsers
       responses:
         '200':
@@ -109,11 +112,11 @@ paths:
   /api/v1/users/{id}:
     get:
       tags: ["Пользователи 👥"]
-      summary: Пользователь по ID
+      summary: Пользователь по UUID
       description: |
         Возвращает одного активного пользователя по UUID.
 
-        Если пользователь не найден или уже удален, API вернет ошибку `404`.
+        Если пользователь не найден или уже был мягко удален, API вернет ошибку `404`.
       operationId: getUserByID
       parameters:
         - $ref: '#/components/parameters/UserID'
@@ -142,9 +145,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     put:
       tags: ["Пользователи 👥"]
-      summary: Обновить пользователя
+      summary: Обновление пользователя
       description: |
-        Обновляет имя, фамилию и email существующего активного пользователя.
+        Обновляет имя, фамилию и email активного пользователя.
 
         Новый email также должен быть уникальным среди активных пользователей.
       operationId: updateUser
@@ -190,17 +193,117 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     delete:
       tags: ["Пользователи 👥"]
-      summary: Удалить пользователя
+      summary: Мягкое удаление пользователя
       description: |
         Выполняет мягкое удаление пользователя по UUID.
 
-        Запись остается в базе данных, но больше не возвращается в пользовательских ручках.
+        Запись остается в базе данных с заполненным `deleted_at`, но больше не возвращается в пользовательских ручках.
       operationId: deleteUser
       parameters:
         - $ref: '#/components/parameters/UserID'
       responses:
         '204':
           description: Пользователь успешно удален. Тело ответа пустое.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/cities:
+    post:
+      tags: ["Города 🏙️"]
+      summary: Добавить отслеживаемый город
+      description: |
+        Добавляет город в список отслеживания активного пользователя.
+
+        Один и тот же город нельзя добавить одному пользователю дважды.
+      operationId: createUserCity
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCityRequest'
+            examples:
+              almaty:
+                summary: Новый город
+                value:
+                  city: Almaty
+      responses:
+        '201':
+          description: Город успешно добавлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CityResponse'
+              examples:
+                created:
+                  summary: Добавленный город
+                  value:
+                    id: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    city: Almaty
+                    created_at: '2026-04-26T10:20:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: ["Города 🏙️"]
+      summary: Отслеживаемые города
+      description: Возвращает список городов, за погодой в которых следит активный пользователь.
+      operationId: listUserCities
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Список городов пользователя.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CityResponse'
+              examples:
+                cities:
+                  summary: Отслеживаемые города
+                  value:
+                    - id: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+                      user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                      city: Almaty
+                      created_at: '2026-04-26T10:20:00Z'
+                    - id: 018f1b79-b67c-73c1-870c-116037ab7846
+                      user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                      city: Astana
+                      created_at: '2026-04-26T10:25:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/cities/{city_id}:
+    delete:
+      tags: ["Города 🏙️"]
+      summary: Удалить отслеживаемый город
+      description: |
+        Удаляет город из списка отслеживания активного пользователя.
+
+        Это обычное удаление записи из `user_cities`: история погоды при этом остается в `weather_history`.
+      operationId: deleteUserCity
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/CityID'
+      responses:
+        '204':
+          description: Город успешно удален. Тело ответа пустое.
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -220,6 +323,17 @@ components:
       examples:
         daniil:
           value: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    CityID:
+      name: city_id
+      in: path
+      required: true
+      description: "UUID записи города в списке отслеживания. Пример: 018f1b79-a83f-7f8d-93e1-31db8fcce245."
+      schema:
+        type: string
+        format: uuid
+      examples:
+        almaty:
+          value: 018f1b79-a83f-7f8d-93e1-31db8fcce245
   responses:
     BadRequest:
       description: Некорректный запрос.
@@ -253,14 +367,22 @@ components:
             code: 404
             message: user not found
     Conflict:
-      description: Пользователь с таким email уже существует.
+      description: Ресурс с такими уникальными данными уже существует.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-          example:
-            code: 409
-            message: user email already exists
+          examples:
+            emailExists:
+              summary: Email уже используется
+              value:
+                code: 409
+                message: user email already exists
+            cityExists:
+              summary: Город уже добавлен
+              value:
+                code: 409
+                message: city already exists
     InternalServerError:
       description: Внутренняя ошибка сервера.
       content:
@@ -273,7 +395,7 @@ components:
   schemas:
     CreateUserRequest:
       type: object
-      description: Данные для создания пользователя.
+      description: Данные, необходимые для создания пользователя.
       required:
         - first_name
         - last_name
@@ -296,7 +418,7 @@ components:
           example: daniil@example.com
     UpdateUserRequest:
       type: object
-      description: Новые данные пользователя.
+      description: Полный набор данных для обновления пользователя.
       required:
         - first_name
         - last_name
@@ -319,7 +441,7 @@ components:
           example: updated@example.com
     UserResponse:
       type: object
-      description: Пользователь, который хранится в системе.
+      description: Активный пользователь, который хранится в системе.
       required:
         - id
         - first_name
@@ -356,6 +478,45 @@ components:
           format: date-time
           description: Время последнего обновления пользователя.
           example: '2026-04-26T10:00:00Z'
+    CreateCityRequest:
+      type: object
+      description: Данные для добавления города в список отслеживания.
+      required:
+        - city
+      properties:
+        city:
+          type: string
+          minLength: 1
+          description: Название города, за которым будет следить пользователь.
+          example: Almaty
+    CityResponse:
+      type: object
+      description: Город из списка отслеживания пользователя.
+      required:
+        - id
+        - user_id
+        - city
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор записи в `user_cities`.
+          example: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+        user_id:
+          type: string
+          format: uuid
+          description: UUID пользователя, который отслеживает город.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        city:
+          type: string
+          description: Название города.
+          example: Almaty
+        created_at:
+          type: string
+          format: date-time
+          description: Время добавления города в список отслеживания.
+          example: '2026-04-26T10:20:00Z'
     ErrorResponse:
       type: object
       description: Ответ с понятным сообщением об ошибке.
