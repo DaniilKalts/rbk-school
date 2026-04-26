@@ -3,24 +3,18 @@ package config
 import (
 	"fmt"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/config/countrystatecity"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/config/postgres"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/config/redis"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/config/server"
 )
 
 type Config struct {
-	CountryStateCity countrystatecity.Config `envPrefix:"COUNTRY_STATE_CITY_"`
 	Server           server.Config           `envPrefix:"SERVER_"`
 	Postgres         postgres.Config         `envPrefix:"POSTGRES_"`
 	Redis            redis.Config            `envPrefix:"REDIS_"`
 }
 
 func (c Config) Validate() error {
-	if err := c.CountryStateCity.Validate(); err != nil {
-		return fmt.Errorf("country state city config: %w", err)
-	}
-
 	if err := c.Server.Validate(); err != nil {
 		return fmt.Errorf("server config: %w", err)
 	}
