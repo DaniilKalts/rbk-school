@@ -1,12 +1,12 @@
 openapi: 3.1.0
 info:
-  title: "Users & Cities API 👥🏙️"
+  title: "Users, Cities & Weather API 👥🏙️🌦️"
   version: 1.0.0
   description: |
-    HTTP API для управления пользователями и городами, за которыми они следят.
+    HTTP API для управления пользователями, отслеживаемыми городами и погодой по этим городам.
 
     Сервис хранит данные в PostgreSQL: пользователи удаляются мягко через `deleted_at`, а города удаляются из списка отслеживания обычным удалением.
-    В следующих шагах эти города используются для получения погоды и сохранения истории погодных запросов.
+    При запросе погоды API получает данные из Open-Meteo и сохраняет результат в историю погодных запросов.
 servers:
   - url: http://localhost:8080
     description: Локальный сервер разработки
@@ -17,6 +17,8 @@ tags:
     description: Создание, чтение, обновление и мягкое удаление пользователей
   - name: "Города 🏙️"
     description: Управление городами, за которыми следит пользователь
+  - name: "Погода 🌦️"
+    description: Получение погоды по всем отслеживаемым городам пользователя
 paths:
   /health:
     get:
@@ -310,6 +312,46 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/weather:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: Погода пользователя
+      description: |
+        Возвращает погоду по всем городам, которые отслеживает активный пользователь.
+
+        Сервис проверяет пользователя через `deleted_at IS NULL`, получает список городов, запрашивает погоду во внешнем API Open-Meteo и сохраняет каждую запись в `weather_history`.
+      operationId: getUserWeather
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Агрегированная погода по городам пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeatherResponse'
+              examples:
+                weather:
+                  summary: Погода по отслеживаемым городам
+                  value:
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    weather:
+                      - city: Almaty
+                        temperature: 18.4
+                        feels_like: 17.9
+                        description: partly cloudy
+                        requested_at: '2026-04-26T10:30:00Z'
+                      - city: Astana
+                        temperature: 9.1
+                        feels_like: 5.8
+                        description: rain
+                        requested_at: '2026-04-26T10:30:01Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   parameters:
     UserID:
@@ -517,6 +559,56 @@ components:
           format: date-time
           description: Время добавления города в список отслеживания.
           example: '2026-04-26T10:20:00Z'
+    UserWeatherResponse:
+      type: object
+      description: Агрегированная погода по отслеживаемым городам пользователя.
+      required:
+        - user_id
+        - weather
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: UUID активного пользователя.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        weather:
+          type: array
+          description: Погода по каждому отслеживаемому городу.
+          items:
+            $ref: '#/components/schemas/WeatherResponse'
+    WeatherResponse:
+      type: object
+      description: Погода по одному городу пользователя.
+      required:
+        - city
+        - temperature
+        - feels_like
+        - description
+        - requested_at
+      properties:
+        city:
+          type: string
+          description: Нормализованное название города.
+          example: Almaty
+        temperature:
+          type: number
+          format: double
+          description: Температура воздуха в градусах Цельсия.
+          example: 18.4
+        feels_like:
+          type: number
+          format: double
+          description: Ощущаемая температура в градусах Цельсия.
+          example: 17.9
+        description:
+          type: string
+          description: Краткое описание погодных условий по коду Open-Meteo.
+          example: partly cloudy
+        requested_at:
+          type: string
+          format: date-time
+          description: Время сохранения записи в `weather_history`.
+          example: '2026-04-26T10:30:00Z'
     ErrorResponse:
       type: object
       description: Ответ с понятным сообщением об ошибке.

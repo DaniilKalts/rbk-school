@@ -1,0 +1,29 @@
+package dto
+
+import (
+	"github.com/google/uuid"
+
+	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
+)
+
+func ToUserWeatherResponse(userID uuid.UUID, weathers []domainweather.Weather) UserWeatherResponse {
+	responses := make([]WeatherResponse, 0, len(weathers))
+	for _, weather := range weathers {
+		responses = append(responses, ToWeatherResponse(weather))
+	}
+
+	return UserWeatherResponse{
+		UserID:  userID,
+		Weather: responses,
+	}
+}
+
+func ToWeatherResponse(weather domainweather.Weather) WeatherResponse {
+	return WeatherResponse{
+		City:        weather.City,
+		Temperature: weather.Temperature,
+		FeelsLike:   weather.FeelsLike,
+		Description: weather.Description,
+		RequestedAt: weather.RequestedAt,
+	}
+}
