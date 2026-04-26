@@ -97,14 +97,14 @@ func initRepositories(db *pgxpool.Pool) *repositories {
 type clients struct {
 	geocoding    *geocoding.Client
 	openMeteo    *openmeteo.Client
-	weatherCache *cacheredis.WeatherCache
+	weatherCache *weatherrepo.WeatherCache
 }
 
 func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *config.Config) *clients {
 	return &clients{
 		geocoding:    geocoding.NewClient(httpClient),
 		openMeteo:    openmeteo.NewClient(httpClient),
-		weatherCache: cacheredis.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL),
+		weatherCache: weatherrepo.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL),
 	}
 }
 
