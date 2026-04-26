@@ -18,3 +18,15 @@ type WeatherResponse struct {
 	Description string    `json:"description"`
 	RequestedAt time.Time `json:"requested_at"`
 }
+
+type UserWeatherHistoryResponse struct {
+	UserID  uuid.UUID                `json:"user_id"`
+	City    string                   `json:"city"`
+	History []WeatherHistoryResponse `json:"history"`
+}
+
+type WeatherHistoryResponse struct {
+	Temperature float64   `json:"temperature"`
+	Description string    `json:"description"`
+	RequestedAt time.Time `json:"requested_at"`
+}

@@ -23,6 +23,7 @@ type CityRepository interface {
 
 type HistoryRepository interface {
 	CreateHistory(ctx context.Context, history domainweather.History) (*domainweather.History, error)
+	ListHistoryByUserAndCity(ctx context.Context, userID uuid.UUID, city string, limit int) ([]domainweather.History, error)
 }
 
 type GeocodingClient interface {
@@ -95,6 +96,33 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 	}
 
 	return weathers, nil
+}
+
+func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int) ([]domainweather.History, error) {
+	if userID == uuid.Nil {
+		return nil, domainuser.ErrInvalidID
+	}
+
+	city = domainweather.NormalizeCityName(city)
+	if city == "" {
+		return nil, domainweather.ErrInvalidCity
+	}
+
+	if limit < 0 {
+		return nil, domainweather.ErrInvalidLimit
+	}
+
+	_, err := s.userRepository.GetByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	history, err := s.historyRepository.ListHistoryByUserAndCity(ctx, userID, city, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return history, nil
 }
 
 func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweather.Weather, error) {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
+
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres/sqlc"
 	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
 )
@@ -29,6 +31,24 @@ func (r *Repository) CreateHistory(ctx context.Context, history domainweather.Hi
 	}
 
 	return new(toDomain(row)), nil
+}
+
+func (r *Repository) ListHistoryByUserAndCity(ctx context.Context, userID uuid.UUID, city string, limit int) ([]domainweather.History, error) {
+	rows, err := r.queries.ListWeatherHistoryByUserAndCity(ctx, sqlc.ListWeatherHistoryByUserAndCityParams{
+		UserID: userID,
+		City:   city,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("list weather history by user and city: %w", err)
+	}
+
+	history := make([]domainweather.History, 0, len(rows))
+	for _, row := range rows {
+		history = append(history, toDomain(row))
+	}
+
+	return history, nil
 }
 
 func toDomain(history sqlc.WeatherHistory) domainweather.History {

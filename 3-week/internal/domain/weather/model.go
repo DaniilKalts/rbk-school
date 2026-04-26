@@ -26,7 +26,7 @@ type History struct {
 }
 
 func New(city string, latitude, longitude float64, temperature, feelsLike float64, weatherCode int) (Weather, error) {
-	city = normalizeCityName(city)
+	city = NormalizeCityName(city)
 	if city == "" {
 		return Weather{}, ErrInvalidCity
 	}
@@ -79,7 +79,7 @@ func validateCoordinates(latitude, longitude float64) error {
 	return nil
 }
 
-func normalizeCityName(city string) string {
+func NormalizeCityName(city string) string {
 	city = strings.TrimSpace(city)
 	if city == "" {
 		return city

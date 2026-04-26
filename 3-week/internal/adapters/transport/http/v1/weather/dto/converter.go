@@ -27,3 +27,24 @@ func ToWeatherResponse(weather domainweather.Weather) WeatherResponse {
 		RequestedAt: weather.RequestedAt,
 	}
 }
+
+func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domainweather.History) UserWeatherHistoryResponse {
+	responses := make([]WeatherHistoryResponse, 0, len(history))
+	for _, item := range history {
+		responses = append(responses, ToWeatherHistoryResponse(item))
+	}
+
+	return UserWeatherHistoryResponse{
+		UserID:  userID,
+		City:    city,
+		History: responses,
+	}
+}
+
+func ToWeatherHistoryResponse(history domainweather.History) WeatherHistoryResponse {
+	return WeatherHistoryResponse{
+		Temperature: history.Temperature,
+		Description: history.Description,
+		RequestedAt: history.RequestedAt,
+	}
+}

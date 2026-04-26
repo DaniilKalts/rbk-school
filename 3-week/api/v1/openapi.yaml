@@ -352,6 +352,45 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/weather/history:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: История погоды по городу
+      description: |
+        Возвращает историю погодных запросов активного пользователя с фильтрацией по городу.
+
+        Query-параметр `city` обязателен. Результат сортируется по `requested_at DESC`, а `limit` можно передать, чтобы ограничить количество записей.
+      operationId: getUserWeatherHistory
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/HistoryCity'
+        - $ref: '#/components/parameters/HistoryLimit'
+      responses:
+        '200':
+          description: История погоды по выбранному городу.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeatherHistoryResponse'
+              examples:
+                almaty:
+                  summary: История по Алматы
+                  value:
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    city: Almaty
+                    history:
+                      - temperature: 18.4
+                        description: partly cloudy
+                        requested_at: '2026-04-26T10:30:00Z'
+                      - temperature: 17.8
+                        description: rain
+                        requested_at: '2026-04-25T10:30:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   parameters:
     UserID:
@@ -376,6 +415,30 @@ components:
       examples:
         almaty:
           value: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+    HistoryCity:
+      name: city
+      in: query
+      required: true
+      description: "Название города для фильтрации истории. Пример: Almaty."
+      schema:
+        type: string
+        minLength: 1
+      examples:
+        almaty:
+          value: Almaty
+        lowerCase:
+          value: almaty
+    HistoryLimit:
+      name: limit
+      in: query
+      required: false
+      description: Количество записей в ответе. Должно быть положительным числом.
+      schema:
+        type: integer
+        minimum: 1
+      examples:
+        ten:
+          value: 10
   responses:
     BadRequest:
       description: Некорректный запрос.
@@ -399,6 +462,16 @@ components:
               value:
                 code: 400
                 message: user email is invalid
+            cityRequired:
+              summary: Не передан город
+              value:
+                code: 400
+                message: city is required
+            invalidLimit:
+              summary: Некорректный limit
+              value:
+                code: 400
+                message: limit must be a positive number
     NotFound:
       description: Пользователь не найден.
       content:
@@ -608,6 +681,50 @@ components:
           type: string
           format: date-time
           description: Время сохранения записи в `weather_history`.
+          example: '2026-04-26T10:30:00Z'
+    UserWeatherHistoryResponse:
+      type: object
+      description: История погоды пользователя по одному городу.
+      required:
+        - user_id
+        - city
+        - history
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: UUID активного пользователя.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        city:
+          type: string
+          description: Нормализованное название города, по которому выполнена фильтрация.
+          example: Almaty
+        history:
+          type: array
+          description: Записи истории, отсортированные от новых к старым.
+          items:
+            $ref: '#/components/schemas/WeatherHistoryResponse'
+    WeatherHistoryResponse:
+      type: object
+      description: Одна сохраненная запись истории погоды.
+      required:
+        - temperature
+        - description
+        - requested_at
+      properties:
+        temperature:
+          type: number
+          format: double
+          description: Температура воздуха в градусах Цельсия.
+          example: 18.4
+        description:
+          type: string
+          description: Краткое описание погодных условий.
+          example: partly cloudy
+        requested_at:
+          type: string
+          format: date-time
+          description: Время сохранения записи в историю.
           example: '2026-04-26T10:30:00Z'
     ErrorResponse:
       type: object

@@ -44,3 +44,46 @@ func (q *Queries) CreateWeatherHistory(ctx context.Context, arg CreateWeatherHis
 	)
 	return i, err
 }
+
+const listWeatherHistoryByUserAndCity = `-- name: ListWeatherHistoryByUserAndCity :many
+SELECT id, user_id, city, temperature, description, requested_at
+FROM weather_history
+WHERE user_id = $1 AND city = $2
+ORDER BY requested_at DESC
+LIMIT NULLIF($3, 0)
+`
+
+type ListWeatherHistoryByUserAndCityParams struct {
+	UserID uuid.UUID
+	City   string
+	Limit  int32
+}
+
+func (q *Queries) ListWeatherHistoryByUserAndCity(ctx context.Context, arg ListWeatherHistoryByUserAndCityParams) ([]WeatherHistory, error) {
+	rows, err := q.db.Query(ctx, listWeatherHistoryByUserAndCity, arg.UserID, arg.City, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := []WeatherHistory{}
+	for rows.Next() {
+		var i WeatherHistory
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.City,
+			&i.Temperature,
+			&i.Description,
+			&i.RequestedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return items, nil
+}
