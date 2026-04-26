@@ -1,0 +1,373 @@
+openapi: 3.1.0
+info:
+  title: "Users API 👥"
+  version: 1.0.0
+  description: |
+    HTTP API для управления пользователями: создание, получение списка, получение пользователя по UUID, обновление данных и мягкое удаление.
+
+    API хранит пользователей в PostgreSQL и не возвращает записи, которые были помечены как удаленные.
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+tags:
+  - name: "Сервис ⚙️"
+    description: Служебные ручки
+  - name: "Пользователи 👥"
+    description: Ручки для управления пользователями
+paths:
+  /health:
+    get:
+      tags: ["Сервис ⚙️"]
+      summary: Проверка сервиса
+      description: Проверяет, что сервис запущен и отвечает.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Сервис работает корректно.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ok
+  /api/v1/users:
+    post:
+      tags: ["Пользователи 👥"]
+      summary: Создать пользователя
+      description: |
+        Создает нового пользователя по имени, фамилии и email.
+
+        Email должен быть уникальным среди активных пользователей.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              daniil:
+                summary: Новый пользователь
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: daniil@example.com
+      responses:
+        '201':
+          description: Пользователь успешно создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                created:
+                  summary: Созданный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: ["Пользователи 👥"]
+      summary: Список пользователей
+      description: Возвращает список активных пользователей, которые не были мягко удалены.
+      operationId: listUsers
+      responses:
+        '200':
+          description: Список пользователей.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+              examples:
+                users:
+                  summary: Активные пользователи
+                  value:
+                    - id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                      first_name: Daniil
+                      last_name: Kalts
+                      email: daniil@example.com
+                      created_at: '2026-04-26T10:00:00Z'
+                      updated_at: '2026-04-26T10:00:00Z'
+                    - id: 018f1b79-9f77-7a4f-92b7-8c2de04b9c1a
+                      first_name: Alina
+                      last_name: Smirnova
+                      email: alina@example.com
+                      created_at: '2026-04-26T10:05:00Z'
+                      updated_at: '2026-04-26T10:05:00Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}:
+    get:
+      tags: ["Пользователи 👥"]
+      summary: Пользователь по ID
+      description: |
+        Возвращает одного активного пользователя по UUID.
+
+        Если пользователь не найден или уже удален, API вернет ошибку `404`.
+      operationId: getUserByID
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Пользователь найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                user:
+                  summary: Пользователь Daniil
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: ["Пользователи 👥"]
+      summary: Обновить пользователя
+      description: |
+        Обновляет имя, фамилию и email существующего активного пользователя.
+
+        Новый email также должен быть уникальным среди активных пользователей.
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+            examples:
+              updated:
+                summary: Новые данные пользователя
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: updated@example.com
+      responses:
+        '200':
+          description: Пользователь успешно обновлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                updated:
+                  summary: Обновленный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: updated@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:15:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: ["Пользователи 👥"]
+      summary: Удалить пользователя
+      description: |
+        Выполняет мягкое удаление пользователя по UUID.
+
+        Запись остается в базе данных, но больше не возвращается в пользовательских ручках.
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '204':
+          description: Пользователь успешно удален. Тело ответа пустое.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  parameters:
+    UserID:
+      name: id
+      in: path
+      required: true
+      description: "UUID пользователя. Пример: 018f1b79-38f8-7a72-a64b-7c58a85f60f3."
+      schema:
+        type: string
+        format: uuid
+      examples:
+        daniil:
+          value: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+  responses:
+    BadRequest:
+      description: Некорректный запрос.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidID:
+              summary: Некорректный UUID
+              value:
+                code: 400
+                message: invalid user id
+            invalidBody:
+              summary: Некорректное тело запроса
+              value:
+                code: 400
+                message: invalid request body
+            invalidUser:
+              summary: Некорректные данные пользователя
+              value:
+                code: 400
+                message: user email is invalid
+    NotFound:
+      description: Пользователь не найден.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 404
+            message: user not found
+    Conflict:
+      description: Пользователь с таким email уже существует.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 409
+            message: user email already exists
+    InternalServerError:
+      description: Внутренняя ошибка сервера.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 500
+            message: internal server error
+  schemas:
+    CreateUserRequest:
+      type: object
+      description: Данные для создания пользователя.
+      required:
+        - first_name
+        - last_name
+        - email
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Уникальный email пользователя.
+          example: daniil@example.com
+    UpdateUserRequest:
+      type: object
+      description: Новые данные пользователя.
+      required:
+        - first_name
+        - last_name
+        - email
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Новое имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Новая фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Новый уникальный email пользователя.
+          example: updated@example.com
+    UserResponse:
+      type: object
+      description: Пользователь, который хранится в системе.
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        first_name:
+          type: string
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Email пользователя.
+          example: daniil@example.com
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания пользователя.
+          example: '2026-04-26T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Время последнего обновления пользователя.
+          example: '2026-04-26T10:00:00Z'
+    ErrorResponse:
+      type: object
+      description: Ответ с понятным сообщением об ошибке.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          description: HTTP-код ошибки.
+          example: 400
+        message:
+          type: string
+          description: Описание ошибки.
+          example: invalid request body

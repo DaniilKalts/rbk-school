@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
+	docshttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/docs"
 	userhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/user"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/config"
 	userrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/user"
@@ -53,6 +54,7 @@ func (c *Container) Close() {
 
 func newRouter(userService userhttp.Service) *http.ServeMux {
 	mux := http.NewServeMux()
+	docshttp.RegisterRoutes(mux)
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
