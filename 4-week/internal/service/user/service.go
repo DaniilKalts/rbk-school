@@ -37,7 +37,7 @@ func New(repository Repository) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*domainuser.User, error) {
-	u, err := domainuser.New(uuid.New(), input.FirstName, input.LastName, input.Email)
+	u, err := domainuser.New(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (s *Service) List(ctx context.Context) ([]domainuser.User, error) {
 }
 
 func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (*domainuser.User, error) {
-	u, err := domainuser.New(id, input.FirstName, input.LastName, input.Email)
+	u, err := domainuser.New(id, input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}

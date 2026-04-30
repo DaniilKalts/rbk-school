@@ -141,7 +141,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	case errors.Is(err, domainuser.ErrInvalidID),
 		errors.Is(err, domainuser.ErrInvalidFirstName),
 		errors.Is(err, domainuser.ErrInvalidLastName),
-		errors.Is(err, domainuser.ErrInvalidEmail):
+		errors.Is(err, domainuser.ErrInvalidEmail),
+		errors.Is(err, domainuser.ErrInvalidRole):
 		utils.Error(w, http.StatusBadRequest, err.Error())
 	default:
 		utils.Error(w, http.StatusInternalServerError, "internal server error")

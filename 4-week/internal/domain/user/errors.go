@@ -9,4 +9,12 @@ var (
 	ErrInvalidFirstName   = errors.New("user first name is invalid")
 	ErrInvalidLastName    = errors.New("user last name is invalid")
 	ErrInvalidEmail       = errors.New("user email is invalid")
+	ErrInvalidRole        = errors.New("user role is invalid")
 )
+
+var fieldErrors = map[string]error{
+	"FirstName": ErrInvalidFirstName,
+	"LastName":  ErrInvalidLastName,
+	"Email":     ErrInvalidEmail,
+	"Role":      ErrInvalidRole,
+}

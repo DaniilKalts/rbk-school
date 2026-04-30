@@ -7,36 +7,55 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, first_name, last_name, email)
-VALUES ($1, $2, $3, $4)
-RETURNING id, first_name, last_name, email, created_at, updated_at, deleted_at
+INSERT INTO users (id, first_name, last_name, email, password_hash, salt, role)
+VALUES ($1, $2, $3, $4, $5, $6,$7)
+RETURNING id, first_name, last_name, email, role, created_at, updated_at, deleted_at
 `
 
 type CreateUserParams struct {
+	ID           uuid.UUID
+	FirstName    string
+	LastName     string
+	Email        string
+	PasswordHash string
+	Salt         string
+	Role         UserRole
+}
+
+type CreateUserRow struct {
 	ID        uuid.UUID
 	FirstName string
 	LastName  string
 	Email     string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,
+		arg.PasswordHash,
+		arg.Salt,
+		arg.Role,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -45,19 +64,39 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, first_name, last_name, email, created_at, updated_at, deleted_at
+SELECT id,
+       first_name,
+       last_name,
+       email,
+       role,
+       created_at,
+       updated_at,
+       deleted_at
 FROM users
-WHERE id = $1 AND deleted_at IS NULL
+WHERE id = $1
+  AND deleted_at IS NULL
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+type GetUserByIDRow struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
-	var i User
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
@@ -66,26 +105,45 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, first_name, last_name, email, created_at, updated_at, deleted_at
+SELECT id,
+       first_name,
+       last_name,
+       email,
+       role,
+       created_at,
+       updated_at,
+       deleted_at
 FROM users
 WHERE deleted_at IS NULL
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+type ListUsersRow struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []User{}
+	items := []ListUsersRow{}
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.FirstName,
 			&i.LastName,
 			&i.Email,
+			&i.Role,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DeletedAt,
@@ -104,7 +162,8 @@ const softDeleteUser = `-- name: SoftDeleteUser :execrows
 UPDATE users
 SET deleted_at = NOW(),
     updated_at = NOW()
-WHERE id = $1 AND deleted_at IS NULL
+WHERE id = $1
+  AND deleted_at IS NULL
 `
 
 func (q *Queries) SoftDeleteUser(ctx context.Context, id uuid.UUID) (int64, error) {
@@ -118,11 +177,12 @@ func (q *Queries) SoftDeleteUser(ctx context.Context, id uuid.UUID) (int64, erro
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET first_name = $2,
-    last_name = $3,
-    email = $4,
+    last_name  = $3,
+    email      = $4,
     updated_at = NOW()
-WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, first_name, last_name, email, created_at, updated_at, deleted_at
+WHERE id = $1
+  AND deleted_at IS NULL
+RETURNING id, first_name, last_name, email, role, created_at, updated_at, deleted_at
 `
 
 type UpdateUserParams struct {
@@ -132,19 +192,31 @@ type UpdateUserParams struct {
 	Email     string
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
+type UpdateUserRow struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,
 	)
-	var i User
+	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,

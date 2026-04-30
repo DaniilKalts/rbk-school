@@ -11,23 +11,36 @@ import (
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
+type Role string
+
+const (
+	RoleAdmin Role = "admin"
+	RoleUser  Role = "user"
+)
+
+func (r Role) IsValid() bool {
+	return r == RoleAdmin || r == RoleUser
+}
+
 type User struct {
 	ID uuid.UUID
 
 	FirstName string `validate:"required,min=2,max=50"`
 	LastName  string `validate:"required,min=2,max=50"`
 	Email     string `validate:"required,email"`
+	Role      Role   `validate:"required"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func New(id uuid.UUID, firstName string, lastName string, email string) (*User, error) {
+func New(id uuid.UUID, firstName string, lastName string, email string, role Role) (*User, error) {
 	u := &User{
 		ID:        id,
 		FirstName: strings.TrimSpace(firstName),
 		LastName:  strings.TrimSpace(lastName),
-		Email:     strings.TrimSpace(email),
+		Email:     strings.ToLower(strings.TrimSpace(email)),
+		Role:      role,
 	}
 
 	if u.ID == uuid.Nil {
@@ -42,7 +55,15 @@ func New(id uuid.UUID, firstName string, lastName string, email string) (*User, 
 }
 
 func (u User) Validate() error {
-	return mapValidationError(validate.Struct(u))
+	if err := mapValidationError(validate.Struct(u)); err != nil {
+		return err
+	}
+
+	if !u.Role.IsValid() {
+		return ErrInvalidRole
+	}
+
+	return nil
 }
 
 func mapValidationError(err error) error {
@@ -56,13 +77,8 @@ func mapValidationError(err error) error {
 	}
 
 	for _, fieldErr := range validationErrors {
-		switch fieldErr.Field() {
-		case "FirstName":
-			return ErrInvalidFirstName
-		case "LastName":
-			return ErrInvalidLastName
-		case "Email":
-			return ErrInvalidEmail
+		if err, ok := fieldErrors[fieldErr.Field()]; ok {
+			return err
 		}
 	}
 
