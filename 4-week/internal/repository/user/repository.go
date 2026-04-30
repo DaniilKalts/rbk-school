@@ -24,12 +24,15 @@ func New(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
-func (r *Repository) Create(ctx context.Context, u domainuser.User) (*domainuser.User, error) {
+func (r *Repository) Create(ctx context.Context, u domainuser.User, passwordHash string, salt string) (*domainuser.User, error) {
 	row, err := r.queries.CreateUser(ctx, sqlc.CreateUserParams{
-		ID:        u.ID,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Email:     u.Email,
+		ID:           u.ID,
+		FirstName:    u.FirstName,
+		LastName:     u.LastName,
+		Email:        u.Email,
+		PasswordHash: passwordHash,
+		Salt:         salt,
+		Role:         sqlc.UserRole(u.Role),
 	})
 	if err != nil {
 		if isEmailUniqueViolation(err) {

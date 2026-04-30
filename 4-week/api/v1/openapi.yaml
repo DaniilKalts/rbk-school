@@ -541,6 +541,7 @@ components:
         - first_name
         - last_name
         - email
+        - password
       properties:
         first_name:
           type: string
@@ -557,6 +558,11 @@ components:
           format: email
           description: Уникальный email пользователя.
           example: daniil@example.com
+        password:
+          type: string
+          minLength: 1
+          description: Пароль пользователя.
+          example: strong-password
     UpdateUserRequest:
       type: object
       description: Полный набор данных для обновления пользователя.

@@ -66,6 +66,14 @@ func (u User) Validate() error {
 	return nil
 }
 
+func ValidatePassword(password string) error {
+	if err := validate.Var(password, "required"); err != nil {
+		return ErrInvalidPassword
+	}
+
+	return nil
+}
+
 func mapValidationError(err error) error {
 	if err == nil {
 		return nil

@@ -7,10 +7,11 @@ import (
 	"github.com/google/uuid"
 
 	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
 )
 
 type Repository interface {
-	Create(ctx context.Context, u domainuser.User) (*domainuser.User, error)
+	Create(ctx context.Context, u domainuser.User, passwordHash string, salt string) (*domainuser.User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error)
 	GetByEmail(ctx context.Context, email string) (*domainuser.User, error)
 	List(ctx context.Context) ([]domainuser.User, error)
@@ -26,6 +27,7 @@ type CreateInput struct {
 	FirstName string
 	LastName  string
 	Email     string
+	Password  string
 }
 
 type UpdateInput struct {
@@ -39,12 +41,26 @@ func New(repository Repository) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*domainuser.User, error) {
+	if err := domainuser.ValidatePassword(input.Password); err != nil {
+		return nil, err
+	}
+
 	u, err := domainuser.New(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}
 
-	created, err := s.repository.Create(ctx, *u)
+	salt, err := utils.GenerateSalt()
+	if err != nil {
+		return nil, err
+	}
+
+	passwordHash, err := utils.HashPassword(input.Password, salt)
+	if err != nil {
+		return nil, err
+	}
+
+	created, err := s.repository.Create(ctx, *u, passwordHash, salt)
 	if err != nil {
 		return nil, err
 	}

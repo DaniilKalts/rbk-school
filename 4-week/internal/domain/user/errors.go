@@ -9,6 +9,7 @@ var (
 	ErrInvalidFirstName   = errors.New("user first name is invalid")
 	ErrInvalidLastName    = errors.New("user last name is invalid")
 	ErrInvalidEmail       = errors.New("user email is invalid")
+	ErrInvalidPassword    = errors.New("user password is invalid")
 	ErrInvalidRole        = errors.New("user role is invalid")
 )
 

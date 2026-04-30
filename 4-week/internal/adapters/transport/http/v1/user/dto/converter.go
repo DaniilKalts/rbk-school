@@ -10,6 +10,7 @@ func ToCreateInput(req CreateUserRequest) serviceuser.CreateInput {
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
+		Password:  req.Password,
 	}
 }
 
