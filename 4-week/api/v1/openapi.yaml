@@ -1,0 +1,772 @@
+openapi: 3.1.0
+info:
+  title: "Weather Tracker API 🌦️"
+  version: 1.0.0
+  description: |
+    HTTP API для трекинга погоды по городам пользователя.
+
+    Сервис позволяет создавать пользователей, добавлять города в список отслеживания, получать актуальную погоду по этим городам и просматривать историю погодных запросов.
+    Данные пользователей, городов и истории хранятся в PostgreSQL, а актуальная погода кешируется в Redis, чтобы не дергать внешний Open-Meteo API без необходимости.
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+tags:
+  - name: "Сервис ⚙️"
+    description: Служебные ручки для проверки состояния API
+  - name: "Пользователи 👥"
+    description: Создание, чтение, обновление и мягкое удаление пользователей
+  - name: "Города 🏙️"
+    description: Управление городами, за которыми следит пользователь
+  - name: "Погода 🌦️"
+    description: Получение погоды по всем отслеживаемым городам пользователя
+paths:
+  /health:
+    get:
+      tags: ["Сервис ⚙️"]
+      summary: Проверка сервиса
+      description: Проверяет, что сервис запущен и отвечает.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Сервис работает корректно.
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ok
+  /api/v1/users:
+    post:
+      tags: ["Пользователи 👥"]
+      summary: Новый пользователь
+      description: |
+        Создает пользователя по имени, фамилии и email.
+
+        Email должен быть уникальным среди активных пользователей. Если пользователь был мягко удален, его email можно использовать повторно.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              daniil:
+                summary: Новый пользователь
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: daniil@example.com
+      responses:
+        '201':
+          description: Пользователь успешно создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                created:
+                  summary: Созданный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: ["Пользователи 👥"]
+      summary: Активные пользователи
+      description: Возвращает только активных пользователей, у которых `deleted_at IS NULL`.
+      operationId: listUsers
+      responses:
+        '200':
+          description: Список пользователей.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+              examples:
+                users:
+                  summary: Активные пользователи
+                  value:
+                    - id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                      first_name: Daniil
+                      last_name: Kalts
+                      email: daniil@example.com
+                      created_at: '2026-04-26T10:00:00Z'
+                      updated_at: '2026-04-26T10:00:00Z'
+                    - id: 018f1b79-9f77-7a4f-92b7-8c2de04b9c1a
+                      first_name: Alina
+                      last_name: Smirnova
+                      email: alina@example.com
+                      created_at: '2026-04-26T10:05:00Z'
+                      updated_at: '2026-04-26T10:05:00Z'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}:
+    get:
+      tags: ["Пользователи 👥"]
+      summary: Пользователь по UUID
+      description: |
+        Возвращает одного активного пользователя по UUID.
+
+        Если пользователь не найден или уже был мягко удален, API вернет ошибку `404`.
+      operationId: getUserByID
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Пользователь найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                user:
+                  summary: Пользователь Daniil
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: ["Пользователи 👥"]
+      summary: Обновление пользователя
+      description: |
+        Обновляет имя, фамилию и email активного пользователя.
+
+        Новый email также должен быть уникальным среди активных пользователей.
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+            examples:
+              updated:
+                summary: Новые данные пользователя
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: updated@example.com
+      responses:
+        '200':
+          description: Пользователь успешно обновлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                updated:
+                  summary: Обновленный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: updated@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:15:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: ["Пользователи 👥"]
+      summary: Мягкое удаление пользователя
+      description: |
+        Выполняет мягкое удаление пользователя по UUID.
+
+        Запись остается в базе данных с заполненным `deleted_at`, но больше не возвращается в пользовательских ручках.
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '204':
+          description: Пользователь успешно удален. Тело ответа пустое.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/cities:
+    post:
+      tags: ["Города 🏙️"]
+      summary: Добавить отслеживаемый город
+      description: |
+        Добавляет город в список отслеживания активного пользователя.
+
+        Один и тот же город нельзя добавить одному пользователю дважды.
+      operationId: createUserCity
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCityRequest'
+            examples:
+              almaty:
+                summary: Новый город
+                value:
+                  city: Almaty
+      responses:
+        '201':
+          description: Город успешно добавлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CityResponse'
+              examples:
+                created:
+                  summary: Добавленный город
+                  value:
+                    id: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    city: Almaty
+                    created_at: '2026-04-26T10:20:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: ["Города 🏙️"]
+      summary: Отслеживаемые города
+      description: Возвращает список городов, за погодой в которых следит активный пользователь.
+      operationId: listUserCities
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Список городов пользователя.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CityResponse'
+              examples:
+                cities:
+                  summary: Отслеживаемые города
+                  value:
+                    - id: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+                      user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                      city: Almaty
+                      created_at: '2026-04-26T10:20:00Z'
+                    - id: 018f1b79-b67c-73c1-870c-116037ab7846
+                      user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                      city: Astana
+                      created_at: '2026-04-26T10:25:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/cities/{city_id}:
+    delete:
+      tags: ["Города 🏙️"]
+      summary: Удалить отслеживаемый город
+      description: |
+        Удаляет город из списка отслеживания активного пользователя.
+
+        Это обычное удаление записи из `user_cities`: история погоды при этом остается в `weather_history`.
+      operationId: deleteUserCity
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/CityID'
+      responses:
+        '204':
+          description: Город успешно удален. Тело ответа пустое.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/weather:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: Погода пользователя
+      description: |
+        Возвращает погоду по всем городам, которые отслеживает активный пользователь.
+
+        Сервис проверяет пользователя через `deleted_at IS NULL`, получает список городов, запрашивает погоду во внешнем API Open-Meteo и сохраняет каждую запись в `weather_history`.
+      operationId: getUserWeather
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      responses:
+        '200':
+          description: Агрегированная погода по городам пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeatherResponse'
+              examples:
+                weather:
+                  summary: Погода по отслеживаемым городам
+                  value:
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    weather:
+                      - city: Almaty
+                        temperature: 18.4
+                        feels_like: 17.9
+                        description: partly cloudy
+                        requested_at: '2026-04-26T10:30:00Z'
+                      - city: Astana
+                        temperature: 9.1
+                        feels_like: 5.8
+                        description: rain
+                        requested_at: '2026-04-26T10:30:01Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/{id}/weather/history:
+    get:
+      tags: ["Погода 🌦️"]
+      summary: История погоды
+      description: |
+        Возвращает историю погодных запросов активного пользователя.
+
+        Query-параметр `city` необязателен: если он передан, история фильтруется по городу; если не передан, возвращается вся история пользователя. Результат сортируется по `requested_at DESC`, а `limit` и `offset` управляют пагинацией.
+      operationId: getUserWeatherHistory
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+        - $ref: '#/components/parameters/HistoryCity'
+        - $ref: '#/components/parameters/HistoryLimit'
+        - $ref: '#/components/parameters/HistoryOffset'
+      responses:
+        '200':
+          description: История погоды пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeatherHistoryResponse'
+              examples:
+                almaty:
+                  summary: История по Алматы
+                  value:
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    city: Almaty
+                    history:
+                      - temperature: 18.4
+                        description: partly cloudy
+                        requested_at: '2026-04-26T10:30:00Z'
+                      - temperature: 17.8
+                        description: rain
+                        requested_at: '2026-04-25T10:30:00Z'
+                allCities:
+                  summary: Вся история пользователя
+                  value:
+                    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    history:
+                      - city: Almaty
+                        temperature: 18.4
+                        description: partly cloudy
+                        requested_at: '2026-04-26T10:30:00Z'
+                      - city: Astana
+                        temperature: 9.1
+                        description: rain
+                        requested_at: '2026-04-26T10:25:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  parameters:
+    UserID:
+      name: id
+      in: path
+      required: true
+      description: "UUID пользователя. Пример: 018f1b79-38f8-7a72-a64b-7c58a85f60f3."
+      schema:
+        type: string
+        format: uuid
+      examples:
+        daniil:
+          value: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    CityID:
+      name: city_id
+      in: path
+      required: true
+      description: "UUID записи города в списке отслеживания. Пример: 018f1b79-a83f-7f8d-93e1-31db8fcce245."
+      schema:
+        type: string
+        format: uuid
+      examples:
+        almaty:
+          value: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+    HistoryCity:
+      name: city
+      in: query
+      required: false
+      description: "Название города для фильтрации истории. Если не передать, вернется вся история пользователя. Пример: Almaty."
+      schema:
+        type: string
+        minLength: 1
+      examples:
+        almaty:
+          value: Almaty
+        lowerCase:
+          value: almaty
+    HistoryLimit:
+      name: limit
+      in: query
+      required: false
+      description: Количество записей в ответе. Должно быть положительным числом.
+      schema:
+        type: integer
+        minimum: 1
+      examples:
+        ten:
+          value: 10
+    HistoryOffset:
+      name: offset
+      in: query
+      required: false
+      description: Количество записей, которое нужно пропустить. Используется для пагинации.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      examples:
+        nextPage:
+          value: 10
+  responses:
+    BadRequest:
+      description: Некорректный запрос.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            invalidID:
+              summary: Некорректный UUID
+              value:
+                code: 400
+                message: invalid user id
+            invalidBody:
+              summary: Некорректное тело запроса
+              value:
+                code: 400
+                message: invalid request body
+            invalidUser:
+              summary: Некорректные данные пользователя
+              value:
+                code: 400
+                message: user email is invalid
+            invalidLimit:
+              summary: Некорректный limit
+              value:
+                code: 400
+                message: limit must be a positive number
+            invalidOffset:
+              summary: Некорректный offset
+              value:
+                code: 400
+                message: offset must be a non-negative number
+    NotFound:
+      description: Пользователь не найден.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 404
+            message: user not found
+    Conflict:
+      description: Ресурс с такими уникальными данными уже существует.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            emailExists:
+              summary: Email уже используется
+              value:
+                code: 409
+                message: user email already exists
+            cityExists:
+              summary: Город уже добавлен
+              value:
+                code: 409
+                message: city already exists
+    InternalServerError:
+      description: Внутренняя ошибка сервера.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 500
+            message: internal server error
+  schemas:
+    CreateUserRequest:
+      type: object
+      description: Данные, необходимые для создания пользователя.
+      required:
+        - first_name
+        - last_name
+        - email
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Уникальный email пользователя.
+          example: daniil@example.com
+    UpdateUserRequest:
+      type: object
+      description: Полный набор данных для обновления пользователя.
+      required:
+        - first_name
+        - last_name
+        - email
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Новое имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Новая фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Новый уникальный email пользователя.
+          example: updated@example.com
+    UserResponse:
+      type: object
+      description: Активный пользователь, который хранится в системе.
+      required:
+        - id
+        - first_name
+        - last_name
+        - email
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        first_name:
+          type: string
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Email пользователя.
+          example: daniil@example.com
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания пользователя.
+          example: '2026-04-26T10:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          description: Время последнего обновления пользователя.
+          example: '2026-04-26T10:00:00Z'
+    CreateCityRequest:
+      type: object
+      description: Данные для добавления города в список отслеживания.
+      required:
+        - city
+      properties:
+        city:
+          type: string
+          minLength: 1
+          description: Название города, за которым будет следить пользователь.
+          example: Almaty
+    CityResponse:
+      type: object
+      description: Город из списка отслеживания пользователя.
+      required:
+        - id
+        - user_id
+        - city
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор записи в `user_cities`.
+          example: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+        user_id:
+          type: string
+          format: uuid
+          description: UUID пользователя, который отслеживает город.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        city:
+          type: string
+          description: Название города.
+          example: Almaty
+        created_at:
+          type: string
+          format: date-time
+          description: Время добавления города в список отслеживания.
+          example: '2026-04-26T10:20:00Z'
+    UserWeatherResponse:
+      type: object
+      description: Агрегированная погода по отслеживаемым городам пользователя.
+      required:
+        - user_id
+        - weather
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: UUID активного пользователя.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        weather:
+          type: array
+          description: Погода по каждому отслеживаемому городу.
+          items:
+            $ref: '#/components/schemas/WeatherResponse'
+    WeatherResponse:
+      type: object
+      description: Погода по одному городу пользователя.
+      required:
+        - city
+        - temperature
+        - feels_like
+        - description
+        - requested_at
+      properties:
+        city:
+          type: string
+          description: Нормализованное название города.
+          example: Almaty
+        temperature:
+          type: number
+          format: double
+          description: Температура воздуха в градусах Цельсия.
+          example: 18.4
+        feels_like:
+          type: number
+          format: double
+          description: Ощущаемая температура в градусах Цельсия.
+          example: 17.9
+        description:
+          type: string
+          description: Краткое описание погодных условий по коду Open-Meteo.
+          example: partly cloudy
+        requested_at:
+          type: string
+          format: date-time
+          description: Время сохранения записи в `weather_history`.
+          example: '2026-04-26T10:30:00Z'
+    UserWeatherHistoryResponse:
+      type: object
+      description: История погоды пользователя с необязательной фильтрацией по городу.
+      required:
+        - user_id
+        - history
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: UUID активного пользователя.
+          example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+        city:
+          type: string
+          description: Нормализованное название города, по которому выполнена фильтрация. Поле отсутствует, если фильтр не передан.
+          example: Almaty
+        history:
+          type: array
+          description: Записи истории, отсортированные от новых к старым.
+          items:
+            $ref: '#/components/schemas/WeatherHistoryResponse'
+    WeatherHistoryResponse:
+      type: object
+      description: Одна сохраненная запись истории погоды.
+      required:
+        - temperature
+        - description
+        - requested_at
+      properties:
+        city:
+          type: string
+          description: Город записи. Поле используется, когда история возвращается без фильтра по городу.
+          example: Almaty
+        temperature:
+          type: number
+          format: double
+          description: Температура воздуха в градусах Цельсия.
+          example: 18.4
+        description:
+          type: string
+          description: Краткое описание погодных условий.
+          example: partly cloudy
+        requested_at:
+          type: string
+          format: date-time
+          description: Время сохранения записи в историю.
+          example: '2026-04-26T10:30:00Z'
+    ErrorResponse:
+      type: object
+      description: Ответ с понятным сообщением об ошибке.
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          description: HTTP-код ошибки.
+          example: 400
+        message:
+          type: string
+          description: Описание ошибки.
+          example: invalid request body
