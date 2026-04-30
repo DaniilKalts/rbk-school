@@ -210,11 +210,11 @@ go run ./cmd/api
 - [x] Добавить поля `password_hash` и `role` в модель и БД.
 - [ ] Реализовать `POST /auth/register`.
 - [ ] Реализовать `POST /auth/login`.
-- [ ] Добавить генерацию и валидацию JWT.
+- [x] Добавить генерацию и валидацию JWT.
 - [ ] Реализовать `AuthMiddleware`.
 - [ ] Реализовать middleware или helper для проверки роли admin.
 - [ ] Убрать `user_id` из пользовательских weather/city маршрутов.
 - [ ] Добавить `GET /users/me`.
 - [ ] Обновить OpenAPI спецификацию.
 - [ ] Обновить Swagger UI.
-- [ ] Дополнить `.env.example` JWT-настройками.
+- [x] Дополнить `.env.example` JWT-настройками.
