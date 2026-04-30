@@ -104,6 +104,47 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 	return i, err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id,
+       first_name,
+       last_name,
+       email,
+       role,
+       created_at,
+       updated_at,
+       deleted_at
+FROM users
+WHERE email = $1
+  AND deleted_at IS NULL
+`
+
+type GetUserByEmailRow struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id,
        first_name,

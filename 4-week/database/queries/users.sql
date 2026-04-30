@@ -16,6 +16,19 @@ FROM users
 WHERE id = $1
   AND deleted_at IS NULL;
 
+-- name: GetUserByEmail :one
+SELECT id,
+       first_name,
+       last_name,
+       email,
+       role,
+       created_at,
+       updated_at,
+       deleted_at
+FROM users
+WHERE email = $1
+  AND deleted_at IS NULL;
+
 -- name: ListUsers :many
 SELECT id,
        first_name,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -38,7 +39,15 @@ func (r *Repository) Create(ctx context.Context, u domainuser.User) (*domainuser
 		return nil, fmt.Errorf("create user: %w", err)
 	}
 
-	return new(toDomain(row)), nil
+	return new(toDomainBase(
+		row.ID,
+		row.FirstName,
+		row.LastName,
+		row.Email,
+		row.Role,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)), nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error) {
@@ -51,7 +60,36 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.Use
 		return nil, fmt.Errorf("get user by id: %w", err)
 	}
 
-	return new(toDomain(row)), nil
+	return new(toDomainBase(
+		row.ID,
+		row.FirstName,
+		row.LastName,
+		row.Email,
+		row.Role,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)), nil
+}
+
+func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.User, error) {
+	row, err := r.queries.GetUserByEmail(ctx, strings.ToLower(strings.TrimSpace(email)))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainuser.ErrNotFound
+		}
+
+		return nil, fmt.Errorf("get user by email: %w", err)
+	}
+
+	return new(toDomainBase(
+		row.ID,
+		row.FirstName,
+		row.LastName,
+		row.Email,
+		row.Role,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)), nil
 }
 
 func (r *Repository) List(ctx context.Context) ([]domainuser.User, error) {
@@ -62,7 +100,15 @@ func (r *Repository) List(ctx context.Context) ([]domainuser.User, error) {
 
 	users := make([]domainuser.User, 0, len(rows))
 	for _, row := range rows {
-		users = append(users, toDomain(row))
+		users = append(users, toDomainBase(
+			row.ID,
+			row.FirstName,
+			row.LastName,
+			row.Email,
+			row.Role,
+			row.CreatedAt,
+			row.UpdatedAt,
+		))
 	}
 
 	return users, nil
@@ -87,7 +133,15 @@ func (r *Repository) Update(ctx context.Context, u domainuser.User) (*domainuser
 		return nil, fmt.Errorf("update user: %w", err)
 	}
 
-	return new(toDomain(row)), nil
+	return new(toDomainBase(
+		row.ID,
+		row.FirstName,
+		row.LastName,
+		row.Email,
+		row.Role,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)), nil
 }
 
 func (r *Repository) SoftDelete(ctx context.Context, id uuid.UUID) error {
