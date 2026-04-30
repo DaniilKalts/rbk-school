@@ -6,7 +6,7 @@ RETURNING id, user_id, city, temperature, description, requested_at;
 -- name: ListWeatherHistory :many
 SELECT id, user_id, city, temperature, description, requested_at
 FROM weather_history
-WHERE user_id = $1 AND ($2 = '' OR city = $2)
-ORDER BY requested_at DESC
-LIMIT NULLIF($3, 0)
+WHERE user_id = $1
+  AND ($2 = '' OR city = $2)
+ORDER BY requested_at DESC LIMIT NULLIF($3, 0)
 OFFSET $4;

@@ -10,5 +10,7 @@ WHERE user_id = $1
 ORDER BY created_at DESC;
 
 -- name: DeleteUserCity :execrows
-DELETE FROM user_cities
-WHERE id = $1 AND user_id = $2;
+DELETE
+FROM user_cities
+WHERE id = $1
+  AND user_id = $2;

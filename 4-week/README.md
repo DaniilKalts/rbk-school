@@ -207,7 +207,7 @@ go run ./cmd/api
 
 ### Чеклист реализации
 
-- [ ] Добавить поля `password_hash` и `role` в модель и БД.
+- [x] Добавить поля `password_hash` и `role` в модель и БД.
 - [ ] Реализовать `POST /auth/register`.
 - [ ] Реализовать `POST /auth/login`.
 - [ ] Добавить генерацию и валидацию JWT.
