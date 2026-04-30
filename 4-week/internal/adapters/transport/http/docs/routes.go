@@ -15,6 +15,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc("GET /swagger/{$}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
 		http.ServeFile(w, r, filepath.Join(swaggerDir, "index.html"))
 	})
 
@@ -22,6 +23,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 
 	mux.HandleFunc("GET /api/v1/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/yaml")
+		w.Header().Set("Cache-Control", "no-store")
 		http.ServeFile(w, r, openAPIPath)
 	})
 }

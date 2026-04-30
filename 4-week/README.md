@@ -122,7 +122,7 @@ JWT payload должен содержать:
 
 ### Рекомендуемые env-переменные
 
-Текущий `.env.example` уже содержит настройки сервера, PostgreSQL и Redis.
+Текущий `.env.example` уже содержит настройки сервера, PostgreSQL, Redis, pgAdmin и Redis Commander.
 Для week 4 его нужно дополнить как минимум JWT-настройками, например:
 
 ```env
@@ -138,23 +138,34 @@ SERVER_HTTP_TIMEOUT=15s
 
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
+POSTGRES_DATABASE=weather_api
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-POSTGRES_DATABASE=weather_api
 POSTGRES_SSL_MODE=disable
-POSTGRES_MAX_CONNS=10
 POSTGRES_MIN_CONNS=1
+POSTGRES_MAX_CONNS=10
 POSTGRES_MAX_CONN_LIFETIME=1h
 POSTGRES_MAX_CONN_IDLE_TIME=30m
 
+PGADMIN_DEFAULT_EMAIL=admin@example.com
+PGADMIN_DEFAULT_PASSWORD=admin
+PGADMIN_PORT=5050
+
 REDIS_ADDR=redis:6379
 REDIS_PORT=6379
-REDIS_PASSWORD=
 REDIS_DB=0
+REDIS_PASSWORD=
 REDIS_DIAL_TIMEOUT=5s
 REDIS_READ_TIMEOUT=3s
 REDIS_WRITE_TIMEOUT=3s
 REDIS_WEATHER_CACHE_TTL=10m
+
+REDIS_COMMANDER_PORT=8081
+REDIS_COMMANDER_USER=admin
+REDIS_COMMANDER_PASSWORD=admin
+
+JWT_SECRET=change-me
+JWT_ACCESS_TOKEN_TTL=15m
 ```
 
 ### Запуск
@@ -172,6 +183,30 @@ docker compose up --build
 ```
 
 После запуска сервис доступен на `http://localhost:8080`.
+
+pgAdmin:
+
+```text
+http://localhost:5050
+```
+
+Подключение к PostgreSQL из pgAdmin:
+
+```text
+Host: postgres
+Port: 5432
+Database: weather_api
+Username: postgres
+Password: postgres
+```
+
+Redis Commander:
+
+```text
+http://localhost:8081
+```
+
+Логин и пароль Redis Commander задаются через `REDIS_COMMANDER_USER` и `REDIS_COMMANDER_PASSWORD`.
 
 Swagger UI:
 
