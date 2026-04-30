@@ -55,17 +55,17 @@ OFFSET $4
 `
 
 type ListWeatherHistoryParams struct {
-	UserID  uuid.UUID
-	Column2 interface{}
-	Column3 interface{}
-	Offset  int32
+	UserID uuid.UUID
+	City   string
+	Limit  int32
+	Offset int32
 }
 
 func (q *Queries) ListWeatherHistory(ctx context.Context, arg ListWeatherHistoryParams) ([]WeatherHistory, error) {
 	rows, err := q.db.Query(ctx, listWeatherHistory,
 		arg.UserID,
-		arg.Column2,
-		arg.Column3,
+		arg.City,
+		arg.Limit,
 		arg.Offset,
 	)
 	if err != nil {

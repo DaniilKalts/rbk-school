@@ -95,6 +95,25 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.
 	)), nil
 }
 
+func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*domainuser.Credentials, error) {
+	row, err := r.queries.GetUserCredentialsByEmail(ctx, strings.ToLower(strings.TrimSpace(email)))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domainuser.ErrNotFound
+		}
+
+		return nil, fmt.Errorf("get user credentials by email: %w", err)
+	}
+
+	return &domainuser.Credentials{
+		ID:           row.ID,
+		Email:        row.Email,
+		Role:         domainuser.Role(row.Role),
+		PasswordHash: row.PasswordHash,
+		Salt:         row.Salt,
+	}, nil
+}
+
 func (r *Repository) List(ctx context.Context) ([]domainuser.User, error) {
 	rows, err := r.queries.ListUsers(ctx)
 	if err != nil {

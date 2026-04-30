@@ -29,6 +29,16 @@ FROM users
 WHERE email = $1
   AND deleted_at IS NULL;
 
+-- name: GetUserCredentialsByEmail :one
+SELECT id,
+       email,
+       password_hash,
+       salt,
+       role
+FROM users
+WHERE email = $1
+  AND deleted_at IS NULL;
+
 -- name: ListUsers :many
 SELECT id,
        first_name,

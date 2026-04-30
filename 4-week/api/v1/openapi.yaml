@@ -13,6 +13,8 @@ servers:
 tags:
   - name: "Сервис ⚙️"
     description: Служебные ручки для проверки состояния API
+  - name: "Аутентификация 🔐"
+    description: Регистрация, вход и получение access token
   - name: "Пользователи 👥"
     description: Создание, чтение, обновление и мягкое удаление пользователей
   - name: "Города 🏙️"
@@ -34,6 +36,82 @@ paths:
               schema:
                 type: string
                 example: ok
+  /api/v1/auth/register:
+    post:
+      tags: ["Аутентификация 🔐"]
+      summary: Регистрация пользователя
+      description: Создает нового пользователя и возвращает access token.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              daniil:
+                summary: Новый пользователь
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: daniil@example.com
+                  password: strong-password
+      responses:
+        '201':
+          description: Пользователь зарегистрирован, токен выдан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+              examples:
+                token:
+                  summary: Access token
+                  value:
+                    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    expires_at: '2026-04-26T10:15:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/auth/login:
+    post:
+      tags: ["Аутентификация 🔐"]
+      summary: Вход пользователя
+      description: Проверяет email и пароль, затем возвращает access token.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              daniil:
+                summary: Учетные данные
+                value:
+                  email: daniil@example.com
+                  password: strong-password
+      responses:
+        '200':
+          description: Пользователь вошел, токен выдан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+              examples:
+                token:
+                  summary: Access token
+                  value:
+                    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    expires_at: '2026-04-26T10:15:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /api/v1/users:
     post:
       tags: ["Пользователи 👥"]
@@ -524,6 +602,15 @@ components:
               value:
                 code: 409
                 message: city already exists
+    Unauthorized:
+      description: Неверные учетные данные.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 401
+            message: invalid email or password
     InternalServerError:
       description: Внутренняя ошибка сервера.
       content:
@@ -534,6 +621,68 @@ components:
             code: 500
             message: internal server error
   schemas:
+    RegisterRequest:
+      type: object
+      description: Данные для регистрации пользователя.
+      required:
+        - first_name
+        - last_name
+        - email
+        - password
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Уникальный email пользователя.
+          example: daniil@example.com
+        password:
+          type: string
+          minLength: 1
+          description: Пароль пользователя.
+          example: strong-password
+    LoginRequest:
+      type: object
+      description: Данные для входа пользователя.
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email пользователя.
+          example: daniil@example.com
+        password:
+          type: string
+          minLength: 1
+          description: Пароль пользователя.
+          example: strong-password
+    AuthTokenResponse:
+      type: object
+      description: Access token и время его истечения.
+      required:
+        - access_token
+        - expires_at
+      properties:
+        access_token:
+          type: string
+          description: JWT access token.
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        expires_at:
+          type: string
+          format: date-time
+          description: Время истечения access token.
+          example: '2026-04-26T10:15:00Z'
     CreateUserRequest:
       type: object
       description: Данные, необходимые для создания пользователя.

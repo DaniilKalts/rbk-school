@@ -34,6 +34,14 @@ type User struct {
 	UpdatedAt time.Time
 }
 
+type Credentials struct {
+	ID           uuid.UUID
+	Email        string
+	Role         Role
+	PasswordHash string
+	Salt         string
+}
+
 func New(id uuid.UUID, firstName string, lastName string, email string, role Role) (*User, error) {
 	u := &User{
 		ID:        id,

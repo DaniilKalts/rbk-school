@@ -63,6 +63,47 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id,
+       first_name,
+       last_name,
+       email,
+       role,
+       created_at,
+       updated_at,
+       deleted_at
+FROM users
+WHERE email = $1
+  AND deleted_at IS NULL
+`
+
+type GetUserByEmailRow struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Role      UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id,
        first_name,
@@ -104,43 +145,34 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 	return i, err
 }
 
-const getUserByEmail = `-- name: GetUserByEmail :one
+const getUserCredentialsByEmail = `-- name: GetUserCredentialsByEmail :one
 SELECT id,
-       first_name,
-       last_name,
        email,
-       role,
-       created_at,
-       updated_at,
-       deleted_at
+       password_hash,
+       salt,
+       role
 FROM users
 WHERE email = $1
   AND deleted_at IS NULL
 `
 
-type GetUserByEmailRow struct {
-	ID        uuid.UUID
-	FirstName string
-	LastName  string
-	Email     string
-	Role      UserRole
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
+type GetUserCredentialsByEmailRow struct {
+	ID           uuid.UUID
+	Email        string
+	PasswordHash string
+	Salt         string
+	Role         UserRole
 }
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i GetUserByEmailRow
+func (q *Queries) GetUserCredentialsByEmail(ctx context.Context, email string) (GetUserCredentialsByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getUserCredentialsByEmail, email)
+	var i GetUserCredentialsByEmailRow
 	err := row.Scan(
 		&i.ID,
-		&i.FirstName,
-		&i.LastName,
 		&i.Email,
+		&i.PasswordHash,
+		&i.Salt,
 		&i.Role,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
 	)
 	return i, err
 }

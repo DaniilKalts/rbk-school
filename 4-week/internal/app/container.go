@@ -11,6 +11,7 @@ import (
 	cacheredis "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/cache/redis"
 	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
 	docshttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/docs"
+	authhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/auth"
 	cityhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/city"
 	userhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/user"
 	weatherhttp "github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/weather"
@@ -20,9 +21,11 @@ import (
 	cityrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/city"
 	userrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/user"
 	weatherrepo "github.com/DaniilKalts/rbk-school/3-week/internal/repository/weather"
+	authservice "github.com/DaniilKalts/rbk-school/3-week/internal/service/auth"
 	cityservice "github.com/DaniilKalts/rbk-school/3-week/internal/service/city"
 	userservice "github.com/DaniilKalts/rbk-school/3-week/internal/service/user"
 	weatherservice "github.com/DaniilKalts/rbk-school/3-week/internal/service/weather"
+	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
 )
 
 type Container struct {
@@ -54,9 +57,9 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 
 	repos := initRepositories(db)
 	clients := initClients(httpClient, redisClient, cfg)
-	services := initServices(repos, clients)
+	services := initServices(repos, clients, cfg)
 
-	router := newRouter(services.user, services.city, services.weather)
+	router := newRouter(services.auth, services.user, services.city, services.weather)
 
 	return &Container{
 		Config:     cfg,
@@ -109,20 +112,24 @@ func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *
 }
 
 type services struct {
+	auth    *authservice.Service
 	user    *userservice.Service
 	city    *cityservice.Service
 	weather *weatherservice.Service
 }
 
-func initServices(repos *repositories, clients *clients) *services {
+func initServices(repos *repositories, clients *clients, cfg *config.Config) *services {
+	tokenManager := utils.NewJWTManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL)
+
 	return &services{
+		auth:    authservice.New(repos.user, tokenManager),
 		user:    userservice.New(repos.user),
 		city:    cityservice.New(repos.city, repos.user),
 		weather: weatherservice.New(repos.user, repos.city, repos.weather, clients.geocoding, clients.openMeteo, clients.weatherCache),
 	}
 }
 
-func newRouter(userService userhttp.Service, cityService cityhttp.Service, weatherService weatherhttp.Service) *http.ServeMux {
+func newRouter(authService authhttp.Service, userService userhttp.Service, cityService cityhttp.Service, weatherService weatherhttp.Service) *http.ServeMux {
 	mux := http.NewServeMux()
 	docshttp.RegisterRoutes(mux)
 
@@ -132,6 +139,7 @@ func newRouter(userService userhttp.Service, cityService cityhttp.Service, weath
 		_, _ = w.Write([]byte("ok"))
 	})
 
+	authhttp.RegisterRoutes(mux, authService)
 	userhttp.RegisterRoutes(mux, userService)
 	cityhttp.RegisterRoutes(mux, cityService)
 	weatherhttp.RegisterRoutes(mux, weatherService)

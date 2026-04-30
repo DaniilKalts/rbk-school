@@ -27,14 +27,15 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (m *JWTManager) Generate(userID uuid.UUID, email string, role string) (string, error) {
+func (m *JWTManager) Generate(userID uuid.UUID, email string, role string) (string, time.Time, error) {
 	now := time.Now().UTC()
+	expiresAt := now.Add(m.ttl)
 	claims := Claims{
 		UserID: userID,
 		Email:  email,
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(m.ttl)),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Issuer:    jwtIssuer,
 			Subject:   userID.String(),
@@ -42,7 +43,12 @@ func (m *JWTManager) Generate(userID uuid.UUID, email string, role string) (stri
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(m.secret)
+	signedToken, err := token.SignedString(m.secret)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	return signedToken, expiresAt, nil
 }
 
 func (m *JWTManager) Validate(tokenString string) (*Claims, error) {

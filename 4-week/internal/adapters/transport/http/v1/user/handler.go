@@ -2,9 +2,7 @@ package user
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -33,7 +31,7 @@ func NewHandler(service Service) *Handler {
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateUserRequest
-	if !decodeJSON(w, r, &req) {
+	if !utils.DecodeJSON(w, r, &req) {
 		return
 	}
 
@@ -78,7 +76,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req dto.UpdateUserRequest
-	if !decodeJSON(w, r, &req) {
+	if !utils.DecodeJSON(w, r, &req) {
 		return
 	}
 
@@ -114,24 +112,6 @@ func parseID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 
 	return id, true
 }
-
-func decodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
-	decoder := json.NewDecoder(r.Body)
-	decoder.DisallowUnknownFields()
-
-	if err := decoder.Decode(v); err != nil {
-		utils.Error(w, http.StatusBadRequest, "invalid request body")
-		return false
-	}
-
-	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-		utils.Error(w, http.StatusBadRequest, "invalid request body")
-		return false
-	}
-
-	return true
-}
-
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, domainuser.ErrNotFound):
