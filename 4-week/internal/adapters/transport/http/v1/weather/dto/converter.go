@@ -3,8 +3,8 @@ package dto
 import (
 	"github.com/google/uuid"
 
-	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
-	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
+	domainhistory "github.com/DaniilKalts/rbk-school/4-week/internal/domain/history"
+	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
 )
 
 func ToUserWeatherResponse(userID uuid.UUID, weathers []domainweather.Weather) UserWeatherResponse {

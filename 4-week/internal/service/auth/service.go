@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 var ErrInvalidCredentials = errors.New("invalid email or password")

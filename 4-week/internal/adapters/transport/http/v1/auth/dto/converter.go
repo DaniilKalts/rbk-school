@@ -1,6 +1,6 @@
 package dto
 
-import serviceauth "github.com/DaniilKalts/rbk-school/3-week/internal/service/auth"
+import serviceauth "github.com/DaniilKalts/rbk-school/4-week/internal/service/auth"
 
 func ToRegisterInput(req RegisterRequest) serviceauth.RegisterInput {
 	return serviceauth.RegisterInput{

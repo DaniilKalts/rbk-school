@@ -7,8 +7,8 @@ import (
 )
 
 func RegisterRoutes(mux *http.ServeMux) {
-	swaggerDir := firstExistingPath(filepath.Join("web", "swagger"), filepath.Join("3-week", "web", "swagger"))
-	openAPIPath := firstExistingPath(filepath.Join("api", "v1", "openapi.yaml"), filepath.Join("3-week", "api", "v1", "openapi.yaml"))
+	swaggerDir := firstExistingPath(filepath.Join("web", "swagger"), filepath.Join("4-week", "web", "swagger"))
+	openAPIPath := firstExistingPath(filepath.Join("api", "v1", "openapi.yaml"), filepath.Join("4-week", "api", "v1", "openapi.yaml"))
 
 	mux.HandleFunc("GET /swagger", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)

@@ -10,11 +10,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/weather/dto"
-	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/weather/dto"
+	domainhistory "github.com/DaniilKalts/rbk-school/4-week/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 type Service interface {

@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/app"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/config"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/app"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/config"
 )
 
 func main() {

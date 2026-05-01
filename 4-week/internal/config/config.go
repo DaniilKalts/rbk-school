@@ -3,10 +3,10 @@ package config
 import (
 	"fmt"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/config/jwt"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/config/postgres"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/config/redis"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/config/server"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/config/jwt"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/config/postgres"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/config/redis"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/config/server"
 )
 
 type Config struct {

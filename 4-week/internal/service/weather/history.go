@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/uuid"
 
-	domainhistory "github.com/DaniilKalts/rbk-school/3-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
+	domainhistory "github.com/DaniilKalts/rbk-school/4-week/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
 )
 
 func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error) {

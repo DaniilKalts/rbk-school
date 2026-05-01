@@ -6,9 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres/sqlc"
-	domaincity "github.com/DaniilKalts/rbk-school/3-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres/sqlc"
+	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
 )
 
 const userCityUniqueConstraint = "user_cities_user_id_city_key"

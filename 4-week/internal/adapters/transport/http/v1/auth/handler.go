@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/auth/dto"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
-	serviceauth "github.com/DaniilKalts/rbk-school/3-week/internal/service/auth"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth/dto"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	serviceauth "github.com/DaniilKalts/rbk-school/4-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 type Service interface {

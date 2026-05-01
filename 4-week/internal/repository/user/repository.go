@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres/sqlc"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres/sqlc"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 )
 
 const emailUniqueIndex = "users_email_idx"

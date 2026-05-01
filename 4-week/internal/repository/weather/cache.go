@@ -10,7 +10,7 @@ import (
 
 	redisclient "github.com/redis/go-redis/v9"
 
-	domainweather "github.com/DaniilKalts/rbk-school/3-week/internal/domain/weather"
+	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
 )
 
 const weatherKeyPrefix = "weather:"

@@ -9,7 +9,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
-	configpostgres "github.com/DaniilKalts/rbk-school/3-week/internal/config/postgres"
+	configpostgres "github.com/DaniilKalts/rbk-school/4-week/internal/config/postgres"
 )
 
 const migrationsDir = "./database/migrations"

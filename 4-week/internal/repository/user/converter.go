@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/database/postgres/sqlc"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres/sqlc"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 )
 
 func toDomainBase(

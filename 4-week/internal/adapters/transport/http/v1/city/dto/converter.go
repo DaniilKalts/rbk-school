@@ -1,8 +1,8 @@
 package dto
 
 import (
-	domaincity "github.com/DaniilKalts/rbk-school/3-week/internal/domain/city"
-	servicecity "github.com/DaniilKalts/rbk-school/3-week/internal/service/city"
+	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
+	servicecity "github.com/DaniilKalts/rbk-school/4-week/internal/service/city"
 )
 
 func ToCreateInput(req CreateCityRequest) servicecity.CreateInput {

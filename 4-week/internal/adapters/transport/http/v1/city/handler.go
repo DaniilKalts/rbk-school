@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/3-week/internal/adapters/transport/http/v1/city/dto"
-	domaincity "github.com/DaniilKalts/rbk-school/3-week/internal/domain/city"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
-	servicecity "github.com/DaniilKalts/rbk-school/3-week/internal/service/city"
-	"github.com/DaniilKalts/rbk-school/3-week/internal/utils"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city/dto"
+	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	servicecity "github.com/DaniilKalts/rbk-school/4-week/internal/service/city"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 type Service interface {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	domaincity "github.com/DaniilKalts/rbk-school/3-week/internal/domain/city"
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
+	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 )
 
 type Repository interface {

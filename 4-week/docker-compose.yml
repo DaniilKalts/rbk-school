@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: rbk-school-3-week-api:latest
+    image: rbk-school-4-week-api:latest
     restart: unless-stopped
     env_file:
       - .env

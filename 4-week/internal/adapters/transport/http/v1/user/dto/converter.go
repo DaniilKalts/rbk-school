@@ -1,8 +1,8 @@
 package dto
 
 import (
-	domainuser "github.com/DaniilKalts/rbk-school/3-week/internal/domain/user"
-	serviceuser "github.com/DaniilKalts/rbk-school/3-week/internal/service/user"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	serviceuser "github.com/DaniilKalts/rbk-school/4-week/internal/service/user"
 )
 
 func ToCreateInput(req CreateUserRequest) serviceuser.CreateInput {
