@@ -4,14 +4,26 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
 	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 )
 
+func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	claims, ok := helpers.ClaimsFromContext(r.Context())
+	if !ok {
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+		helpers.JSON(w, http.StatusUnauthorized, response)
+		return uuid.Nil, false
+	}
+
+	return claims.UserID, true
+}
+
 func parseID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
 		response := helpers.NewErrorResponse(http.StatusBadRequest, "invalid user id")
 		helpers.JSON(w, http.StatusBadRequest, response)

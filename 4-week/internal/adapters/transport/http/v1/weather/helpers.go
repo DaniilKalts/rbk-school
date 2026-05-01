@@ -14,15 +14,15 @@ import (
 	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
 )
 
-func parseUUID(w http.ResponseWriter, value string, message string) (uuid.UUID, bool) {
-	id, err := uuid.Parse(value)
-	if err != nil {
-		response := helpers.NewErrorResponse(http.StatusBadRequest, message)
-		helpers.JSON(w, http.StatusBadRequest, response)
+func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	claims, ok := helpers.ClaimsFromContext(r.Context())
+	if !ok {
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+		helpers.JSON(w, http.StatusUnauthorized, response)
 		return uuid.Nil, false
 	}
 
-	return id, true
+	return claims.UserID, true
 }
 
 func parseLimit(w http.ResponseWriter, value string) (int, bool) {

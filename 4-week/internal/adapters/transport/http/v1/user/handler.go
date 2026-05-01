@@ -68,6 +68,21 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
 }
 
+func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
+	userID, ok := currentUserID(w, r)
+	if !ok {
+		return
+	}
+
+	u, err := h.service.GetByID(r.Context(), userID)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
+}
+
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	id, ok := parseID(w, r)
 	if !ok {

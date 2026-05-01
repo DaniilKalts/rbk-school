@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	redisclient "github.com/redis/go-redis/v9"
 
 	cacheredis "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/cache/redis"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres"
 	docshttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/docs"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/middleware"
 	authhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth"
 	cityhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city"
 	userhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user"
@@ -34,7 +36,7 @@ type Container struct {
 	DB         *pgxpool.Pool
 	Redis      *redisclient.Client
 	HTTPClient *http.Client
-	Router     *http.ServeMux
+	Router     http.Handler
 }
 
 func NewContainer(cfg *config.Config) (*Container, error) {
@@ -59,7 +61,7 @@ func NewContainer(cfg *config.Config) (*Container, error) {
 	clients := initClients(httpClient, redisClient, cfg)
 	services := initServices(repos, clients, cfg)
 
-	router := newRouter(services.auth, services.user, services.city, services.weather)
+	router := newRouter(services)
 
 	return &Container{
 		Config:     cfg,
@@ -112,37 +114,52 @@ func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *
 }
 
 type services struct {
-	auth    *authservice.Service
-	user    *userservice.Service
-	city    *cityservice.Service
-	weather *weatherservice.Service
+	auth         *authservice.Service
+	user         *userservice.Service
+	city         *cityservice.Service
+	weather      *weatherservice.Service
+	tokenManager *utils.JWTManager
 }
 
 func initServices(repos *repositories, clients *clients, cfg *config.Config) *services {
 	tokenManager := utils.NewJWTManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL)
 
 	return &services{
-		auth:    authservice.New(repos.user, tokenManager),
-		user:    userservice.New(repos.user),
-		city:    cityservice.New(repos.city, repos.user),
-		weather: weatherservice.New(repos.user, repos.city, repos.weather, clients.geocoding, clients.openMeteo, clients.weatherCache),
+		auth:         authservice.New(repos.user, tokenManager),
+		user:         userservice.New(repos.user),
+		city:         cityservice.New(repos.city, repos.user),
+		weather:      weatherservice.New(repos.user, repos.city, repos.weather, clients.geocoding, clients.openMeteo, clients.weatherCache),
+		tokenManager: tokenManager,
 	}
 }
 
-func newRouter(authService authhttp.Service, userService userhttp.Service, cityService cityhttp.Service, weatherService weatherhttp.Service) *http.ServeMux {
-	mux := http.NewServeMux()
-	docshttp.RegisterRoutes(mux)
+func newRouter(services *services) http.Handler {
+	r := chi.NewRouter()
+	docshttp.RegisterRoutes(r)
 
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
 
-	authhttp.RegisterRoutes(mux, authService)
-	userhttp.RegisterRoutes(mux, userService)
-	cityhttp.RegisterRoutes(mux, cityService)
-	weatherhttp.RegisterRoutes(mux, weatherService)
+	r.Route("/api/v1", func(r chi.Router) {
+		authhttp.RegisterRoutes(r, services.auth)
 
-	return mux
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.Auth(services.tokenManager))
+
+			cityhttp.RegisterRoutes(r, services.city)
+			weatherhttp.RegisterRoutes(r, services.weather)
+			userhttp.RegisterCurrentUserRoutes(r, services.user)
+
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.RequireRole("admin"))
+
+				userhttp.RegisterAdminRoutes(r, services.user)
+			})
+		})
+	})
+
+	return r
 }

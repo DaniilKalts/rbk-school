@@ -4,12 +4,28 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
 	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
 	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 )
+
+func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	claims, ok := helpers.ClaimsFromContext(r.Context())
+	if !ok {
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+		helpers.JSON(w, http.StatusUnauthorized, response)
+		return uuid.Nil, false
+	}
+
+	return claims.UserID, true
+}
+
+func parseUUIDParam(w http.ResponseWriter, r *http.Request, param string, message string) (uuid.UUID, bool) {
+	return parseUUID(w, chi.URLParam(r, param), message)
+}
 
 func parseUUID(w http.ResponseWriter, value string, message string) (uuid.UUID, bool) {
 	id, err := uuid.Parse(value)

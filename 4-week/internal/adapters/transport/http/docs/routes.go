@@ -4,24 +4,26 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/go-chi/chi/v5"
 )
 
-func RegisterRoutes(mux *http.ServeMux) {
+func RegisterRoutes(r chi.Router) {
 	swaggerDir := firstExistingPath(filepath.Join("web", "swagger"), filepath.Join("4-week", "web", "swagger"))
 	openAPIPath := firstExistingPath(filepath.Join("api", "v1", "openapi.yaml"), filepath.Join("4-week", "api", "v1", "openapi.yaml"))
 
-	mux.HandleFunc("GET /swagger", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)
 	})
 
-	mux.HandleFunc("GET /swagger/{$}", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/swagger/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		http.ServeFile(w, r, filepath.Join(swaggerDir, "index.html"))
 	})
 
-	mux.Handle("GET /swagger/", http.StripPrefix("/swagger/", http.FileServer(http.Dir(swaggerDir))))
+	r.Handle("/swagger/*", http.StripPrefix("/swagger/", http.FileServer(http.Dir(swaggerDir))))
 
-	mux.HandleFunc("GET /api/v1/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/api/v1/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/yaml")
 		w.Header().Set("Cache-Control", "no-store")
 		http.ServeFile(w, r, openAPIPath)

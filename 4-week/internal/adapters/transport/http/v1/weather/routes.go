@@ -1,10 +1,10 @@
 package weather
 
-import "net/http"
+import "github.com/go-chi/chi/v5"
 
-func RegisterRoutes(mux *http.ServeMux, service Service) {
+func RegisterRoutes(r chi.Router, service Service) {
 	h := NewHandler(service)
 
-	mux.HandleFunc("GET /api/v1/users/{id}/weather", h.GetByUserID)
-	mux.HandleFunc("GET /api/v1/users/{id}/weather/history", h.GetHistory)
+	r.Get("/weather", h.GetByUserID)
+	r.Get("/weather/history", h.GetHistory)
 }

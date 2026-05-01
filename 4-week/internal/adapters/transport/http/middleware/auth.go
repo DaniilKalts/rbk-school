@@ -15,15 +15,15 @@ func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token, ok := helpers.BearerTokenFromRequest(r)
 			if !ok {
-				res := helpers.NewErrorResponse(http.StatusUnauthorized, "missing or malformed authorization header")
-				helpers.JSON(w, http.StatusUnauthorized, res)
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing or malformed authorization header")
+				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
 			}
 
 			claims, err := jwtManager.Validate(token)
 			if err != nil {
-				res := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
-				helpers.JSON(w, http.StatusUnauthorized, res)
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
+				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
 			}
 

@@ -247,9 +247,9 @@ go run ./cmd/api
 - [x] Реализовать `POST /auth/login`.
 - [x] Добавить генерацию и валидацию JWT.
 - [x] Реализовать `AuthMiddleware`.
-- [ ] Реализовать middleware или helper для проверки роли admin.
-- [ ] Убрать `user_id` из пользовательских weather/city маршрутов.
-- [ ] Добавить `GET /users/me`.
-- [ ] Обновить OpenAPI спецификацию.
-- [ ] Обновить Swagger UI.
+- [x] Реализовать middleware или helper для проверки роли admin.
+- [x] Убрать `user_id` из пользовательских weather/city маршрутов.
+- [x] Добавить `GET /users/me`.
+- [x] Обновить OpenAPI спецификацию.
+- [x] Обновить Swagger UI.
 - [x] Дополнить `.env.example` JWT-настройками.

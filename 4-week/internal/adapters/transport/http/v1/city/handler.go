@@ -27,7 +27,7 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	userID, ok := parseUUID(w, r.PathValue("id"), "invalid user id")
+	userID, ok := currentUserID(w, r)
 	if !ok {
 		return
 	}
@@ -47,7 +47,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
-	userID, ok := parseUUID(w, r.PathValue("id"), "invalid user id")
+	userID, ok := currentUserID(w, r)
 	if !ok {
 		return
 	}
@@ -62,12 +62,12 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	userID, ok := parseUUID(w, r.PathValue("id"), "invalid user id")
+	userID, ok := currentUserID(w, r)
 	if !ok {
 		return
 	}
 
-	cityID, ok := parseUUID(w, r.PathValue("city_id"), "invalid city id")
+	cityID, ok := parseUUIDParam(w, r, "city_id", "invalid city id")
 	if !ok {
 		return
 	}

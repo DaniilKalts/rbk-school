@@ -4,6 +4,13 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
+	geocodingdto "github.com/DaniilKalts/rbk-school/4-week/internal/client/geocoding/dto"
+	openmeteodto "github.com/DaniilKalts/rbk-school/4-week/internal/client/openmeteo/dto"
+	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
+	domainhistory "github.com/DaniilKalts/rbk-school/4-week/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
+	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
 )
 
 type UserRepository interface {

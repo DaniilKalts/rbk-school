@@ -18,7 +18,7 @@ tags:
   - name: "Аутентификация 🔐"
     description: Регистрация, вход и получение access token
   - name: "Пользователи 👥"
-    description: Создание, чтение, обновление и мягкое удаление пользователей
+    description: Получение текущего пользователя и admin-only операции с пользователями
   - name: "Города 🏙️"
     description: Управление городами, за которыми следит пользователь
   - name: "Погода 🌦️"
@@ -118,56 +118,10 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /api/v1/users:
-    post:
-      tags: ["Пользователи 👥"]
-      summary: Новый пользователь
-      description: |
-        Создает пользователя по имени, фамилии и email.
-
-        Email должен быть уникальным среди активных пользователей. Если пользователь был мягко удален, его email можно использовать повторно.
-      operationId: createUser
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-            examples:
-              daniil:
-                summary: Новый пользователь
-                value:
-                  first_name: Daniil
-                  last_name: Kalts
-                  email: daniil@example.com
-      responses:
-        '201':
-          description: Пользователь успешно создан.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-              examples:
-                created:
-                  summary: Созданный пользователь
-                  value:
-                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
-                    first_name: Daniil
-                    last_name: Kalts
-                    email: daniil@example.com
-                    created_at: '2026-04-26T10:00:00Z'
-                    updated_at: '2026-04-26T10:00:00Z'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '409':
-          $ref: '#/components/responses/Conflict'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
     get:
       tags: ["Пользователи 👥"]
       summary: Активные пользователи
-      description: Возвращает только активных пользователей, у которых `deleted_at IS NULL`.
+      description: Admin-only маршрут. Возвращает только активных пользователей, у которых `deleted_at IS NULL`.
       operationId: listUsers
       responses:
         '200':
@@ -196,6 +150,37 @@ paths:
                       updated_at: '2026-04-26T10:05:00Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/v1/users/me:
+    get:
+      tags: ["Пользователи 👥"]
+      summary: Текущий пользователь
+      description: Возвращает текущего пользователя, определенного по JWT claims.
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Текущий пользователь найден.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                user:
+                  summary: Текущий пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /api/v1/users/{id}:
@@ -203,7 +188,7 @@ paths:
       tags: ["Пользователи 👥"]
       summary: Пользователь по UUID
       description: |
-        Возвращает одного активного пользователя по UUID.
+        Admin-only маршрут. Возвращает одного активного пользователя по UUID.
 
         Если пользователь не найден или уже был мягко удален, API вернет ошибку `404`.
       operationId: getUserByID
@@ -230,65 +215,17 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    put:
-      tags: ["Пользователи 👥"]
-      summary: Обновление пользователя
-      description: |
-        Обновляет имя, фамилию и email активного пользователя.
-
-        Новый email также должен быть уникальным среди активных пользователей.
-      operationId: updateUser
-      parameters:
-        - $ref: '#/components/parameters/UserID'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateUserRequest'
-            examples:
-              updated:
-                summary: Новые данные пользователя
-                value:
-                  first_name: Daniil
-                  last_name: Kalts
-                  email: updated@example.com
-      responses:
-        '200':
-          description: Пользователь успешно обновлен.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-              examples:
-                updated:
-                  summary: Обновленный пользователь
-                  value:
-                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
-                    first_name: Daniil
-                    last_name: Kalts
-                    email: updated@example.com
-                    created_at: '2026-04-26T10:00:00Z'
-                    updated_at: '2026-04-26T10:15:00Z'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '409':
-          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
       tags: ["Пользователи 👥"]
       summary: Мягкое удаление пользователя
       description: |
-        Выполняет мягкое удаление пользователя по UUID.
+        Admin-only маршрут. Выполняет мягкое удаление пользователя по UUID.
 
         Запись остается в базе данных с заполненным `deleted_at`, но больше не возвращается в пользовательских ручках.
       operationId: deleteUser
@@ -301,21 +238,21 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /api/v1/users/{id}/cities:
+  /api/v1/cities:
     post:
       tags: ["Города 🏙️"]
       summary: Добавить отслеживаемый город
       description: |
-        Добавляет город в список отслеживания активного пользователя.
+        Добавляет город в список отслеживания текущего пользователя из JWT.
 
         Один и тот же город нельзя добавить одному пользователю дважды.
       operationId: createUserCity
-      parameters:
-        - $ref: '#/components/parameters/UserID'
       requestBody:
         required: true
         content:
@@ -355,10 +292,8 @@ paths:
     get:
       tags: ["Города 🏙️"]
       summary: Отслеживаемые города
-      description: Возвращает список городов, за погодой в которых следит активный пользователь.
+      description: Возвращает список городов, за погодой в которых следит текущий пользователь из JWT.
       operationId: listUserCities
-      parameters:
-        - $ref: '#/components/parameters/UserID'
       responses:
         '200':
           description: Список городов пользователя.
@@ -388,17 +323,16 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /api/v1/users/{id}/cities/{city_id}:
+  /api/v1/cities/{city_id}:
     delete:
       tags: ["Города 🏙️"]
       summary: Удалить отслеживаемый город
       description: |
-        Удаляет город из списка отслеживания активного пользователя.
+        Удаляет город из списка отслеживания текущего пользователя из JWT.
 
         Это обычное удаление записи из `user_cities`: история погоды при этом остается в `weather_history`.
       operationId: deleteUserCity
       parameters:
-        - $ref: '#/components/parameters/UserID'
         - $ref: '#/components/parameters/CityID'
       responses:
         '204':
@@ -411,17 +345,15 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /api/v1/users/{id}/weather:
+  /api/v1/weather:
     get:
       tags: ["Погода 🌦️"]
       summary: Погода пользователя
       description: |
-        Возвращает погоду по всем городам, которые отслеживает активный пользователь.
+        Возвращает погоду по всем городам, которые отслеживает текущий пользователь из JWT.
 
         Сервис проверяет пользователя через `deleted_at IS NULL`, получает список городов, запрашивает погоду во внешнем API Open-Meteo и сохраняет каждую запись в `weather_history`.
       operationId: getUserWeather
-      parameters:
-        - $ref: '#/components/parameters/UserID'
       responses:
         '200':
           description: Агрегированная погода по городам пользователя.
@@ -453,17 +385,16 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /api/v1/users/{id}/weather/history:
+  /api/v1/weather/history:
     get:
       tags: ["Погода 🌦️"]
       summary: История погоды
       description: |
-        Возвращает историю погодных запросов активного пользователя.
+        Возвращает историю погодных запросов текущего пользователя из JWT.
 
         Query-параметр `city` необязателен: если он передан, история фильтруется по городу; если не передан, возвращается вся история пользователя. Результат сортируется по `requested_at DESC`, а `limit` и `offset` управляют пагинацией.
       operationId: getUserWeatherHistory
       parameters:
-        - $ref: '#/components/parameters/UserID'
         - $ref: '#/components/parameters/HistoryCity'
         - $ref: '#/components/parameters/HistoryLimit'
         - $ref: '#/components/parameters/HistoryOffset'
@@ -650,12 +581,21 @@ components:
               summary: Токен не передан
               value:
                 code: 401
-                message: authorization token is required
+                message: missing or malformed authorization header
             invalidToken:
               summary: Токен недействителен
               value:
                 code: 401
-                message: authorization token is invalid
+                message: invalid or expired token
+    Forbidden:
+      description: У пользователя нет прав для выполнения операции.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 403
+            message: forbidden
     InternalServerError:
       description: Внутренняя ошибка сервера.
       content:
@@ -728,58 +668,6 @@ components:
           format: date-time
           description: Время истечения access token.
           example: '2026-04-26T10:15:00Z'
-    CreateUserRequest:
-      type: object
-      description: Данные, необходимые для создания пользователя.
-      required:
-        - first_name
-        - last_name
-        - email
-        - password
-      properties:
-        first_name:
-          type: string
-          minLength: 1
-          description: Имя пользователя.
-          example: Daniil
-        last_name:
-          type: string
-          minLength: 1
-          description: Фамилия пользователя.
-          example: Kalts
-        email:
-          type: string
-          format: email
-          description: Уникальный email пользователя.
-          example: daniil@example.com
-        password:
-          type: string
-          minLength: 1
-          description: Пароль пользователя.
-          example: strong-password
-    UpdateUserRequest:
-      type: object
-      description: Полный набор данных для обновления пользователя.
-      required:
-        - first_name
-        - last_name
-        - email
-      properties:
-        first_name:
-          type: string
-          minLength: 1
-          description: Новое имя пользователя.
-          example: Daniil
-        last_name:
-          type: string
-          minLength: 1
-          description: Новая фамилия пользователя.
-          example: Kalts
-        email:
-          type: string
-          format: email
-          description: Новый уникальный email пользователя.
-          example: updated@example.com
     UserResponse:
       type: object
       description: Активный пользователь, который хранится в системе.

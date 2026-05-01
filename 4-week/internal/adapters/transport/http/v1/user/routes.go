@@ -1,13 +1,17 @@
 package user
 
-import "net/http"
+import "github.com/go-chi/chi/v5"
 
-func RegisterRoutes(mux *http.ServeMux, service Service) {
+func RegisterCurrentUserRoutes(r chi.Router, service Service) {
 	h := NewHandler(service)
 
-	mux.HandleFunc("POST /api/v1/users", h.Create)
-	mux.HandleFunc("GET /api/v1/users", h.List)
-	mux.HandleFunc("GET /api/v1/users/{id}", h.GetByID)
-	mux.HandleFunc("PUT /api/v1/users/{id}", h.Update)
-	mux.HandleFunc("DELETE /api/v1/users/{id}", h.Delete)
+	r.Get("/users/me", h.Me)
+}
+
+func RegisterAdminRoutes(r chi.Router, service Service) {
+	h := NewHandler(service)
+
+	r.Get("/users", h.List)
+	r.Get("/users/{id}", h.GetByID)
+	r.Delete("/users/{id}", h.Delete)
 }

@@ -27,7 +27,7 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) GetByUserID(w http.ResponseWriter, r *http.Request) {
-	userID, ok := parseUUID(w, r.PathValue("id"), "invalid user id")
+	userID, ok := currentUserID(w, r)
 	if !ok {
 		return
 	}
@@ -42,7 +42,7 @@ func (h *Handler) GetByUserID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetHistory(w http.ResponseWriter, r *http.Request) {
-	userID, ok := parseUUID(w, r.PathValue("id"), "invalid user id")
+	userID, ok := currentUserID(w, r)
 	if !ok {
 		return
 	}
