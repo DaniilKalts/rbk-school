@@ -17,21 +17,21 @@ func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token, ok := helpers.BearerTokenFromRequest(r)
 			if !ok {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing or malformed authorization header")
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствует или некорректный заголовок Authorization")
 				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
 			}
 
 			claims, err := jwtManager.Validate(token)
 			if err != nil {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
 				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
 			}
 
 			revoked, err := jwtManager.IsRevoked(r.Context(), token)
 			if err != nil || revoked {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
 				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
 			}

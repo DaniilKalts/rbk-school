@@ -15,7 +15,7 @@ import (
 func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 	claims, ok := helpers.ClaimsFromContext(r.Context())
 	if !ok {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствуют claims аутентификации")
 		helpers.JSON(w, http.StatusUnauthorized, response)
 		return uuid.Nil, false
 	}

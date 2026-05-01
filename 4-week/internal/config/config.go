@@ -18,19 +18,19 @@ type Config struct {
 
 func (c Config) Validate() error {
 	if err := c.Server.Validate(); err != nil {
-		return fmt.Errorf("server config: %w", err)
+		return fmt.Errorf("конфигурация сервера: %w", err)
 	}
 
 	if err := c.Postgres.Validate(); err != nil {
-		return fmt.Errorf("postgres config: %w", err)
+		return fmt.Errorf("конфигурация postgres: %w", err)
 	}
 
 	if err := c.Redis.Validate(); err != nil {
-		return fmt.Errorf("redis config: %w", err)
+		return fmt.Errorf("конфигурация redis: %w", err)
 	}
 
 	if err := c.JWT.Validate(); err != nil {
-		return fmt.Errorf("jwt config: %w", err)
+		return fmt.Errorf("конфигурация jwt: %w", err)
 	}
 
 	return nil

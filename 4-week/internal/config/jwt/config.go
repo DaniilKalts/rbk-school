@@ -13,11 +13,11 @@ type Config struct {
 
 func (c Config) Validate() error {
 	if strings.TrimSpace(c.Secret) == "" {
-		return fmt.Errorf("secret is required")
+		return fmt.Errorf("секрет обязателен")
 	}
 
 	if c.AccessTokenTTL <= 0 {
-		return fmt.Errorf("access token ttl must be positive")
+		return fmt.Errorf("ttl access token должен быть положительным")
 	}
 
 	return nil

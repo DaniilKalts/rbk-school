@@ -35,7 +35,7 @@ func NewClient(httpClient *http.Client) *Client {
 func (c *Client) GetCoordsByCity(ctx context.Context, city string) (dto.CoordsResponse, error) {
 	parsedURL, err := url.Parse(c.baseURL)
 	if err != nil {
-		return dto.CoordsResponse{}, fmt.Errorf("geocoding: parse base url: %w", err)
+		return dto.CoordsResponse{}, fmt.Errorf("geocoding: ошибка разбора базового URL: %w", err)
 	}
 
 	query := parsedURL.Query()
@@ -47,26 +47,26 @@ func (c *Client) GetCoordsByCity(ctx context.Context, city string) (dto.CoordsRe
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsedURL.String(), nil)
 	if err != nil {
-		return dto.CoordsResponse{}, fmt.Errorf("geocoding: create request: %w", err)
+		return dto.CoordsResponse{}, fmt.Errorf("geocoding: ошибка создания запроса: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return dto.CoordsResponse{}, fmt.Errorf("geocoding: do request: %w", err)
+		return dto.CoordsResponse{}, fmt.Errorf("geocoding: ошибка выполнения запроса: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return dto.CoordsResponse{}, fmt.Errorf("geocoding: unexpected status code %d", res.StatusCode)
+		return dto.CoordsResponse{}, fmt.Errorf("geocoding: неожиданный статус-код %d", res.StatusCode)
 	}
 
 	var results dto.GeocodingResults
 	if err := json.NewDecoder(res.Body).Decode(&results); err != nil {
-		return dto.CoordsResponse{}, fmt.Errorf("geocoding: decode response body: %w", err)
+		return dto.CoordsResponse{}, fmt.Errorf("geocoding: ошибка декодирования тела ответа: %w", err)
 	}
 
 	if len(results.Results) == 0 {
-		return dto.CoordsResponse{}, fmt.Errorf("geocoding: no results found for city %q", city)
+		return dto.CoordsResponse{}, fmt.Errorf("geocoding: не найдено результатов для города %q", city)
 	}
 
 	return results.Results[0], nil

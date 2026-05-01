@@ -16,7 +16,7 @@ type History struct {
 	RequestedAt time.Time
 }
 
-func New(id uuid.UUID, userID uuid.UUID, city string, temperature float64, description string) (*History, error) {
+func NewHistory(id uuid.UUID, userID uuid.UUID, city string, temperature float64, description string) (*History, error) {
 	if id == uuid.Nil {
 		return nil, ErrInvalidID
 	}

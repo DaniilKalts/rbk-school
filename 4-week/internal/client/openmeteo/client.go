@@ -36,7 +36,7 @@ func NewClient(httpClient *http.Client) *Client {
 func (c *Client) GetWeatherByCoords(ctx context.Context, latitude, longitude float64) (dto.WeatherResponse, error) {
 	parsedURL, err := url.Parse(c.baseURL)
 	if err != nil {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: parse base url: %w", err)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: ошибка разбора базового URL: %w", err)
 	}
 
 	query := parsedURL.Query()
@@ -47,22 +47,22 @@ func (c *Client) GetWeatherByCoords(ctx context.Context, latitude, longitude flo
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, parsedURL.String(), nil)
 	if err != nil {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: create request: %w", err)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: ошибка создания запроса: %w", err)
 	}
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: do request: %w", err)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: ошибка выполнения запроса: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: unexpected status code %d", res.StatusCode)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: неожиданный статус-код %d", res.StatusCode)
 	}
 
 	var weather dto.WeatherResponse
 	if err := json.NewDecoder(res.Body).Decode(&weather); err != nil {
-		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: decode response body: %w", err)
+		return dto.WeatherResponse{}, fmt.Errorf("openmeteo: ошибка декодирования тела ответа: %w", err)
 	}
 
 	return weather, nil

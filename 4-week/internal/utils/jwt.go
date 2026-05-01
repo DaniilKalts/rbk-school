@@ -21,8 +21,8 @@ type JWTManager struct {
 }
 
 type TokenBlacklist interface {
-	Revoke(ctx context.Context, tokenHash string, expiresAt time.Time) error
-	Contains(ctx context.Context, tokenHash string) (bool, error)
+	Revoke(ctx context.Context, token string, expiresAt time.Time) error
+	IsRevoked(ctx context.Context, token string) (bool, error)
 }
 
 func NewJWTManager(secret []byte, ttl time.Duration, blacklist TokenBlacklist) *JWTManager {
@@ -63,7 +63,7 @@ func (m *JWTManager) Generate(userID uuid.UUID, email string, role string) (stri
 func (m *JWTManager) Validate(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if token.Method != jwt.SigningMethodHS256 {
-			return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
+			return nil, fmt.Errorf("неожиданный метод подписи: %s", token.Header["alg"])
 		}
 
 		return m.secret, nil
@@ -74,12 +74,12 @@ func (m *JWTManager) Validate(tokenString string) (*Claims, error) {
 	}
 
 	if !token.Valid {
-		return nil, errors.New("invalid token")
+		return nil, errors.New("некорректный токен")
 	}
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		return nil, errors.New("invalid claims")
+		return nil, errors.New("некорректные claims")
 	}
 
 	return claims, nil
@@ -103,7 +103,7 @@ func (m *JWTManager) IsRevoked(ctx context.Context, tokenString string) (bool, e
 		return false, nil
 	}
 
-	return m.blacklist.Contains(ctx, hashToken(tokenString))
+	return m.blacklist.IsRevoked(ctx, hashToken(tokenString))
 }
 
 func hashToken(token string) string {

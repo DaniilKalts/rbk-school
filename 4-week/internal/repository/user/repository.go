@@ -20,7 +20,7 @@ type Repository struct {
 	queries *sqlc.Queries
 }
 
-func New(db sqlc.DBTX) *Repository {
+func NewRepository(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
@@ -39,7 +39,7 @@ func (r *Repository) Create(ctx context.Context, u domainuser.User, passwordHash
 			return nil, domainuser.ErrEmailAlreadyExists
 		}
 
-		return nil, fmt.Errorf("create user: %w", err)
+		return nil, fmt.Errorf("создание пользователя: %w", err)
 	}
 
 	return new(toDomainBase(
@@ -60,7 +60,7 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.Use
 			return nil, domainuser.ErrNotFound
 		}
 
-		return nil, fmt.Errorf("get user by id: %w", err)
+		return nil, fmt.Errorf("получение пользователя по id: %w", err)
 	}
 
 	return new(toDomainBase(
@@ -81,7 +81,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.
 			return nil, domainuser.ErrNotFound
 		}
 
-		return nil, fmt.Errorf("get user by email: %w", err)
+		return nil, fmt.Errorf("получение пользователя по email: %w", err)
 	}
 
 	return new(toDomainBase(
@@ -102,7 +102,7 @@ func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*
 			return nil, domainuser.ErrNotFound
 		}
 
-		return nil, fmt.Errorf("get user credentials by email: %w", err)
+		return nil, fmt.Errorf("получение учетных данных пользователя по email: %w", err)
 	}
 
 	return &domainuser.Credentials{
@@ -117,7 +117,7 @@ func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*
 func (r *Repository) List(ctx context.Context) ([]domainuser.User, error) {
 	rows, err := r.queries.ListUsers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("list users: %w", err)
+		return nil, fmt.Errorf("получение списка пользователей: %w", err)
 	}
 
 	users := make([]domainuser.User, 0, len(rows))
@@ -152,7 +152,7 @@ func (r *Repository) Update(ctx context.Context, u domainuser.User) (*domainuser
 			return nil, domainuser.ErrEmailAlreadyExists
 		}
 
-		return nil, fmt.Errorf("update user: %w", err)
+		return nil, fmt.Errorf("обновление пользователя: %w", err)
 	}
 
 	return new(toDomainBase(
@@ -169,7 +169,7 @@ func (r *Repository) Update(ctx context.Context, u domainuser.User) (*domainuser
 func (r *Repository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	rowsAffected, err := r.queries.SoftDeleteUser(ctx, id)
 	if err != nil {
-		return fmt.Errorf("soft delete user: %w", err)
+		return fmt.Errorf("мягкое удаление пользователя: %w", err)
 	}
 
 	if rowsAffected == 0 {

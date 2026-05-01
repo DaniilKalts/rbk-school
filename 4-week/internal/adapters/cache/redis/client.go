@@ -9,7 +9,7 @@ import (
 	configredis "github.com/DaniilKalts/rbk-school/4-week/internal/config/redis"
 )
 
-func New(ctx context.Context, cfg *configredis.Config) (*redisclient.Client, error) {
+func NewClient(ctx context.Context, cfg *configredis.Config) (*redisclient.Client, error) {
 	client := redisclient.NewClient(&redisclient.Options{
 		Addr:         cfg.Addr,
 		Password:     cfg.Password,
@@ -21,7 +21,7 @@ func New(ctx context.Context, cfg *configredis.Config) (*redisclient.Client, err
 
 	if err := client.Ping(ctx).Err(); err != nil {
 		client.Close()
-		return nil, fmt.Errorf("ping redis at %s: %w", cfg.Addr, err)
+		return nil, fmt.Errorf("проверка подключения к redis %s: %w", cfg.Addr, err)
 	}
 
 	return client, nil

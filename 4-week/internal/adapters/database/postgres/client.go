@@ -14,14 +14,14 @@ import (
 
 const migrationsDir = "./database/migrations"
 
-func New(ctx context.Context, cfg *configpostgres.Config) (*pgxpool.Pool, error) {
+func NewClient(ctx context.Context, cfg *configpostgres.Config) (*pgxpool.Pool, error) {
 	if err := runMigrations(cfg); err != nil {
 		return nil, err
 	}
 
 	poolConfig, err := pgxpool.ParseConfig(cfg.DSN())
 	if err != nil {
-		return nil, fmt.Errorf("parse postgres config: %w", err)
+		return nil, fmt.Errorf("parse конфигурация postgres: %w", err)
 	}
 
 	poolConfig.MaxConns = cfg.MaxConns
@@ -31,12 +31,12 @@ func New(ctx context.Context, cfg *configpostgres.Config) (*pgxpool.Pool, error)
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
-		return nil, fmt.Errorf("connect to postgres: %w", err)
+		return nil, fmt.Errorf("подключение к postgres: %w", err)
 	}
 
 	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
-		return nil, fmt.Errorf("ping postgres at %s:%d: %w", cfg.Host, cfg.Port, err)
+		return nil, fmt.Errorf("проверка подключения к postgres %s:%d: %w", cfg.Host, cfg.Port, err)
 	}
 
 	return pool, nil
@@ -45,16 +45,16 @@ func New(ctx context.Context, cfg *configpostgres.Config) (*pgxpool.Pool, error)
 func runMigrations(cfg *configpostgres.Config) error {
 	db, err := sql.Open("pgx", cfg.DSN())
 	if err != nil {
-		return fmt.Errorf("open postgres migration connection: %w", err)
+		return fmt.Errorf("открытие подключения для миграций postgres: %w", err)
 	}
 	defer db.Close()
 
 	if err := goose.SetDialect("postgres"); err != nil {
-		return fmt.Errorf("set goose dialect: %w", err)
+		return fmt.Errorf("настройка диалекта goose: %w", err)
 	}
 
 	if err := goose.Up(db, migrationsDir); err != nil {
-		return fmt.Errorf("apply postgres migrations: %w", err)
+		return fmt.Errorf("применение миграций postgres: %w", err)
 	}
 
 	return nil

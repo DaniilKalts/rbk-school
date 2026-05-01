@@ -10,32 +10,32 @@ import (
 
 const tokenBlacklistPrefix = "token_blacklist:"
 
-type TokenBlacklist struct {
+type Cache struct {
 	client *redisclient.Client
 }
 
-func NewRepository(client *redisclient.Client) *TokenBlacklist {
-	return &TokenBlacklist{client: client}
+func NewRepository(client *redisclient.Client) *Cache {
+	return &Cache{client: client}
 }
 
-func (r *TokenBlacklist) Revoke(ctx context.Context, tokenHash string, expiresAt time.Time) error {
+func (r *Cache) Revoke(ctx context.Context, token string, expiresAt time.Time) error {
 	ttl := time.Until(expiresAt)
 	if ttl <= 0 {
 		return nil
 	}
 
-	err := r.client.Set(ctx, tokenBlacklistPrefix+tokenHash, "1", ttl).Err()
+	err := r.client.Set(ctx, tokenBlacklistPrefix+token, "1", ttl).Err()
 	if err != nil {
-		return fmt.Errorf("set revoked token: %w", err)
+		return fmt.Errorf("добавление отозванного токена: %w", err)
 	}
 
 	return nil
 }
 
-func (r *TokenBlacklist) Contains(ctx context.Context, tokenHash string) (bool, error) {
-	count, err := r.client.Exists(ctx, tokenBlacklistPrefix+tokenHash).Result()
+func (r *Cache) IsRevoked(ctx context.Context, token string) (bool, error) {
+	count, err := r.client.Exists(ctx, tokenBlacklistPrefix+token).Result()
 	if err != nil {
-		return false, fmt.Errorf("check revoked token: %w", err)
+		return false, fmt.Errorf("проверка отозванного токена: %w", err)
 	}
 
 	return count > 0, nil

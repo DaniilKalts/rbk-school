@@ -36,7 +36,7 @@ type UpdateInput struct {
 	Email     string
 }
 
-func New(repository Repository) *Service {
+func NewService(repository Repository) *Service {
 	return &Service{repository: repository}
 }
 
@@ -45,7 +45,7 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*domainuser.Us
 		return nil, err
 	}
 
-	u, err := domainuser.New(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	u, err := domainuser.NewUser(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (s *Service) List(ctx context.Context) ([]domainuser.User, error) {
 }
 
 func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (*domainuser.User, error) {
-	u, err := domainuser.New(id, input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	u, err := domainuser.NewUser(id, input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}

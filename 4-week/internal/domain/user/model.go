@@ -42,7 +42,7 @@ type Credentials struct {
 	Salt         string
 }
 
-func New(id uuid.UUID, firstName string, lastName string, email string, role Role) (*User, error) {
+func NewUser(id uuid.UUID, firstName string, lastName string, email string, role Role) (*User, error) {
 	u := &User{
 		ID:        id,
 		FirstName: strings.TrimSpace(firstName),

@@ -9,7 +9,7 @@ type Service struct {
 	weatherCache      WeatherCache
 }
 
-func New(
+func NewService(
 	userRepository UserRepository,
 	cityRepository CityRepository,
 	historyRepository HistoryRepository,

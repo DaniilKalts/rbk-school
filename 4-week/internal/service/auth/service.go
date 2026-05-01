@@ -12,7 +12,7 @@ import (
 	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
-var ErrInvalidCredentials = errors.New("invalid email or password")
+var ErrInvalidCredentials = errors.New("неверный email или пароль")
 
 type Repository interface {
 	Create(ctx context.Context, u domainuser.User, passwordHash string, salt string) (*domainuser.User, error)
@@ -55,7 +55,7 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, er
 		return nil, err
 	}
 
-	u, err := domainuser.New(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	u, err := domainuser.NewUser(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}

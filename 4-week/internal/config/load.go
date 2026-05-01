@@ -12,17 +12,17 @@ import (
 func Load(path string) (*Config, error) {
 	if path != "" {
 		if err := godotenv.Load(path); err != nil && !errors.Is(err, os.ErrNotExist) {
-			return nil, fmt.Errorf("load env file %q: %w", path, err)
+			return nil, fmt.Errorf("загрузка env-файла %q: %w", path, err)
 		}
 	}
 
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return nil, fmt.Errorf("parse config from environment: %w", err)
+		return nil, fmt.Errorf("разбор конфигурации из окружения: %w", err)
 	}
 
 	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("validate config: %w", err)
+		return nil, fmt.Errorf("валидация конфигурации: %w", err)
 	}
 
 	return &cfg, nil

@@ -3,7 +3,7 @@ package history
 import "errors"
 
 var (
-	ErrInvalidID     = errors.New("history id is invalid")
-	ErrInvalidUserID = errors.New("user id is invalid")
-	ErrInvalidCity   = errors.New("city is invalid")
+	ErrInvalidID     = errors.New("некорректный идентификатор записи истории")
+	ErrInvalidUserID = errors.New("некорректный идентификатор пользователя")
+	ErrInvalidCity   = errors.New("некорректный город")
 )

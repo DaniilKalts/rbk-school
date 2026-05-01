@@ -14,7 +14,7 @@ import (
 func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 	claims, ok := helpers.ClaimsFromContext(r.Context())
 	if !ok {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствуют claims аутентификации")
 		helpers.JSON(w, http.StatusUnauthorized, response)
 		return uuid.Nil, false
 	}
@@ -25,7 +25,7 @@ func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 func parseID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
-		response := helpers.NewErrorResponse(http.StatusBadRequest, "invalid user id")
+		response := helpers.NewErrorResponse(http.StatusBadRequest, "некорректный id пользователя")
 		helpers.JSON(w, http.StatusBadRequest, response)
 		return uuid.Nil, false
 	}

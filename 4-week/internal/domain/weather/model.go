@@ -14,7 +14,7 @@ type Weather struct {
 	RequestedAt time.Time
 }
 
-func New(city string, latitude, longitude float64, temperature, feelsLike float64, weatherCode int) (Weather, error) {
+func NewWeather(city string, latitude, longitude float64, temperature, feelsLike float64, weatherCode int) (Weather, error) {
 	city = NormalizeCityName(city)
 	if city == "" {
 		return Weather{}, ErrInvalidCity
@@ -59,10 +59,10 @@ func DescriptionByCode(code int) string {
 
 func validateCoordinates(latitude, longitude float64) error {
 	if latitude < -90 || latitude > 90 {
-		return fmt.Errorf("invalid latitude: %.6f", latitude)
+		return fmt.Errorf("некорректная широта: %.6f", latitude)
 	}
 	if longitude < -180 || longitude > 180 {
-		return fmt.Errorf("invalid longitude: %.6f", longitude)
+		return fmt.Errorf("некорректная долгота: %.6f", longitude)
 	}
 
 	return nil

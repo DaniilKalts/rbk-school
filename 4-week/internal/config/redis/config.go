@@ -18,27 +18,27 @@ type Config struct {
 
 func (c Config) Validate() error {
 	if strings.TrimSpace(c.Addr) == "" {
-		return fmt.Errorf("addr is required")
+		return fmt.Errorf("адрес обязателен")
 	}
 
 	if c.DB < 0 {
-		return fmt.Errorf("db must not be negative")
+		return fmt.Errorf("номер базы redis не может быть отрицательным")
 	}
 
 	if c.DialTimeout <= 0 {
-		return fmt.Errorf("dial timeout must be positive")
+		return fmt.Errorf("dial timeout должен быть положительным")
 	}
 
 	if c.ReadTimeout <= 0 {
-		return fmt.Errorf("read timeout must be positive")
+		return fmt.Errorf("read timeout должен быть положительным")
 	}
 
 	if c.WriteTimeout <= 0 {
-		return fmt.Errorf("write timeout must be positive")
+		return fmt.Errorf("write timeout должен быть положительным")
 	}
 
 	if c.WeatherCacheTTL <= 0 {
-		return fmt.Errorf("weather cache ttl must be positive")
+		return fmt.Errorf("ttl кеша погоды должен быть положительным")
 	}
 
 	return nil

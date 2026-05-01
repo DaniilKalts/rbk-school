@@ -25,7 +25,7 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 
 	cities, err := s.cityRepository.ListByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("list user cities: %w", err)
+		return nil, fmt.Errorf("получение списка городов пользователя: %w", err)
 	}
 
 	weathers := make([]domainweather.Weather, len(cities))
@@ -43,7 +43,7 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 				return
 			}
 
-			historyModel, err := domainhistory.New(uuid.New(), userID, weather.City, weather.Temperature, weather.Description)
+			historyModel, err := domainhistory.NewHistory(uuid.New(), userID, weather.City, weather.Temperature, weather.Description)
 			if err != nil {
 				errCh <- err
 				return
@@ -80,15 +80,15 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 
 	coords, err := s.geocodingClient.GetCoordsByCity(ctx, city)
 	if err != nil {
-		return domainweather.Weather{}, fmt.Errorf("get coordinates for city %q: %w", city, err)
+		return domainweather.Weather{}, fmt.Errorf("получение координат для города %q: %w", city, err)
 	}
 
 	weatherResponse, err := s.weatherClient.GetWeatherByCoords(ctx, coords.Latitude, coords.Longitude)
 	if err != nil {
-		return domainweather.Weather{}, fmt.Errorf("get weather for city %q: %w", city, err)
+		return domainweather.Weather{}, fmt.Errorf("получение погоды для города %q: %w", city, err)
 	}
 
-	weather, err := domainweather.New(
+	weather, err := domainweather.NewWeather(
 		city,
 		coords.Latitude,
 		coords.Longitude,
@@ -97,7 +97,7 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 		weatherResponse.Current.WeatherCode,
 	)
 	if err != nil {
-		return domainweather.Weather{}, fmt.Errorf("build weather for city %q: %w", city, err)
+		return domainweather.Weather{}, fmt.Errorf("сборка модели погоды для города %q: %w", city, err)
 	}
 
 	if s.weatherCache != nil {

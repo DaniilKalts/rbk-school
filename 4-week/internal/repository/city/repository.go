@@ -17,7 +17,7 @@ type Repository struct {
 	queries *sqlc.Queries
 }
 
-func New(db sqlc.DBTX) *Repository {
+func NewRepository(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
@@ -32,7 +32,7 @@ func (r *Repository) Create(ctx context.Context, c domaincity.City) (*domaincity
 			return nil, domaincity.ErrAlreadyExists
 		}
 
-		return nil, fmt.Errorf("create user city: %w", err)
+		return nil, fmt.Errorf("создание города пользователя: %w", err)
 	}
 
 	return new(toDomain(row)), nil
@@ -41,7 +41,7 @@ func (r *Repository) Create(ctx context.Context, c domaincity.City) (*domaincity
 func (r *Repository) ListByUserID(ctx context.Context, userID uuid.UUID) ([]domaincity.City, error) {
 	rows, err := r.queries.ListUserCities(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("list user cities: %w", err)
+		return nil, fmt.Errorf("получение списка городов пользователя: %w", err)
 	}
 
 	cities := make([]domaincity.City, 0, len(rows))
@@ -58,7 +58,7 @@ func (r *Repository) Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID)
 		UserID: userID,
 	})
 	if err != nil {
-		return fmt.Errorf("delete user city: %w", err)
+		return fmt.Errorf("удаление города пользователя: %w", err)
 	}
 
 	if rowsAffected == 0 {

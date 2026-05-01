@@ -7,7 +7,7 @@ import (
 
 func DecodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		response := NewErrorResponse(http.StatusBadRequest, "invalid request body")
+		response := NewErrorResponse(http.StatusBadRequest, "некорректное тело запроса")
 		JSON(w, http.StatusBadRequest, response)
 		return false
 	}

@@ -13,11 +13,11 @@ type Config struct {
 
 func (c Config) Validate() error {
 	if strings.TrimSpace(c.Addr) == "" {
-		return fmt.Errorf("addr is required")
+		return fmt.Errorf("адрес обязателен")
 	}
 
 	if c.HTTPTimeout <= 0 {
-		return fmt.Errorf("http timeout must be positive")
+		return fmt.Errorf("http timeout должен быть положительным")
 	}
 
 	return nil

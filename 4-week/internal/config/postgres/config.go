@@ -22,43 +22,43 @@ type Config struct {
 
 func (c Config) Validate() error {
 	if strings.TrimSpace(c.Host) == "" {
-		return fmt.Errorf("host is required")
+		return fmt.Errorf("host обязателен")
 	}
 
 	if c.Port < 1 || c.Port > 65535 {
-		return fmt.Errorf("port must be between 1 and 65535")
+		return fmt.Errorf("port должен быть в диапазоне от 1 до 65535")
 	}
 
 	if strings.TrimSpace(c.User) == "" {
-		return fmt.Errorf("user is required")
+		return fmt.Errorf("user обязателен")
 	}
 
 	if strings.TrimSpace(c.Database) == "" {
-		return fmt.Errorf("database is required")
+		return fmt.Errorf("database обязателен")
 	}
 
 	if !isValidSSLMode(c.SSLMode) {
-		return fmt.Errorf("ssl mode must be one of: disable, allow, prefer, require, verify-ca, verify-full")
+		return fmt.Errorf("ssl mode должен быть одним из: disable, allow, prefer, require, verify-ca, verify-full")
 	}
 
 	if c.MaxConns <= 0 {
-		return fmt.Errorf("max conns must be positive")
+		return fmt.Errorf("max conns должен быть положительным")
 	}
 
 	if c.MinConns < 0 {
-		return fmt.Errorf("min conns must not be negative")
+		return fmt.Errorf("min conns не может быть отрицательным")
 	}
 
 	if c.MinConns > c.MaxConns {
-		return fmt.Errorf("min conns must not be greater than max conns")
+		return fmt.Errorf("min conns не может быть больше max conns")
 	}
 
 	if c.MaxConnLifetime <= 0 {
-		return fmt.Errorf("max conn lifetime must be positive")
+		return fmt.Errorf("max conn lifetime должен быть положительным")
 	}
 
 	if c.MaxConnIdleTime <= 0 {
-		return fmt.Errorf("max conn idle time must be positive")
+		return fmt.Errorf("max conn idle time должен быть положительным")
 	}
 
 	return nil

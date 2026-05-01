@@ -26,7 +26,7 @@ func (e *UserRole) Scan(src interface{}) error {
 	case string:
 		*e = UserRole(s)
 	default:
-		return fmt.Errorf("unsupported scan type for UserRole: %T", src)
+		return fmt.Errorf("неподдерживаемый тип сканирования для UserRole: %T", src)
 	}
 	return nil
 }

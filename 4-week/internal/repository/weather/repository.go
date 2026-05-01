@@ -14,7 +14,7 @@ type Repository struct {
 	queries *sqlc.Queries
 }
 
-func New(db sqlc.DBTX) *Repository {
+func NewRepository(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
@@ -27,7 +27,7 @@ func (r *Repository) CreateHistory(ctx context.Context, history domainhistory.Hi
 		Description: history.Description,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("create weather history: %w", err)
+		return nil, fmt.Errorf("создание записи истории погоды: %w", err)
 	}
 
 	return new(toDomain(row)), nil
@@ -41,7 +41,7 @@ func (r *Repository) ListHistory(ctx context.Context, userID uuid.UUID, city str
 		Offset: int32(offset),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("list weather history: %w", err)
+		return nil, fmt.Errorf("получение истории погоды: %w", err)
 	}
 
 	history := make([]domainhistory.History, 0, len(rows))

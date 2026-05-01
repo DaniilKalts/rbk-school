@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os/signal"
 	"syscall"
+
+	"github.com/DaniilKalts/rbk-school/4-week/internal/config"
 )
 
 type App struct {
@@ -14,34 +16,50 @@ type App struct {
 	server    *http.Server
 }
 
-func New(container *Container) (*App, error) {
-	if container == nil {
-		return nil, fmt.Errorf("app: container is nil")
+
+func NewApp(cfg *config.Config) *App {
+	container, err := NewContainer(cfg)
+	if err != nil {
+		log.Fatalf("не удалось собрать DI-контейнер приложения: %v", err)
 	}
 
-	server := &http.Server{
-		Addr:         container.Config.Server.Addr,
-		Handler:      container.Router,
-		ReadTimeout:  container.Config.Server.HTTPTimeout,
-		WriteTimeout: container.Config.Server.HTTPTimeout,
-		IdleTimeout:  container.Config.Server.HTTPTimeout,
+	a := &App{container: container}
+	a.initDeps()
+
+	return a
+}
+
+
+func (a *App) initDeps() {
+	inits := []func(){
+		a.initHTTPServer,
 	}
 
-	return &App{
-		container: container,
-		server:    server,
-	}, nil
+	for _, fn := range inits {
+		fn()
+	}
+}
+
+func (a *App) initHTTPServer() {
+	cfg := a.container.Config()
+	a.server = &http.Server{
+		Addr:         cfg.Server.Addr,
+		Handler:      a.container.Router(),
+		ReadTimeout:  cfg.Server.HTTPTimeout,
+		WriteTimeout: cfg.Server.HTTPTimeout,
+		IdleTimeout:  cfg.Server.HTTPTimeout,
+	}
 }
 
 func (a *App) Run() error {
 	if a == nil || a.server == nil {
-		return fmt.Errorf("app: server is not initialized")
+		return fmt.Errorf("app: сервер не инициализирован")
 	}
 	if a.container != nil {
 		defer a.container.Close()
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	sigCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	errCh := make(chan error, 1)
@@ -49,7 +67,7 @@ func (a *App) Run() error {
 
 	go func() {
 		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			errCh <- fmt.Errorf("app: run server: %w", err)
+			errCh <- fmt.Errorf("app: ошибка запуска сервера: %w", err)
 		}
 		close(errCh)
 	}()
@@ -57,14 +75,14 @@ func (a *App) Run() error {
 	select {
 	case err := <-errCh:
 		return err
-	case <-ctx.Done():
+	case <-sigCtx.Done():
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.server.ReadTimeout)
 	defer cancel()
 
 	if err := a.server.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("app: shutdown server: %w", err)
+		return fmt.Errorf("app: ошибка остановки сервера: %w", err)
 	}
 
 	if err := <-errCh; err != nil {

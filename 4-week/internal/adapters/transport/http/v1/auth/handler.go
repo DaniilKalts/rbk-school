@@ -56,14 +56,14 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	token, ok := helpers.BearerTokenFromRequest(r)
 	if !ok {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing or malformed authorization header")
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствует или некорректный заголовок Authorization")
 		helpers.JSON(w, http.StatusUnauthorized, response)
 		return
 	}
 
 	err := h.service.Logout(r.Context(), token)
 	if err != nil {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
 		helpers.JSON(w, http.StatusUnauthorized, response)
 		return
 	}

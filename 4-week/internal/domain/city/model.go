@@ -14,7 +14,7 @@ type City struct {
 	CreatedAt time.Time
 }
 
-func New(id uuid.UUID, userID uuid.UUID, name string) (*City, error) {
+func NewCity(id uuid.UUID, userID uuid.UUID, name string) (*City, error) {
 	c := &City{
 		ID:     id,
 		UserID: userID,

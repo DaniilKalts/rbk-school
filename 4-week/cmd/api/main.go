@@ -15,20 +15,12 @@ func main() {
 
 	cfg, err := config.Load(*configPath)
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		log.Fatalf("не удалось загрузить конфигурацию: %v", err)
 	}
 
-	container, err := app.NewContainer(cfg)
-	if err != nil {
-		log.Fatalf("failed to build app container: %v", err)
-	}
-
-	a, err := app.New(container)
-	if err != nil {
-		log.Fatalf("failed to build app: %v", err)
-	}
+	a := app.NewApp(cfg)
 
 	if err := a.Run(); err != nil {
-		log.Fatalf("failed to run app: %v", err)
+		log.Fatalf("не удалось запустить приложение: %v", err)
 	}
 }

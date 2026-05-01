@@ -17,7 +17,7 @@ import (
 func currentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 	claims, ok := helpers.ClaimsFromContext(r.Context())
 	if !ok {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствуют claims аутентификации")
 		helpers.JSON(w, http.StatusUnauthorized, response)
 		return uuid.Nil, false
 	}
@@ -33,7 +33,7 @@ func parseLimit(w http.ResponseWriter, value string) (int, bool) {
 
 	limit, err := strconv.Atoi(value)
 	if err != nil || limit <= 0 || limit > math.MaxInt32 {
-		response := helpers.NewErrorResponse(http.StatusBadRequest, "limit must be a positive number")
+		response := helpers.NewErrorResponse(http.StatusBadRequest, "limit должен быть положительным числом")
 		helpers.JSON(w, http.StatusBadRequest, response)
 		return 0, false
 	}
@@ -49,7 +49,7 @@ func parseOffset(w http.ResponseWriter, value string) (int, bool) {
 
 	offset, err := strconv.Atoi(value)
 	if err != nil || offset < 0 || offset > math.MaxInt32 {
-		response := helpers.NewErrorResponse(http.StatusBadRequest, "offset must be a non-negative number")
+		response := helpers.NewErrorResponse(http.StatusBadRequest, "offset должен быть неотрицательным числом")
 		helpers.JSON(w, http.StatusBadRequest, response)
 		return 0, false
 	}

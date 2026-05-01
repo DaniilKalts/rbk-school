@@ -11,13 +11,13 @@ func RequireRole(role string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			claims, ok := helpers.ClaimsFromContext(r.Context())
 			if !ok {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing authentication claims")
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствуют claims аутентификации")
 				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
 			}
 
 			if claims.Role != role {
-				response := helpers.NewErrorResponse(http.StatusForbidden, "forbidden")
+				response := helpers.NewErrorResponse(http.StatusForbidden, "доступ запрещен")
 				helpers.JSON(w, http.StatusForbidden, response)
 				return
 			}

@@ -30,12 +30,12 @@ func (c *WeatherCache) Get(ctx context.Context, city string) (domainweather.Weat
 		return domainweather.Weather{}, false, nil
 	}
 	if err != nil {
-		return domainweather.Weather{}, false, fmt.Errorf("get weather cache: %w", err)
+		return domainweather.Weather{}, false, fmt.Errorf("получение кеша погоды: %w", err)
 	}
 
 	var weather domainweather.Weather
 	if err := json.Unmarshal([]byte(value), &weather); err != nil {
-		return domainweather.Weather{}, false, fmt.Errorf("decode weather cache: %w", err)
+		return domainweather.Weather{}, false, fmt.Errorf("декодирование кеша погоды: %w", err)
 	}
 
 	return weather, true, nil
@@ -46,11 +46,11 @@ func (c *WeatherCache) Set(ctx context.Context, city string, weather domainweath
 
 	data, err := json.Marshal(weather)
 	if err != nil {
-		return fmt.Errorf("encode weather cache: %w", err)
+		return fmt.Errorf("кодирование кеша погоды: %w", err)
 	}
 
 	if err := c.client.Set(ctx, weatherKey(city), data, c.ttl).Err(); err != nil {
-		return fmt.Errorf("set weather cache: %w", err)
+		return fmt.Errorf("запись кеша погоды: %w", err)
 	}
 
 	return nil

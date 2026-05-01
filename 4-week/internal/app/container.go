@@ -3,74 +3,204 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	redisclient "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 
-	cacheredis "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/cache/redis"
+	redisclient "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/cache/redis"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres"
-	docshttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/docs"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/docs"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/middleware"
-	authhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth"
-	cityhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city"
-	userhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user"
-	weatherhttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/weather"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/client/geocoding"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/client/openmeteo"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/weather"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/config"
-	cityrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/city"
-	authrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/auth"
-	userrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/user"
-	weatherrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/weather"
-	authservice "github.com/DaniilKalts/rbk-school/4-week/internal/service/auth"
-	cityservice "github.com/DaniilKalts/rbk-school/4-week/internal/service/city"
-	userservice "github.com/DaniilKalts/rbk-school/4-week/internal/service/user"
-	weatherservice "github.com/DaniilKalts/rbk-school/4-week/internal/service/weather"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/repository"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/service"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 type Container struct {
-	Config *config.Config
+	// Конфигурация приложения.
+	config *config.Config
 
-	DB         *pgxpool.Pool
-	Redis      *redisclient.Client
-	HTTPClient *http.Client
-	Router     http.Handler
+	// Инфраструктурные зависимости.
+	db         *pgxpool.Pool
+	redis      *redis.Client
+	httpClient *http.Client
+
+	// Внешние клиенты.
+	clients *client.Clients
+
+	// Репозитории.
+	repositories *repository.Repositories
+
+	// Кеши.
+	caches *repository.Caches
+
+	// Сервисы и безопасность.
+	tokenManager *utils.JWTManager
+	services     *service.Services
+
+	// Транспортный слой.
+	router http.Handler
 }
 
 func NewContainer(cfg *config.Config) (*Container, error) {
 	if cfg == nil {
-		return nil, fmt.Errorf("container: config is nil")
+		return nil, fmt.Errorf("container: конфигурация не задана")
 	}
 
-	db, err := postgres.New(context.Background(), &cfg.Postgres)
-	if err != nil {
-		return nil, fmt.Errorf("container: create postgres client: %w", err)
+	return &Container{config: cfg}, nil
+}
+
+func (c *Container) Config() *config.Config {
+	return c.config
+}
+
+func (c *Container) DB() *pgxpool.Pool {
+	if c.db == nil {
+		db, err := postgres.NewClient(context.Background(), &c.config.Postgres)
+		if err != nil {
+			log.Fatalf("не удалось создать клиент postgres: %v", err)
+		}
+
+		c.db = db
 	}
 
-	redisClient, err := cacheredis.New(context.Background(), &cfg.Redis)
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("container: create redis client: %w", err)
+	return c.db
+}
+
+func (c *Container) Redis() *redis.Client {
+	if c.redis == nil {
+		redisClient, err := redisclient.NewClient(context.Background(), &c.config.Redis)
+		if err != nil {
+			log.Fatalf("не удалось создать клиент redis: %v", err)
+		}
+
+		c.redis = redisClient
 	}
 
-	httpClient := &http.Client{Timeout: cfg.Server.HTTPTimeout}
+	return c.redis
+}
 
-	repos := initRepositories(db)
-	clients := initClients(httpClient, redisClient, cfg)
-	services := initServices(repos, clients, cfg)
+func (c *Container) HTTPClient() *http.Client {
+	if c.httpClient == nil {
+		c.httpClient = &http.Client{Timeout: c.config.Server.HTTPTimeout}
+	}
 
-	router := newRouter(services)
+	return c.httpClient
+}
 
-	return &Container{
-		Config:     cfg,
-		DB:         db,
-		Redis:      redisClient,
-		HTTPClient: httpClient,
-		Router:     router,
-	}, nil
+func (c *Container) Clients() *client.Clients {
+	if c.clients == nil {
+		c.clients = client.NewClients(c.HTTPClient(), c.Redis(), c.config.Redis.WeatherCacheTTL)
+	}
+
+	return c.clients
+}
+
+func (c *Container) TokenBlacklist() repository.TokenBlacklist {
+	return c.Caches().TokenBlacklist
+}
+
+func (c *Container) UserRepository() repository.UserRepository {
+	return c.Repositories().User
+}
+
+func (c *Container) CityRepository() repository.CityRepository {
+	return c.Repositories().City
+}
+
+func (c *Container) WeatherRepository() repository.WeatherRepository {
+	return c.Repositories().Weather
+}
+
+func (c *Container) Repositories() *repository.Repositories {
+	if c.repositories == nil {
+		c.repositories = repository.NewRepositories(c.DB())
+	}
+
+	return c.repositories
+}
+
+func (c *Container) Caches() *repository.Caches {
+	if c.caches == nil {
+		c.caches = repository.NewCaches(c.Redis())
+	}
+
+	return c.caches
+}
+
+func (c *Container) TokenManager() *utils.JWTManager {
+	if c.tokenManager == nil {
+		c.tokenManager = utils.NewJWTManager([]byte(c.config.JWT.Secret), c.config.JWT.AccessTokenTTL, c.TokenBlacklist())
+	}
+
+	return c.tokenManager
+}
+
+func (c *Container) AuthService() service.AuthService {
+	return c.Services().Auth
+}
+
+func (c *Container) UserService() service.UserService {
+	return c.Services().User
+}
+
+func (c *Container) CityService() service.CityService {
+	return c.Services().City
+}
+
+func (c *Container) WeatherService() service.WeatherService {
+	return c.Services().Weather
+}
+
+func (c *Container) Services() *service.Services {
+	if c.services == nil {
+		c.services = service.NewServicesFromDependencies(c.Repositories(), c.Clients(), c.TokenManager())
+	}
+
+	return c.services
+}
+
+func (c *Container) Router() http.Handler {
+	if c.router == nil {
+		r := chi.NewRouter()
+		docs.RegisterRoutes(r)
+
+		r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("ok"))
+		})
+
+		r.Route("/api/v1", func(r chi.Router) {
+			auth.RegisterRoutes(r, c.AuthService())
+
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.Auth(c.TokenManager()))
+
+				city.RegisterRoutes(r, c.CityService())
+				weather.RegisterRoutes(r, c.WeatherService())
+				user.RegisterCurrentUserRoutes(r, c.UserService())
+
+				r.Group(func(r chi.Router) {
+					r.Use(middleware.RequireRole("admin"))
+					user.RegisterAdminRoutes(r, c.UserService())
+				})
+			})
+		})
+
+		c.router = r
+	}
+
+	return c.router
 }
 
 func (c *Container) Close() {
@@ -78,91 +208,10 @@ func (c *Container) Close() {
 		return
 	}
 
-	if c.DB != nil {
-		c.DB.Close()
+	if c.db != nil {
+		c.db.Close()
 	}
-	if c.Redis != nil {
-		_ = c.Redis.Close()
+	if c.redis != nil {
+		_ = c.redis.Close()
 	}
-}
-
-type repositories struct {
-	user    *userrepo.Repository
-	city    *cityrepo.Repository
-	weather *weatherrepo.Repository
-}
-
-func initRepositories(db *pgxpool.Pool) *repositories {
-	return &repositories{
-		user:    userrepo.New(db),
-		city:    cityrepo.New(db),
-		weather: weatherrepo.New(db),
-	}
-}
-
-type clients struct {
-	geocoding    *geocoding.Client
-	openMeteo    *openmeteo.Client
-	weatherCache *weatherrepo.WeatherCache
-	tokenBL      *authrepo.TokenBlacklist
-}
-
-func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *config.Config) *clients {
-	return &clients{
-		geocoding:    geocoding.NewClient(httpClient),
-		openMeteo:    openmeteo.NewClient(httpClient),
-		weatherCache: weatherrepo.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL),
-		tokenBL:      authrepo.NewRepository(redisClient),
-	}
-}
-
-type services struct {
-	auth         *authservice.Service
-	user         *userservice.Service
-	city         *cityservice.Service
-	weather      *weatherservice.Service
-	tokenManager *utils.JWTManager
-}
-
-func initServices(repos *repositories, clients *clients, cfg *config.Config) *services {
-	tokenManager := utils.NewJWTManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL, clients.tokenBL)
-
-	return &services{
-		auth:         authservice.NewService(repos.user, tokenManager),
-		user:         userservice.New(repos.user),
-		city:         cityservice.New(repos.city, repos.user),
-		weather:      weatherservice.New(repos.user, repos.city, repos.weather, clients.geocoding, clients.openMeteo, clients.weatherCache),
-		tokenManager: tokenManager,
-	}
-}
-
-func newRouter(services *services) http.Handler {
-	r := chi.NewRouter()
-	docshttp.RegisterRoutes(r)
-
-	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
-	})
-
-	r.Route("/api/v1", func(r chi.Router) {
-		authhttp.RegisterRoutes(r, services.auth)
-
-		r.Group(func(r chi.Router) {
-			r.Use(middleware.Auth(services.tokenManager))
-
-			cityhttp.RegisterRoutes(r, services.city)
-			weatherhttp.RegisterRoutes(r, services.weather)
-			userhttp.RegisterCurrentUserRoutes(r, services.user)
-
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireRole("admin"))
-
-				userhttp.RegisterAdminRoutes(r, services.user)
-			})
-		})
-	})
-
-	return r
 }
