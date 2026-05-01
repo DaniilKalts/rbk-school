@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -12,12 +15,18 @@ import (
 const jwtIssuer = "weather-api"
 
 type JWTManager struct {
-	secret []byte
-	ttl    time.Duration
+	secret    []byte
+	ttl       time.Duration
+	blacklist TokenBlacklist
 }
 
-func NewJWTManager(secret []byte, ttl time.Duration) *JWTManager {
-	return &JWTManager{secret: secret, ttl: ttl}
+type TokenBlacklist interface {
+	Revoke(ctx context.Context, tokenHash string, expiresAt time.Time) error
+	Contains(ctx context.Context, tokenHash string) (bool, error)
+}
+
+func NewJWTManager(secret []byte, ttl time.Duration, blacklist TokenBlacklist) *JWTManager {
+	return &JWTManager{secret: secret, ttl: ttl, blacklist: blacklist}
 }
 
 type Claims struct {
@@ -74,4 +83,30 @@ func (m *JWTManager) Validate(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func (m *JWTManager) Revoke(ctx context.Context, tokenString string) error {
+	claims, err := m.Validate(tokenString)
+	if err != nil {
+		return err
+	}
+
+	if m.blacklist == nil {
+		return nil
+	}
+
+	return m.blacklist.Revoke(ctx, hashToken(tokenString), claims.ExpiresAt.Time)
+}
+
+func (m *JWTManager) IsRevoked(ctx context.Context, tokenString string) (bool, error) {
+	if m.blacklist == nil {
+		return false, nil
+	}
+
+	return m.blacklist.Contains(ctx, hashToken(tokenString))
+}
+
+func hashToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
 }

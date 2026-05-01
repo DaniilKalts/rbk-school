@@ -21,6 +21,7 @@ import (
 	"github.com/DaniilKalts/rbk-school/4-week/internal/client/openmeteo"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/config"
 	cityrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/city"
+	authrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/auth"
 	userrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/user"
 	weatherrepo "github.com/DaniilKalts/rbk-school/4-week/internal/repository/weather"
 	authservice "github.com/DaniilKalts/rbk-school/4-week/internal/service/auth"
@@ -103,6 +104,7 @@ type clients struct {
 	geocoding    *geocoding.Client
 	openMeteo    *openmeteo.Client
 	weatherCache *weatherrepo.WeatherCache
+	tokenBL      *authrepo.TokenBlacklist
 }
 
 func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *config.Config) *clients {
@@ -110,6 +112,7 @@ func initClients(httpClient *http.Client, redisClient *redisclient.Client, cfg *
 		geocoding:    geocoding.NewClient(httpClient),
 		openMeteo:    openmeteo.NewClient(httpClient),
 		weatherCache: weatherrepo.NewWeatherCache(redisClient, cfg.Redis.WeatherCacheTTL),
+		tokenBL:      authrepo.NewRepository(redisClient),
 	}
 }
 
@@ -122,10 +125,10 @@ type services struct {
 }
 
 func initServices(repos *repositories, clients *clients, cfg *config.Config) *services {
-	tokenManager := utils.NewJWTManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL)
+	tokenManager := utils.NewJWTManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL, clients.tokenBL)
 
 	return &services{
-		auth:         authservice.New(repos.user, tokenManager),
+		auth:         authservice.NewService(repos.user, tokenManager),
 		user:         userservice.New(repos.user),
 		city:         cityservice.New(repos.city, repos.user),
 		weather:      weatherservice.New(repos.user, repos.city, repos.weather, clients.geocoding, clients.openMeteo, clients.weatherCache),

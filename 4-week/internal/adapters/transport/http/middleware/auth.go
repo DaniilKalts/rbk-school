@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
@@ -8,6 +9,7 @@ import (
 
 type JWTManager interface {
 	Validate(tokenString string) (*helpers.Claims, error)
+	IsRevoked(ctx context.Context, tokenString string) (bool, error)
 }
 
 func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
@@ -22,6 +24,13 @@ func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 
 			claims, err := jwtManager.Validate(token)
 			if err != nil {
+				response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
+				helpers.JSON(w, http.StatusUnauthorized, response)
+				return
+			}
+
+			revoked, err := jwtManager.IsRevoked(r.Context(), token)
+			if err != nil || revoked {
 				response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
 				helpers.JSON(w, http.StatusUnauthorized, response)
 				return

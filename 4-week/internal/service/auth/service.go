@@ -21,6 +21,7 @@ type Repository interface {
 
 type TokenManager interface {
 	Generate(userID uuid.UUID, email string, role string) (string, time.Time, error)
+	Revoke(ctx context.Context, token string) error
 }
 
 type Service struct {
@@ -45,7 +46,7 @@ type Token struct {
 	ExpiresAt   time.Time
 }
 
-func New(repository Repository, tokenManager TokenManager) *Service {
+func NewService(repository Repository, tokenManager TokenManager) *Service {
 	return &Service{repository: repository, tokenManager: tokenManager}
 }
 
@@ -101,6 +102,10 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
 	}
 
 	return s.generateToken(credentials.ID, credentials.Email, credentials.Role)
+}
+
+func (s *Service) Logout(ctx context.Context, accessToken string) error {
+	return s.tokenManager.Revoke(ctx, accessToken)
 }
 
 func (s *Service) generateToken(userID uuid.UUID, email string, role domainuser.Role) (*Token, error) {

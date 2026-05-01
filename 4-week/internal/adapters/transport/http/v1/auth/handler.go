@@ -12,6 +12,7 @@ import (
 type Service interface {
 	Register(ctx context.Context, input serviceauth.RegisterInput) (*serviceauth.Token, error)
 	Login(ctx context.Context, input serviceauth.LoginInput) (*serviceauth.Token, error)
+	Logout(ctx context.Context, accessToken string) error
 }
 
 type Handler struct {
@@ -50,4 +51,22 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helpers.JSON(w, http.StatusOK, dto.ToTokenResponse(*token))
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	token, ok := helpers.BearerTokenFromRequest(r)
+	if !ok {
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "missing or malformed authorization header")
+		helpers.JSON(w, http.StatusUnauthorized, response)
+		return
+	}
+
+	err := h.service.Logout(r.Context(), token)
+	if err != nil {
+		response := helpers.NewErrorResponse(http.StatusUnauthorized, "invalid or expired token")
+		helpers.JSON(w, http.StatusUnauthorized, response)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
