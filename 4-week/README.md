@@ -246,7 +246,7 @@ go run ./cmd/api
 - [x] Реализовать `POST /auth/register`.
 - [x] Реализовать `POST /auth/login`.
 - [x] Добавить генерацию и валидацию JWT.
-- [ ] Реализовать `AuthMiddleware`.
+- [x] Реализовать `AuthMiddleware`.
 - [ ] Реализовать middleware или helper для проверки роли admin.
 - [ ] Убрать `user_id` из пользовательских weather/city маршрутов.
 - [ ] Добавить `GET /users/me`.

@@ -2,15 +2,14 @@ package user
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user/dto"
 	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	serviceuser "github.com/DaniilKalts/rbk-school/4-week/internal/service/user"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 type Service interface {
@@ -31,7 +30,7 @@ func NewHandler(service Service) *Handler {
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateUserRequest
-	if !utils.DecodeJSON(w, r, &req) {
+	if !helpers.DecodeJSON(w, r, &req) {
 		return
 	}
 
@@ -41,7 +40,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusCreated, dto.ToUserResponse(*u))
+	helpers.JSON(w, http.StatusCreated, dto.ToUserResponse(*u))
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +50,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, dto.ToUserResponses(users))
+	helpers.JSON(w, http.StatusOK, dto.ToUserResponses(users))
 }
 
 func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +65,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
+	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +75,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req dto.UpdateUserRequest
-	if !utils.DecodeJSON(w, r, &req) {
+	if !helpers.DecodeJSON(w, r, &req) {
 		return
 	}
 
@@ -86,7 +85,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
+	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -101,31 +100,4 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func parseID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
-	id, err := uuid.Parse(r.PathValue("id"))
-	if err != nil {
-		utils.Error(w, http.StatusBadRequest, "invalid user id")
-		return uuid.Nil, false
-	}
-
-	return id, true
-}
-func writeServiceError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, domainuser.ErrNotFound):
-		utils.Error(w, http.StatusNotFound, err.Error())
-	case errors.Is(err, domainuser.ErrEmailAlreadyExists):
-		utils.Error(w, http.StatusConflict, err.Error())
-	case errors.Is(err, domainuser.ErrInvalidID),
-		errors.Is(err, domainuser.ErrInvalidFirstName),
-		errors.Is(err, domainuser.ErrInvalidLastName),
-		errors.Is(err, domainuser.ErrInvalidEmail),
-		errors.Is(err, domainuser.ErrInvalidPassword),
-		errors.Is(err, domainuser.ErrInvalidRole):
-		utils.Error(w, http.StatusBadRequest, err.Error())
-	default:
-		utils.Error(w, http.StatusInternalServerError, "internal server error")
-	}
 }

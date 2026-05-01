@@ -2,16 +2,14 @@ package city
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city/dto"
 	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
-	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	servicecity "github.com/DaniilKalts/rbk-school/4-week/internal/service/city"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/utils"
 )
 
 type Service interface {
@@ -35,7 +33,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req dto.CreateCityRequest
-	if !utils.DecodeJSON(w, r, &req) {
+	if !helpers.DecodeJSON(w, r, &req) {
 		return
 	}
 
@@ -45,7 +43,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusCreated, dto.ToCityResponse(*c))
+	helpers.JSON(w, http.StatusCreated, dto.ToCityResponse(*c))
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +58,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JSON(w, http.StatusOK, dto.ToCityResponses(cities))
+	helpers.JSON(w, http.StatusOK, dto.ToCityResponses(cities))
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -80,31 +78,4 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func parseUUID(w http.ResponseWriter, value string, message string) (uuid.UUID, bool) {
-	id, err := uuid.Parse(value)
-	if err != nil {
-		utils.Error(w, http.StatusBadRequest, message)
-		return uuid.Nil, false
-	}
-
-	return id, true
-}
-func writeServiceError(w http.ResponseWriter, err error) {
-	switch {
-	case errors.Is(err, domainuser.ErrNotFound):
-		utils.Error(w, http.StatusNotFound, err.Error())
-	case errors.Is(err, domaincity.ErrNotFound):
-		utils.Error(w, http.StatusNotFound, err.Error())
-	case errors.Is(err, domaincity.ErrAlreadyExists):
-		utils.Error(w, http.StatusConflict, err.Error())
-	case errors.Is(err, domaincity.ErrInvalidID),
-		errors.Is(err, domaincity.ErrInvalidUserID),
-		errors.Is(err, domaincity.ErrInvalidName),
-		errors.Is(err, domainuser.ErrInvalidID):
-		utils.Error(w, http.StatusBadRequest, err.Error())
-	default:
-		utils.Error(w, http.StatusInternalServerError, "internal server error")
-	}
 }
