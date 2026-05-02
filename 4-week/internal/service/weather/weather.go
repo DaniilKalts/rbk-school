@@ -3,11 +3,10 @@ package weather
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 
-	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/4-week/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
@@ -29,40 +28,31 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 	}
 
 	weathers := make([]domainweather.Weather, len(cities))
-	errCh := make(chan error, len(cities))
-	var wg sync.WaitGroup
+	g, gCtx := errgroup.WithContext(ctx)
 
 	for i, city := range cities {
-		wg.Add(1)
-		go func(i int, city domaincity.City) {
-			defer wg.Done()
+		idx := i
+		cityName := city.Name
 
-			weather, err := s.getWeatherByCity(ctx, city.Name)
+		g.Go(func() error {
+			weather, err := s.getWeatherByCity(gCtx, cityName)
 			if err != nil {
-				errCh <- err
-				return
+				return err
 			}
 
-			historyModel, err := domainhistory.NewHistory(uuid.New(), userID, weather.City, weather.Temperature, weather.Description)
+			history, err := s.createHistory(gCtx, userID, weather)
 			if err != nil {
-				errCh <- err
-				return
-			}
-
-			history, err := s.historyRepository.CreateHistory(ctx, *historyModel)
-			if err != nil {
-				errCh <- err
-				return
+				return err
 			}
 
 			weather.RequestedAt = history.RequestedAt
-			weathers[i] = weather
-		}(i, city)
-	}
-	wg.Wait()
-	close(errCh)
+			weathers[idx] = weather
 
-	if err := <-errCh; err != nil {
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
 		return nil, err
 	}
 
@@ -101,8 +91,22 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 	}
 
 	if s.weatherCache != nil {
-		_ = s.weatherCache.Set(ctx, weather.City, weather)
+		_ = s.weatherCache.Set(ctx, cacheKey, weather)
 	}
 
 	return weather, nil
+}
+
+func (s *Service) createHistory(ctx context.Context, userID uuid.UUID, weather domainweather.Weather) (domainhistory.History, error) {
+	historyModel, err := domainhistory.NewHistory(uuid.New(), userID, weather.City, weather.Temperature, weather.Description)
+	if err != nil {
+		return domainhistory.History{}, err
+	}
+
+	history, err := s.historyRepository.CreateHistory(ctx, *historyModel)
+	if err != nil {
+		return domainhistory.History{}, err
+	}
+
+	return *history, nil
 }

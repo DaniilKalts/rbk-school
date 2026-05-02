@@ -29,10 +29,5 @@ func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string,
 		return nil, err
 	}
 
-	history, err := s.historyRepository.ListHistory(ctx, userID, city, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-
-	return history, nil
+	return s.historyRepository.ListHistory(ctx, userID, city, limit, offset)
 }

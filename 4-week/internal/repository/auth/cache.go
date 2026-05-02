@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	redisclient "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 )
 
 const tokenBlacklistPrefix = "token_blacklist:"
 
 type Cache struct {
-	client *redisclient.Client
+	client *redis.Client
 }
 
-func NewRepository(client *redisclient.Client) *Cache {
+func NewRepository(client *redis.Client) *Cache {
 	return &Cache{client: client}
 }
 
