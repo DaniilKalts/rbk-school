@@ -2,10 +2,11 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth/dto"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	serviceauth "github.com/DaniilKalts/rbk-school/4-week/internal/service/auth"
 )
 
@@ -23,50 +24,16 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	var req dto.RegisterRequest
-	if !helpers.DecodeJSON(w, r, &req) {
-		return
+func WriteServiceError(w http.ResponseWriter, err error) {
+	status := http.StatusInternalServerError
+	msg := "internal server error"
+	switch {
+	case errors.Is(err, user.ErrEmailAlreadyExists):
+		status, msg = http.StatusConflict, err.Error()
+	case errors.Is(err, user.ErrInvalidFirstName), errors.Is(err, user.ErrInvalidLastName), errors.Is(err, user.ErrInvalidEmail), errors.Is(err, user.ErrInvalidPassword):
+		status, msg = http.StatusBadRequest, err.Error()
+	case errors.Is(err, serviceauth.ErrInvalidCredentials):
+		status, msg = http.StatusUnauthorized, err.Error()
 	}
-
-	token, err := h.service.Register(r.Context(), dto.ToRegisterInput(req))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusCreated, dto.ToTokenResponse(*token))
-}
-
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	var req dto.LoginRequest
-	if !helpers.DecodeJSON(w, r, &req) {
-		return
-	}
-
-	token, err := h.service.Login(r.Context(), dto.ToLoginInput(req))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToTokenResponse(*token))
-}
-
-func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	token, ok := helpers.BearerTokenFromRequest(r)
-	if !ok {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствует или некорректный заголовок Authorization")
-		helpers.JSON(w, http.StatusUnauthorized, response)
-		return
-	}
-
-	err := h.service.Logout(r.Context(), token)
-	if err != nil {
-		response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
-		helpers.JSON(w, http.StatusUnauthorized, response)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))
 }

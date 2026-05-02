@@ -6,18 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
 	redisclient "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/cache/redis"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/database/postgres"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/docs"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/middleware"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/weather"
+	transporthttp "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http"
+	v1 "github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/config"
 	"github.com/DaniilKalts/rbk-school/4-week/internal/repository"
@@ -171,33 +166,13 @@ func (c *Container) Services() *service.Services {
 
 func (c *Container) Router() http.Handler {
 	if c.router == nil {
-		r := chi.NewRouter()
-		docs.RegisterRoutes(r)
-
-		r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("ok"))
+		c.router = transporthttp.NewRouter(v1.Dependencies{
+			AuthService:    c.AuthService(),
+			CityService:    c.CityService(),
+			WeatherService: c.WeatherService(),
+			UserService:    c.UserService(),
+			JWTManager:     c.TokenManager(),
 		})
-
-		r.Route("/api/v1", func(r chi.Router) {
-			auth.RegisterRoutes(r, c.AuthService())
-
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.Auth(c.TokenManager()))
-
-				city.RegisterRoutes(r, c.CityService())
-				weather.RegisterRoutes(r, c.WeatherService())
-				user.RegisterCurrentUserRoutes(r, c.UserService())
-
-				r.Group(func(r chi.Router) {
-					r.Use(middleware.RequireRole("admin"))
-					user.RegisterAdminRoutes(r, c.UserService())
-				})
-			})
-		})
-
-		c.router = r
 	}
 
 	return c.router

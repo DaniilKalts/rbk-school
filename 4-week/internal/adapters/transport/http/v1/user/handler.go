@@ -2,12 +2,13 @@ package user
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user/dto"
+
 	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	serviceuser "github.com/DaniilKalts/rbk-school/4-week/internal/service/user"
 )
@@ -28,91 +29,15 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req dto.CreateUserRequest
-	if !helpers.DecodeJSON(w, r, &req) {
-		return
+func WriteServiceError(w http.ResponseWriter, err error) {
+	status, msg := http.StatusInternalServerError, "internal server error"
+	switch {
+	case errors.Is(err, domainuser.ErrNotFound):
+		status, msg = http.StatusNotFound, err.Error()
+	case errors.Is(err, domainuser.ErrEmailAlreadyExists):
+		status, msg = http.StatusConflict, err.Error()
+	case errors.Is(err, domainuser.ErrInvalidID), errors.Is(err, domainuser.ErrInvalidFirstName), errors.Is(err, domainuser.ErrInvalidLastName), errors.Is(err, domainuser.ErrInvalidEmail), errors.Is(err, domainuser.ErrInvalidPassword), errors.Is(err, domainuser.ErrInvalidRole):
+		status, msg = http.StatusBadRequest, err.Error()
 	}
-
-	u, err := h.service.Create(r.Context(), dto.ToCreateInput(req))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusCreated, dto.ToUserResponse(*u))
-}
-
-func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
-	users, err := h.service.List(r.Context())
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToUserResponses(users))
-}
-
-func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
-	id, ok := parseID(w, r)
-	if !ok {
-		return
-	}
-
-	u, err := h.service.GetByID(r.Context(), id)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
-}
-
-func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
-	userID, ok := currentUserID(w, r)
-	if !ok {
-		return
-	}
-
-	u, err := h.service.GetByID(r.Context(), userID)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
-}
-
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	id, ok := parseID(w, r)
-	if !ok {
-		return
-	}
-
-	var req dto.UpdateUserRequest
-	if !helpers.DecodeJSON(w, r, &req) {
-		return
-	}
-
-	u, err := h.service.Update(r.Context(), id, dto.ToUpdateInput(req))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToUserResponse(*u))
-}
-
-func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, ok := parseID(w, r)
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(r.Context(), id); err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))
 }

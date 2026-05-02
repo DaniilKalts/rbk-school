@@ -1,28 +1,33 @@
 package dto
 
 import (
+	"time"
+
 	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
 	servicecity "github.com/DaniilKalts/rbk-school/4-week/internal/service/city"
 )
 
+type CreateCityRequest struct {
+	City string `json:"city"`
+}
+
+type CityResponse struct {
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	City      string    `json:"city"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 func ToCreateInput(req CreateCityRequest) servicecity.CreateInput {
 	return servicecity.CreateInput{Name: req.City}
 }
-
 func ToCityResponse(c domaincity.City) CityResponse {
-	return CityResponse{
-		ID:        c.ID,
-		UserID:    c.UserID,
-		City:      c.Name,
-		CreatedAt: c.CreatedAt,
-	}
+	return CityResponse{ID: c.ID.String(), UserID: c.UserID.String(), City: c.Name, CreatedAt: c.CreatedAt}
 }
-
 func ToCityResponses(cities []domaincity.City) []CityResponse {
-	responses := make([]CityResponse, 0, len(cities))
+	res := make([]CityResponse, 0, len(cities))
 	for _, c := range cities {
-		responses = append(responses, ToCityResponse(c))
+		res = append(res, ToCityResponse(c))
 	}
-
-	return responses
+	return res
 }

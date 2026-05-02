@@ -2,13 +2,14 @@ package city
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city/dto"
 	domaincity "github.com/DaniilKalts/rbk-school/4-week/internal/domain/city"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	servicecity "github.com/DaniilKalts/rbk-school/4-week/internal/service/city"
 )
 
@@ -26,56 +27,24 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	userID, ok := currentUserID(w, r)
+func CurrentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	claims, ok := helpers.ClaimsFromContext(r.Context())
 	if !ok {
-		return
+		helpers.JSON(w, http.StatusUnauthorized, helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствуют claims аутентификации"))
+		return uuid.Nil, false
 	}
-
-	var req dto.CreateCityRequest
-	if !helpers.DecodeJSON(w, r, &req) {
-		return
-	}
-
-	c, err := h.service.Create(r.Context(), userID, dto.ToCreateInput(req))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusCreated, dto.ToCityResponse(*c))
+	return claims.UserID, true
 }
 
-func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
-	userID, ok := currentUserID(w, r)
-	if !ok {
-		return
+func WriteServiceError(w http.ResponseWriter, err error) {
+	status, msg := http.StatusInternalServerError, "internal server error"
+	switch {
+	case errors.Is(err, domainuser.ErrNotFound), errors.Is(err, domaincity.ErrNotFound):
+		status, msg = http.StatusNotFound, err.Error()
+	case errors.Is(err, domaincity.ErrAlreadyExists):
+		status, msg = http.StatusConflict, err.Error()
+	case errors.Is(err, domaincity.ErrInvalidID), errors.Is(err, domaincity.ErrInvalidUserID), errors.Is(err, domaincity.ErrInvalidName), errors.Is(err, domainuser.ErrInvalidID):
+		status, msg = http.StatusBadRequest, err.Error()
 	}
-
-	cities, err := h.service.List(r.Context(), userID)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToCityResponses(cities))
-}
-
-func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	userID, ok := currentUserID(w, r)
-	if !ok {
-		return
-	}
-
-	cityID, ok := parseUUIDParam(w, r, "city_id", "invalid city id")
-	if !ok {
-		return
-	}
-
-	if err := h.service.Delete(r.Context(), userID, cityID); err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
+	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))
 }

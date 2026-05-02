@@ -2,14 +2,14 @@ package weather
 
 import (
 	"context"
+	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/helpers"
-	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/weather/dto"
 	domainhistory "github.com/DaniilKalts/rbk-school/4-week/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/4-week/internal/domain/user"
 	domainweather "github.com/DaniilKalts/rbk-school/4-week/internal/domain/weather"
 )
 
@@ -26,43 +26,22 @@ func NewHandler(service Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) GetByUserID(w http.ResponseWriter, r *http.Request) {
-	userID, ok := currentUserID(w, r)
+func CurrentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
+	claims, ok := helpers.ClaimsFromContext(r.Context())
 	if !ok {
-		return
+		helpers.JSON(w, http.StatusUnauthorized, helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствуют claims аутентификации"))
+		return uuid.Nil, false
 	}
-
-	weathers, err := h.service.GetByUserID(r.Context(), userID)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToUserWeatherResponse(userID, weathers))
+	return claims.UserID, true
 }
 
-func (h *Handler) GetHistory(w http.ResponseWriter, r *http.Request) {
-	userID, ok := currentUserID(w, r)
-	if !ok {
-		return
+func WriteServiceError(w http.ResponseWriter, err error) {
+	status, msg := http.StatusInternalServerError, "internal server error"
+	switch {
+	case errors.Is(err, domainuser.ErrNotFound):
+		status, msg = http.StatusNotFound, err.Error()
+	case errors.Is(err, domainuser.ErrInvalidID), errors.Is(err, domainweather.ErrInvalidCity), errors.Is(err, domainweather.ErrInvalidLimit), errors.Is(err, domainweather.ErrInvalidOffset):
+		status, msg = http.StatusBadRequest, err.Error()
 	}
-
-	city := strings.TrimSpace(r.URL.Query().Get("city"))
-	limit, ok := parseLimit(w, r.URL.Query().Get("limit"))
-	if !ok {
-		return
-	}
-
-	offset, ok := parseOffset(w, r.URL.Query().Get("offset"))
-	if !ok {
-		return
-	}
-
-	history, err := h.service.GetHistory(r.Context(), userID, city, limit, offset)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	helpers.JSON(w, http.StatusOK, dto.ToUserWeatherHistoryResponse(userID, domainweather.NormalizeCityName(city), history))
+	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))
 }

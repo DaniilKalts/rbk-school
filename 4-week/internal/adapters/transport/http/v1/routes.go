@@ -1,0 +1,38 @@
+package v1
+
+import (
+	"github.com/go-chi/chi/v5"
+
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/middleware"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/auth"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/city"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/user"
+	"github.com/DaniilKalts/rbk-school/4-week/internal/adapters/transport/http/v1/weather"
+)
+
+type Dependencies struct {
+	AuthService    auth.Service
+	CityService    city.Service
+	WeatherService weather.Service
+	UserService    user.Service
+	JWTManager     middleware.JWTManager
+}
+
+func RegisterRoutes(r chi.Router, deps Dependencies) {
+	r.Route("/api/v1", func(r chi.Router) {
+		auth.RegisterRoutes(r, deps.AuthService)
+
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.Auth(deps.JWTManager))
+
+			city.RegisterRoutes(r, deps.CityService)
+			weather.RegisterRoutes(r, deps.WeatherService)
+			user.RegisterCurrentUserRoutes(r, deps.UserService)
+
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.RequireRole("admin"))
+				user.RegisterAdminRoutes(r, deps.UserService)
+			})
+		})
+	})
+}

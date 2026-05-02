@@ -129,6 +129,52 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
   /api/v1/users:
+    post:
+      tags: ["Пользователи 👥"]
+      summary: Создать пользователя
+      description: Admin-only маршрут. Создает нового пользователя с ролью `user`.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              user:
+                summary: Новый пользователь
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: daniil@example.com
+                  password: strong-password
+      responses:
+        '201':
+          description: Пользователь успешно создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                created:
+                  summary: Созданный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     get:
       tags: ["Пользователи 👥"]
       summary: Активные пользователи
@@ -194,6 +240,63 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: ["Пользователи 👥"]
+      summary: Обновить текущего пользователя
+      description: Обновляет имя, фамилию и email текущего пользователя, определенного по JWT claims.
+      operationId: updateCurrentUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+            examples:
+              update:
+                summary: Новые данные текущего пользователя
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: daniil.new@example.com
+      responses:
+        '200':
+          description: Текущий пользователь успешно обновлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                user:
+                  summary: Обновленный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil.new@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T11:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: ["Пользователи 👥"]
+      summary: Удалить текущего пользователя
+      description: Выполняет мягкое удаление текущего пользователя, определенного по JWT claims.
+      operationId: deleteCurrentUser
+      responses:
+        '204':
+          description: Текущий пользователь успешно удален. Тело ответа пустое.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /api/v1/users/{id}:
     get:
       tags: ["Пользователи 👥"]
@@ -253,6 +356,55 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: ["Пользователи 👥"]
+      summary: Обновить пользователя
+      description: Admin-only маршрут. Обновляет имя, фамилию и email пользователя.
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/UserID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+            examples:
+              update:
+                summary: Новые данные пользователя
+                value:
+                  first_name: Daniil
+                  last_name: Kalts
+                  email: daniil.new@example.com
+      responses:
+        '200':
+          description: Пользователь успешно обновлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              examples:
+                updated:
+                  summary: Обновленный пользователь
+                  value:
+                    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+                    first_name: Daniil
+                    last_name: Kalts
+                    email: daniil.new@example.com
+                    created_at: '2026-04-26T10:00:00Z'
+                    updated_at: '2026-04-26T10:40:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /api/v1/cities:
@@ -617,6 +769,58 @@ components:
             code: 500
             message: internal server error
   schemas:
+    CreateUserRequest:
+      type: object
+      description: Данные для создания пользователя через admin API.
+      required:
+        - first_name
+        - last_name
+        - email
+        - password
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Уникальный email пользователя.
+          example: daniil@example.com
+        password:
+          type: string
+          minLength: 1
+          description: Пароль пользователя.
+          example: strong-password
+    UpdateUserRequest:
+      type: object
+      description: Данные для обновления пользователя через admin API.
+      required:
+        - first_name
+        - last_name
+        - email
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Имя пользователя.
+          example: Daniil
+        last_name:
+          type: string
+          minLength: 1
+          description: Фамилия пользователя.
+          example: Kalts
+        email:
+          type: string
+          format: email
+          description: Уникальный email пользователя.
+          example: daniil@example.com
     RegisterRequest:
       type: object
       description: Данные для регистрации пользователя.
