@@ -80,12 +80,8 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, er
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
 	email := strings.ToLower(strings.TrimSpace(input.Email))
-	if email == "" {
-		return nil, domainuser.ErrInvalidEmail
-	}
-
-	if err := domainuser.ValidatePassword(input.Password); err != nil {
-		return nil, err
+	if email == "" || input.Password == "" {
+		return nil, ErrInvalidCredentials
 	}
 
 	credentials, err := s.repository.GetCredentialsByEmail(ctx, email)
