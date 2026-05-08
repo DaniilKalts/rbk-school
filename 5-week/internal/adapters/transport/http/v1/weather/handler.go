@@ -40,7 +40,12 @@ func WriteServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, domainuser.ErrNotFound):
 		status, msg = http.StatusNotFound, err.Error()
-	case errors.Is(err, domainuser.ErrInvalidID), errors.Is(err, domainweather.ErrInvalidCity), errors.Is(err, domainweather.ErrInvalidLimit), errors.Is(err, domainweather.ErrInvalidOffset):
+	case errors.Is(err, domainuser.ErrInvalidID),
+		errors.Is(err, domainweather.ErrInvalidCity),
+		errors.Is(err, domainweather.ErrInvalidLatitude),
+		errors.Is(err, domainweather.ErrInvalidLongitude),
+		errors.Is(err, domainweather.ErrInvalidLimit),
+		errors.Is(err, domainweather.ErrInvalidOffset):
 		status, msg = http.StatusBadRequest, err.Error()
 	}
 	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))

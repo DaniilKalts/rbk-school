@@ -1,7 +1,6 @@
 package weather
 
 import (
-	"fmt"
 	"strings"
 	"time"
 )
@@ -59,10 +58,10 @@ func DescriptionByCode(code int) string {
 
 func validateCoordinates(latitude, longitude float64) error {
 	if latitude < -90 || latitude > 90 {
-		return fmt.Errorf("некорректная широта: %.6f", latitude)
+		return ErrInvalidLatitude
 	}
 	if longitude < -180 || longitude > 180 {
-		return fmt.Errorf("некорректная долгота: %.6f", longitude)
+		return ErrInvalidLongitude
 	}
 
 	return nil

@@ -29,9 +29,16 @@ func WriteServiceError(w http.ResponseWriter, err error) {
 	status := http.StatusInternalServerError
 	msg := "internal server error"
 	switch {
+	case errors.Is(err, user.ErrNotFound):
+		status, msg = http.StatusNotFound, err.Error()
 	case errors.Is(err, user.ErrEmailAlreadyExists):
 		status, msg = http.StatusConflict, err.Error()
-	case errors.Is(err, user.ErrInvalidFirstName), errors.Is(err, user.ErrInvalidLastName), errors.Is(err, user.ErrInvalidEmail), errors.Is(err, user.ErrInvalidPassword):
+	case errors.Is(err, user.ErrInvalidID),
+		errors.Is(err, user.ErrInvalidFirstName),
+		errors.Is(err, user.ErrInvalidLastName),
+		errors.Is(err, user.ErrInvalidEmail),
+		errors.Is(err, user.ErrInvalidPassword),
+		errors.Is(err, user.ErrInvalidRole):
 		status, msg = http.StatusBadRequest, err.Error()
 	case errors.Is(err, serviceauth.ErrInvalidCredentials), errors.Is(err, utils.ErrInvalidToken):
 		status, msg = http.StatusUnauthorized, err.Error()
