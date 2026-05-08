@@ -17,8 +17,10 @@ tags:
     description: Служебные ручки для проверки состояния API
   - name: "Аутентификация 🔐"
     description: Регистрация, вход и получение access token
+  - name: "Профиль 👤"
+    description: Получение и изменение профиля текущего пользователя
   - name: "Пользователи 👥"
-    description: Получение текущего пользователя и admin-only операции с пользователями
+    description: Admin-only операции с пользователями
   - name: "Города 🏙️"
     description: Управление городами, за которыми следит пользователь
   - name: "Погода 🌦️"
@@ -213,7 +215,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /api/v1/users/me:
     get:
-      tags: ["Пользователи 👥"]
+      tags: ["Профиль 👤"]
       summary: Текущий пользователь
       description: Возвращает текущего пользователя, определенного по JWT claims.
       operationId: getCurrentUser
@@ -241,7 +243,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
-      tags: ["Пользователи 👥"]
+      tags: ["Профиль 👤"]
       summary: Обновить текущего пользователя
       description: Обновляет имя, фамилию и email текущего пользователя, определенного по JWT claims.
       operationId: updateCurrentUser
@@ -284,7 +286,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
-      tags: ["Пользователи 👥"]
+      tags: ["Профиль 👤"]
       summary: Удалить текущего пользователя
       description: Выполняет мягкое удаление текущего пользователя, определенного по JWT claims.
       operationId: deleteCurrentUser
