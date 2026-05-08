@@ -33,6 +33,10 @@ func NewService(repository Repository, userRepository UserRepository) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, userID uuid.UUID, input CreateInput) (*domaincity.City, error) {
+	if userID == uuid.Nil {
+		return nil, domaincity.ErrInvalidUserID
+	}
+
 	c, err := domaincity.NewCity(uuid.New(), userID, input.Name)
 	if err != nil {
 		return nil, err
