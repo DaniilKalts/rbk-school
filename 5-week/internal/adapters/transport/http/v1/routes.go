@@ -8,6 +8,7 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1/user"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1/weather"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 )
 
 type Dependencies struct {
@@ -15,7 +16,7 @@ type Dependencies struct {
 	CityService    city.Service
 	WeatherService weather.Service
 	UserService    user.Service
-	JWTManager     middleware.JWTManager
+	TokenManager   *utils.JWTManager
 }
 
 func RegisterRoutes(r chi.Router, deps Dependencies) {
@@ -23,15 +24,15 @@ func RegisterRoutes(r chi.Router, deps Dependencies) {
 		auth.RegisterRoutes(r, deps.AuthService)
 
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.Auth(deps.JWTManager))
+			r.Use(middleware.Auth(deps.TokenManager))
 
 			city.RegisterRoutes(r, deps.CityService)
 			weather.RegisterRoutes(r, deps.WeatherService)
-			user.RegisterCurrentUserRoutes(r, deps.UserService)
+			user.RegisterCurrentUserRoutes(r, deps.UserService, deps.TokenManager)
 
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireRole("admin"))
-				user.RegisterAdminRoutes(r, deps.UserService)
+				user.RegisterAdminRoutes(r, deps.UserService, deps.TokenManager)
 			})
 		})
 	})

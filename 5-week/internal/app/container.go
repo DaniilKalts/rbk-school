@@ -171,7 +171,7 @@ func (c *Container) Router() http.Handler {
 			CityService:    c.CityService(),
 			WeatherService: c.WeatherService(),
 			UserService:    c.UserService(),
-			JWTManager:     c.TokenManager(),
+			TokenManager:   c.TokenManager(),
 		})
 	}
 

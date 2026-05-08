@@ -33,6 +33,17 @@ func (h *Handler) MeDelete() http.HandlerFunc {
 			return
 		}
 
+		token, ok := helpers.BearerTokenFromRequest(req)
+		if !ok {
+			helpers.JSON(w, http.StatusUnauthorized, helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствует или некорректный заголовок Authorization"))
+			return
+		}
+
+		if err := h.tokenRevoker.Revoke(req.Context(), token); err != nil {
+			WriteServiceError(w, err)
+			return
+		}
+
 		if err := h.service.Delete(req.Context(), userID); err != nil {
 			WriteServiceError(w, err)
 			return
