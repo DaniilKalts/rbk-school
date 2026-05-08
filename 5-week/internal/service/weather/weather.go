@@ -3,6 +3,7 @@ package weather
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
@@ -63,7 +64,9 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 	cacheKey := domainweather.NormalizeCityName(city)
 	if s.weatherCache != nil {
 		weather, ok, err := s.weatherCache.Get(ctx, cacheKey)
-		if err == nil && ok {
+		if err != nil {
+			log.Printf("weather cache get %q: %v", cacheKey, err)
+		} else if ok {
 			return weather, nil
 		}
 	}
@@ -91,7 +94,9 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 	}
 
 	if s.weatherCache != nil {
-		_ = s.weatherCache.Set(ctx, cacheKey, weather)
+		if err := s.weatherCache.Set(ctx, cacheKey, weather); err != nil {
+			log.Printf("weather cache set %q: %v", cacheKey, err)
+		}
 	}
 
 	return weather, nil
