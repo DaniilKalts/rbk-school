@@ -105,7 +105,16 @@ func (s *Service) List(ctx context.Context) ([]domainuser.User, error) {
 }
 
 func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (*domainuser.User, error) {
-	u, err := domainuser.NewUser(id, input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	if id == uuid.Nil {
+		return nil, domainuser.ErrInvalidID
+	}
+
+	existing, err := s.repository.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := domainuser.NewUser(id, input.FirstName, input.LastName, input.Email, existing.Role)
 	if err != nil {
 		return nil, err
 	}
