@@ -30,7 +30,12 @@ func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 			}
 
 			revoked, err := jwtManager.IsRevoked(r.Context(), token)
-			if err != nil || revoked {
+			if err != nil {
+				response := helpers.NewErrorResponse(http.StatusServiceUnavailable, "сервис временно недоступен")
+				helpers.JSON(w, http.StatusServiceUnavailable, response)
+				return
+			}
+			if revoked {
 				response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
 				helpers.JSON(w, http.StatusUnauthorized, response)
 				return
