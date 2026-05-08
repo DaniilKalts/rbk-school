@@ -14,6 +14,8 @@ import (
 
 const jwtIssuer = "weather-api"
 
+var ErrInvalidToken = errors.New("некорректный или просроченный токен")
+
 type JWTManager struct {
 	secret    []byte
 	ttl       time.Duration
@@ -70,16 +72,16 @@ func (m *JWTManager) Validate(tokenString string) (*Claims, error) {
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}), jwt.WithExpirationRequired())
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", ErrInvalidToken, err)
 	}
 
 	if !token.Valid {
-		return nil, errors.New("некорректный токен")
+		return nil, ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		return nil, errors.New("некорректные claims")
+		return nil, ErrInvalidToken
 	}
 
 	return claims, nil

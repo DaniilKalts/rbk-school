@@ -15,7 +15,7 @@ func (h *Handler) Delete() http.HandlerFunc {
 		}
 
 		if err := h.service.Logout(req.Context(), token); err != nil {
-			helpers.JSON(w, http.StatusUnauthorized, helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен"))
+			WriteServiceError(w, err)
 			return
 		}
 
