@@ -11,7 +11,6 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres/sqlc"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 )
 
 const emailUniqueIndex = "users_email_idx"
@@ -95,22 +94,24 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, 
 	)), nil
 }
 
-func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*auth.Credentials, error) {
+func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*user.User, user.Password, error) {
 	row, err := r.queries.GetUserCredentialsByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, user.ErrNotFound
+			return nil, user.Password{}, user.ErrNotFound
 		}
 
-		return nil, fmt.Errorf("получение учетных данных пользователя по email: %w", err)
+		return nil, user.Password{}, fmt.Errorf("получение учетных данных пользователя по email: %w", err)
 	}
 
-	return &auth.Credentials{
-		ID:       row.ID,
-		Email:    row.Email,
-		Role:     user.Role(row.Role),
-		Password: user.Password{Hash: row.PasswordHash, Salt: row.Salt},
-	}, nil
+	u := &user.User{
+		ID:    row.ID,
+		Email: row.Email,
+		Role:  user.Role(row.Role),
+	}
+	password := user.Password{Hash: row.PasswordHash, Salt: row.Salt}
+
+	return u, password, nil
 }
 
 func (r *Repository) List(ctx context.Context) ([]user.User, error) {

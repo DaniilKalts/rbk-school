@@ -9,7 +9,6 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 
 	cityrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/city"
 	userrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
@@ -20,7 +19,7 @@ type UserRepository interface {
 	Create(ctx context.Context, u user.User, password user.Password) (*user.User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*user.User, error)
 	GetByEmail(ctx context.Context, email string) (*user.User, error)
-	GetCredentialsByEmail(ctx context.Context, email string) (*auth.Credentials, error)
+	GetCredentialsByEmail(ctx context.Context, email string) (*user.User, user.Password, error)
 	List(ctx context.Context) ([]user.User, error)
 	Update(ctx context.Context, u user.User) (*user.User, error)
 	SoftDelete(ctx context.Context, id uuid.UUID) error

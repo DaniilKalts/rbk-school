@@ -13,7 +13,7 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
 		return nil, ErrInvalidCredentials
 	}
 
-	credentials, err := s.repository.GetCredentialsByEmail(ctx, email)
+	u, password, err := s.repository.GetCredentialsByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, user.ErrNotFound) {
 			return nil, ErrInvalidCredentials
@@ -22,9 +22,9 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
 		return nil, err
 	}
 
-	if !credentials.Verify(input.Password) {
+	if !password.Matches(input.Password) {
 		return nil, ErrInvalidCredentials
 	}
 
-	return s.generateToken(credentials.ID, credentials.Email, credentials.Role)
+	return s.generateToken(u.ID, u.Email, u.Role)
 }

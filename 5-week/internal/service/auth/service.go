@@ -14,18 +14,7 @@ var ErrInvalidCredentials = errors.New("неверный email или парол
 
 type Repository interface {
 	Create(ctx context.Context, u user.User, password user.Password) (*user.User, error)
-	GetCredentialsByEmail(ctx context.Context, email string) (*Credentials, error)
-}
-
-type Credentials struct {
-	ID       uuid.UUID
-	Email    string
-	Role     user.Role
-	Password user.Password
-}
-
-func (c Credentials) Verify(plain string) bool {
-	return c.Password.Matches(plain)
+	GetCredentialsByEmail(ctx context.Context, email string) (*user.User, user.Password, error)
 }
 
 type TokenManager interface {
