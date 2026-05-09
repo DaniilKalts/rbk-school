@@ -8,11 +8,23 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres/sqlc"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/weather"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 
 	cityrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/city"
+	userrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
+	weatherrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/weather"
 )
+
+type UserRepository interface {
+	Create(ctx context.Context, u user.User, password user.Password) (*user.User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*user.User, error)
+	GetByEmail(ctx context.Context, email string) (*user.User, error)
+	GetCredentialsByEmail(ctx context.Context, email string) (*auth.Credentials, error)
+	List(ctx context.Context) ([]user.User, error)
+	Update(ctx context.Context, u user.User) (*user.User, error)
+	SoftDelete(ctx context.Context, id uuid.UUID) error
+}
 
 type CityRepository interface {
 	Create(ctx context.Context, c city.City) (*city.City, error)
@@ -26,15 +38,15 @@ type WeatherRepository interface {
 }
 
 type Repositories struct {
-	User    *user.Repository
+	User    UserRepository
 	City    CityRepository
 	Weather WeatherRepository
 }
 
 func NewRepositories(db sqlc.DBTX) *Repositories {
 	return &Repositories{
-		User:    user.NewRepository(db),
+		User:    userrepo.NewRepository(db),
 		City:    cityrepo.NewRepository(db),
-		Weather: weather.NewRepository(db),
+		Weather: weatherrepo.NewRepository(db),
 	}
 }
