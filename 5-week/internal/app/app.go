@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,19 +24,9 @@ func NewApp(cfg *config.Config) *App {
 	}
 
 	a := &App{container: container}
-	a.initDeps()
+	a.initHTTPServer()
 
 	return a
-}
-
-func (a *App) initDeps() {
-	inits := []func(){
-		a.initHTTPServer,
-	}
-
-	for _, fn := range inits {
-		fn()
-	}
 }
 
 func (a *App) initHTTPServer() {
@@ -64,7 +55,7 @@ func (a *App) Run() error {
 	log.Printf("server is running on %s", a.server.Addr)
 
 	go func() {
-		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := a.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- fmt.Errorf("app: ошибка запуска сервера: %w", err)
 		}
 		close(errCh)

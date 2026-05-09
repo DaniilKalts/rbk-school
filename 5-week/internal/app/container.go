@@ -113,18 +113,6 @@ func (c *Container) TokenBlacklist() cache.TokenBlacklist {
 	return c.Caches().TokenBlacklist
 }
 
-func (c *Container) UserRepository() repository.UserRepository {
-	return c.Repositories().User
-}
-
-func (c *Container) CityRepository() repository.CityRepository {
-	return c.Repositories().City
-}
-
-func (c *Container) WeatherRepository() repository.WeatherRepository {
-	return c.Repositories().Weather
-}
-
 func (c *Container) TokenManager() *jwt.Manager {
 	if c.tokenManager == nil {
 		c.tokenManager = jwt.NewManager([]byte(c.config.JWT.Secret), c.config.JWT.AccessTokenTTL, c.TokenBlacklist())
