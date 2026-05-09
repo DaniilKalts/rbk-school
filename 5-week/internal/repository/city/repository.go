@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres/sqlc"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 )
 

@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
