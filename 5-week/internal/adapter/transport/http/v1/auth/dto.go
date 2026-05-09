@@ -1,6 +1,8 @@
-package dto
+package auth
 
 import (
+	"time"
+
 	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 )
 
@@ -21,14 +23,14 @@ type TokenResponse struct {
 	ExpiresAt   string `json:"expires_at"`
 }
 
-func ToRegisterInput(req RegisterRequest) auth.RegisterInput {
-	return auth.RegisterInput{FirstName: req.FirstName, LastName: req.LastName, Email: req.Email, Password: req.Password}
+func ToRegisterInput(r RegisterRequest) auth.RegisterInput {
+	return auth.RegisterInput{FirstName: r.FirstName, LastName: r.LastName, Email: r.Email, Password: r.Password}
 }
 
-func ToLoginInput(req LoginRequest) auth.LoginInput {
-	return auth.LoginInput{Email: req.Email, Password: req.Password}
+func ToLoginInput(r LoginRequest) auth.LoginInput {
+	return auth.LoginInput{Email: r.Email, Password: r.Password}
 }
 
 func ToTokenResponse(token auth.Token) TokenResponse {
-	return TokenResponse{AccessToken: token.AccessToken, ExpiresAt: token.ExpiresAt.UTC().Format("2006-01-02T15:04:05Z")}
+	return TokenResponse{AccessToken: token.AccessToken, ExpiresAt: token.ExpiresAt.UTC().Format(time.RFC3339)}
 }

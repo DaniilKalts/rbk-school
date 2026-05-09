@@ -4,44 +4,40 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/helpers"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/httpx"
 )
 
 type JWTManager interface {
-	Validate(tokenString string) (*helpers.Claims, error)
+	Validate(tokenString string) (*httpx.Claims, error)
 	IsRevoked(ctx context.Context, tokenString string) (bool, error)
 }
 
 func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token, ok := helpers.BearerTokenFromRequest(r)
+			token, ok := httpx.BearerTokenFromRequest(r)
 			if !ok {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "отсутствует или некорректный заголовок Authorization")
-				helpers.JSON(w, http.StatusUnauthorized, response)
+				httpx.WriteError(w, http.StatusUnauthorized, "отсутствует или некорректный заголовок Authorization")
 				return
 			}
 
 			claims, err := jwtManager.Validate(token)
 			if err != nil {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
-				helpers.JSON(w, http.StatusUnauthorized, response)
+				httpx.WriteError(w, http.StatusUnauthorized, "некорректный или просроченный токен")
 				return
 			}
 
 			revoked, err := jwtManager.IsRevoked(r.Context(), token)
 			if err != nil {
-				response := helpers.NewErrorResponse(http.StatusServiceUnavailable, "сервис временно недоступен")
-				helpers.JSON(w, http.StatusServiceUnavailable, response)
+				httpx.WriteError(w, http.StatusServiceUnavailable, "сервис временно недоступен")
 				return
 			}
 			if revoked {
-				response := helpers.NewErrorResponse(http.StatusUnauthorized, "некорректный или просроченный токен")
-				helpers.JSON(w, http.StatusUnauthorized, response)
+				httpx.WriteError(w, http.StatusUnauthorized, "некорректный или просроченный токен")
 				return
 			}
 
-			ctx := helpers.WithClaims(r.Context(), claims)
+			ctx := httpx.WithClaims(r.Context(), claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

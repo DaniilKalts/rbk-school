@@ -1,4 +1,4 @@
-package dto
+package city
 
 import (
 	"time"
@@ -19,12 +19,14 @@ type CityResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func ToCreateInput(req CreateCityRequest) servicecity.CreateInput {
-	return servicecity.CreateInput{Name: req.City}
+func ToCreateInput(r CreateCityRequest) servicecity.CreateInput {
+	return servicecity.CreateInput{Name: r.City}
 }
+
 func ToCityResponse(c city.City) CityResponse {
 	return CityResponse{ID: c.ID.String(), UserID: c.UserID.String(), City: c.Name, CreatedAt: c.CreatedAt}
 }
+
 func ToCityResponses(cities []city.City) []CityResponse {
 	res := make([]CityResponse, 0, len(cities))
 	for _, c := range cities {

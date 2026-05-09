@@ -1,4 +1,4 @@
-package helpers
+package httpx
 
 import (
 	"encoding/json"
@@ -17,11 +17,11 @@ func DecodeJSON(w http.ResponseWriter, r *http.Request, v any) bool {
 	if err := dec.Decode(v); err != nil {
 		var maxBytesErr *http.MaxBytesError
 		if errors.As(err, &maxBytesErr) {
-			JSON(w, http.StatusRequestEntityTooLarge, NewErrorResponse(http.StatusRequestEntityTooLarge, "тело запроса слишком большое"))
+			WriteError(w, http.StatusRequestEntityTooLarge, "тело запроса слишком большое")
 			return false
 		}
 
-		JSON(w, http.StatusBadRequest, NewErrorResponse(http.StatusBadRequest, "некорректное тело запроса"))
+		WriteError(w, http.StatusBadRequest, "некорректное тело запроса")
 		return false
 	}
 

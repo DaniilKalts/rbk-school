@@ -2,13 +2,9 @@ package user
 
 import (
 	"context"
-	"errors"
-	"net/http"
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 
 	serviceuser "github.com/DaniilKalts/rbk-school/5-week/internal/service/user"
@@ -33,19 +29,4 @@ type Handler struct {
 
 func NewHandler(service Service, tokenRevoker TokenRevoker) *Handler {
 	return &Handler{service: service, tokenRevoker: tokenRevoker}
-}
-
-func WriteServiceError(w http.ResponseWriter, err error) {
-	status, msg := http.StatusInternalServerError, "internal server error"
-	switch {
-	case errors.Is(err, user.ErrNotFound):
-		status, msg = http.StatusNotFound, err.Error()
-	case errors.Is(err, user.ErrEmailAlreadyExists):
-		status, msg = http.StatusConflict, err.Error()
-	case errors.Is(err, user.ErrInvalidID), errors.Is(err, user.ErrInvalidFirstName), errors.Is(err, user.ErrInvalidLastName), errors.Is(err, user.ErrInvalidEmail), errors.Is(err, user.ErrInvalidPassword), errors.Is(err, user.ErrInvalidRole):
-		status, msg = http.StatusBadRequest, err.Error()
-	case errors.Is(err, jwt.ErrInvalidToken):
-		status, msg = http.StatusUnauthorized, err.Error()
-	}
-	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))
 }

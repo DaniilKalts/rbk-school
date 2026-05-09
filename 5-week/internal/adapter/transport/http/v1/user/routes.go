@@ -6,16 +6,16 @@ import (
 
 func RegisterCurrentUserRoutes(r chi.Router, service Service, tokenRevoker TokenRevoker) {
 	h := NewHandler(service, tokenRevoker)
-	r.Get("/users/me", h.Me())
-	r.Patch("/users/me", h.MePatch())
-	r.Delete("/users/me", h.MeDelete())
+	r.Get("/users/me", h.GetMe)
+	r.Patch("/users/me", h.UpdateMe)
+	r.Delete("/users/me", h.DeleteMe)
 }
 
 func RegisterAdminRoutes(r chi.Router, service Service, tokenRevoker TokenRevoker) {
 	h := NewHandler(service, tokenRevoker)
-	r.Post("/users", h.Post())
-	r.Get("/users", h.Get())
-	r.Get("/users/{id}", h.GetByID())
-	r.Patch("/users/{id}", h.Patch())
-	r.Delete("/users/{id}", h.Delete())
+	r.Post("/users", h.Create)
+	r.Get("/users", h.List)
+	r.Get("/users/{id}", h.GetByID)
+	r.Patch("/users/{id}", h.Update)
+	r.Delete("/users/{id}", h.Delete)
 }

@@ -1,4 +1,4 @@
-package dto
+package user
 
 import (
 	"time"
@@ -28,15 +28,18 @@ type UserResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ToCreateInput(req CreateUserRequest) serviceuser.CreateInput {
-	return serviceuser.CreateInput{FirstName: req.FirstName, LastName: req.LastName, Email: req.Email, Password: req.Password}
+func ToCreateInput(r CreateUserRequest) serviceuser.CreateInput {
+	return serviceuser.CreateInput{FirstName: r.FirstName, LastName: r.LastName, Email: r.Email, Password: r.Password}
 }
-func ToUpdateInput(req UpdateUserRequest) serviceuser.UpdateInput {
-	return serviceuser.UpdateInput{FirstName: req.FirstName, LastName: req.LastName, Email: req.Email}
+
+func ToUpdateInput(r UpdateUserRequest) serviceuser.UpdateInput {
+	return serviceuser.UpdateInput{FirstName: r.FirstName, LastName: r.LastName, Email: r.Email}
 }
+
 func ToUserResponse(u user.User) UserResponse {
 	return UserResponse{ID: u.ID.String(), FirstName: u.FirstName, LastName: u.LastName, Email: u.Email, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt}
 }
+
 func ToUserResponses(users []user.User) []UserResponse {
 	res := make([]UserResponse, 0, len(users))
 	for _, u := range users {

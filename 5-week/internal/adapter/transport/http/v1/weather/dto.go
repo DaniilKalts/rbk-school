@@ -1,4 +1,4 @@
-package dto
+package weather
 
 import (
 	"time"
@@ -39,6 +39,7 @@ func ToUserWeatherResponse(userID uuid.UUID, weather []weather.Weather) UserWeat
 	}
 	return UserWeatherResponse{UserID: userID.String(), Weather: items}
 }
+
 func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []history.History) UserWeatherHistoryResponse {
 	items := make([]WeatherHistoryResponse, 0, len(history))
 	for _, h := range history {

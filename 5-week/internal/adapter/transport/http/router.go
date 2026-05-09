@@ -5,13 +5,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/docs"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/swagger"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1"
 )
 
 func NewRouter(deps v1.Dependencies) http.Handler {
 	r := chi.NewRouter()
-	docs.RegisterRoutes(r)
+	swagger.RegisterRoutes(r)
 
 	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")

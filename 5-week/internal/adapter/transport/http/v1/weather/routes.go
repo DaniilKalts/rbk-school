@@ -6,6 +6,6 @@ import (
 
 func RegisterRoutes(r chi.Router, service Service) {
 	h := NewHandler(service)
-	r.Get("/weather", h.Get())
-	r.Get("/weather/history", h.History())
+	r.Get("/weather", h.GetByUser)
+	r.Get("/weather/history", h.History)
 }
