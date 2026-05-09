@@ -8,6 +8,7 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1/weather/dto"
+
 	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 )
 

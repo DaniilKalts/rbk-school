@@ -5,30 +5,30 @@ import (
 
 	"github.com/google/uuid"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
-	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/client/geocoding/dto"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 
-	geocodingdto "github.com/DaniilKalts/rbk-school/5-week/internal/client/geocoding/dto"
 	openmeteodto "github.com/DaniilKalts/rbk-school/5-week/internal/client/openmeteo/dto"
 )
 
 type UserRepository interface {
-	GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*user.User, error)
 }
 
 type CityRepository interface {
-	ListByUserID(ctx context.Context, userID uuid.UUID) ([]domaincity.City, error)
+	ListByUserID(ctx context.Context, userID uuid.UUID) ([]city.City, error)
 }
 
 type HistoryRepository interface {
-	CreateHistory(ctx context.Context, history domainhistory.History) (*domainhistory.History, error)
-	ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error)
+	CreateHistory(ctx context.Context, history history.History) (*history.History, error)
+	ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]history.History, error)
 }
 
 type GeocodingClient interface {
-	GetCoordsByCity(ctx context.Context, city string) (geocodingdto.CoordsResponse, error)
+	GetCoordsByCity(ctx context.Context, city string) (dto.CoordsResponse, error)
 }
 
 type WeatherClient interface {
@@ -36,8 +36,8 @@ type WeatherClient interface {
 }
 
 type WeatherCache interface {
-	Get(ctx context.Context, city string) (domainweather.Weather, bool, error)
-	Set(ctx context.Context, city string, weather domainweather.Weather) error
+	Get(ctx context.Context, city string) (weather.Weather, bool, error)
+	Set(ctx context.Context, city string, weather weather.Weather) error
 }
 
 type Service struct {

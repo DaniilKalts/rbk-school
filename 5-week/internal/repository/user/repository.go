@@ -10,8 +10,8 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	serviceauth "github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 )
 
 const emailUniqueIndex = "users_email_idx"
@@ -24,7 +24,7 @@ func NewRepository(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
-func (r *Repository) Create(ctx context.Context, u domainuser.User, password domainuser.Password) (*domainuser.User, error) {
+func (r *Repository) Create(ctx context.Context, u user.User, password user.Password) (*user.User, error) {
 	row, err := r.queries.CreateUser(ctx, sqlc.CreateUserParams{
 		ID:           u.ID,
 		FirstName:    u.FirstName,
@@ -36,7 +36,7 @@ func (r *Repository) Create(ctx context.Context, u domainuser.User, password dom
 	})
 	if err != nil {
 		if isEmailUniqueViolation(err) {
-			return nil, domainuser.ErrEmailAlreadyExists
+			return nil, user.ErrEmailAlreadyExists
 		}
 
 		return nil, fmt.Errorf("создание пользователя: %w", err)
@@ -53,11 +53,11 @@ func (r *Repository) Create(ctx context.Context, u domainuser.User, password dom
 	)), nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error) {
+func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*user.User, error) {
 	row, err := r.queries.GetUserByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domainuser.ErrNotFound
+			return nil, user.ErrNotFound
 		}
 
 		return nil, fmt.Errorf("получение пользователя по id: %w", err)
@@ -74,11 +74,11 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.Use
 	)), nil
 }
 
-func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.User, error) {
+func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
 	row, err := r.queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domainuser.ErrNotFound
+			return nil, user.ErrNotFound
 		}
 
 		return nil, fmt.Errorf("получение пользователя по email: %w", err)
@@ -95,31 +95,31 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.
 	)), nil
 }
 
-func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*serviceauth.Credentials, error) {
+func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*auth.Credentials, error) {
 	row, err := r.queries.GetUserCredentialsByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domainuser.ErrNotFound
+			return nil, user.ErrNotFound
 		}
 
 		return nil, fmt.Errorf("получение учетных данных пользователя по email: %w", err)
 	}
 
-	return &serviceauth.Credentials{
+	return &auth.Credentials{
 		ID:       row.ID,
 		Email:    row.Email,
-		Role:     domainuser.Role(row.Role),
-		Password: domainuser.Password{Hash: row.PasswordHash, Salt: row.Salt},
+		Role:     user.Role(row.Role),
+		Password: user.Password{Hash: row.PasswordHash, Salt: row.Salt},
 	}, nil
 }
 
-func (r *Repository) List(ctx context.Context) ([]domainuser.User, error) {
+func (r *Repository) List(ctx context.Context) ([]user.User, error) {
 	rows, err := r.queries.ListUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("получение списка пользователей: %w", err)
 	}
 
-	users := make([]domainuser.User, 0, len(rows))
+	users := make([]user.User, 0, len(rows))
 	for _, row := range rows {
 		users = append(users, toDomainBase(
 			row.ID,
@@ -135,7 +135,7 @@ func (r *Repository) List(ctx context.Context) ([]domainuser.User, error) {
 	return users, nil
 }
 
-func (r *Repository) Update(ctx context.Context, u domainuser.User) (*domainuser.User, error) {
+func (r *Repository) Update(ctx context.Context, u user.User) (*user.User, error) {
 	row, err := r.queries.UpdateUser(ctx, sqlc.UpdateUserParams{
 		ID:        u.ID,
 		FirstName: u.FirstName,
@@ -144,11 +144,11 @@ func (r *Repository) Update(ctx context.Context, u domainuser.User) (*domainuser
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domainuser.ErrNotFound
+			return nil, user.ErrNotFound
 		}
 
 		if isEmailUniqueViolation(err) {
-			return nil, domainuser.ErrEmailAlreadyExists
+			return nil, user.ErrEmailAlreadyExists
 		}
 
 		return nil, fmt.Errorf("обновление пользователя: %w", err)
@@ -172,7 +172,7 @@ func (r *Repository) SoftDelete(ctx context.Context, id uuid.UUID) error {
 	}
 
 	if rowsAffected == 0 {
-		return domainuser.ErrNotFound
+		return user.ErrNotFound
 	}
 
 	return nil

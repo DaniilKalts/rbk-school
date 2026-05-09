@@ -8,15 +8,16 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+
 	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 )
 
 func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainweather.Weather, error) {
 	if userID == uuid.Nil {
-		return nil, domainuser.ErrInvalidID
+		return nil, user.ErrInvalidID
 	}
 
 	_, err := s.userRepository.GetByID(ctx, userID)

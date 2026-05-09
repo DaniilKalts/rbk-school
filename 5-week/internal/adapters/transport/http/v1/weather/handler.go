@@ -8,14 +8,14 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/helpers"
-	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 )
 
 type Service interface {
-	GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainweather.Weather, error)
-	GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error)
+	GetByUserID(ctx context.Context, userID uuid.UUID) ([]weather.Weather, error)
+	GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]history.History, error)
 }
 
 type Handler struct {
@@ -38,12 +38,12 @@ func CurrentUserID(w http.ResponseWriter, r *http.Request) (uuid.UUID, bool) {
 func WriteServiceError(w http.ResponseWriter, err error) {
 	status, msg := http.StatusInternalServerError, "internal server error"
 	switch {
-	case errors.Is(err, domainuser.ErrNotFound):
+	case errors.Is(err, user.ErrNotFound):
 		status, msg = http.StatusNotFound, err.Error()
-	case errors.Is(err, domainuser.ErrInvalidID),
-		errors.Is(err, domainweather.ErrInvalidCity),
-		errors.Is(err, domainweather.ErrInvalidLimit),
-		errors.Is(err, domainweather.ErrInvalidOffset):
+	case errors.Is(err, user.ErrInvalidID),
+		errors.Is(err, weather.ErrInvalidCity),
+		errors.Is(err, weather.ErrInvalidLimit),
+		errors.Is(err, weather.ErrInvalidOffset):
 		status, msg = http.StatusBadRequest, err.Error()
 	}
 	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))

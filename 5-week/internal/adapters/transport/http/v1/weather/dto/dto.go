@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 )
 
 type WeatherResponse struct {
@@ -32,14 +32,14 @@ type UserWeatherHistoryResponse struct {
 	History []WeatherHistoryResponse `json:"history"`
 }
 
-func ToUserWeatherResponse(userID uuid.UUID, weather []domainweather.Weather) UserWeatherResponse {
+func ToUserWeatherResponse(userID uuid.UUID, weather []weather.Weather) UserWeatherResponse {
 	items := make([]WeatherResponse, 0, len(weather))
 	for _, w := range weather {
 		items = append(items, WeatherResponse{City: w.City, Temperature: w.Temperature, FeelsLike: w.FeelsLike, Description: w.Description, RequestedAt: w.RequestedAt})
 	}
 	return UserWeatherResponse{UserID: userID.String(), Weather: items}
 }
-func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []domainhistory.History) UserWeatherHistoryResponse {
+func ToUserWeatherHistoryResponse(userID uuid.UUID, city string, history []history.History) UserWeatherHistoryResponse {
 	items := make([]WeatherHistoryResponse, 0, len(history))
 	for _, h := range history {
 		items = append(items, WeatherHistoryResponse{City: h.City, Temperature: h.Temperature, Description: h.Description, RequestedAt: h.RequestedAt})

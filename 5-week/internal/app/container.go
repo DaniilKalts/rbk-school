@@ -9,16 +9,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
-	redisclient "github.com/DaniilKalts/rbk-school/5-week/internal/adapters/cache/redis"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres"
-	transporthttp "github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http"
-	v1 "github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
-	userrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/service"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
+
+	redisclient "github.com/DaniilKalts/rbk-school/5-week/internal/adapters/cache/redis"
+	transporthttp "github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http"
 )
 
 type Container struct {
@@ -105,7 +106,7 @@ func (c *Container) TokenBlacklist() repository.TokenBlacklist {
 	return c.Caches().TokenBlacklist
 }
 
-func (c *Container) UserRepository() *userrepo.Repository {
+func (c *Container) UserRepository() *user.Repository {
 	return c.Repositories().User
 }
 

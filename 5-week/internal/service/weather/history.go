@@ -5,24 +5,25 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+
 	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
-	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 )
 
-func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error) {
+func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]history.History, error) {
 	if userID == uuid.Nil {
-		return nil, domainuser.ErrInvalidID
+		return nil, user.ErrInvalidID
 	}
 
 	city = domaincity.NormalizeCityName(city)
 
 	if limit < 0 {
-		return nil, domainweather.ErrInvalidLimit
+		return nil, weather.ErrInvalidLimit
 	}
 	if offset < 0 {
-		return nil, domainweather.ErrInvalidOffset
+		return nil, weather.ErrInvalidOffset
 	}
 
 	_, err := s.userRepository.GetByID(ctx, userID)

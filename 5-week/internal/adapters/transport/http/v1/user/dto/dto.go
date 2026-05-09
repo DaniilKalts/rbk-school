@@ -3,7 +3,8 @@ package dto
 import (
 	"time"
 
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+
 	serviceuser "github.com/DaniilKalts/rbk-school/5-week/internal/service/user"
 )
 
@@ -33,10 +34,10 @@ func ToCreateInput(req CreateUserRequest) serviceuser.CreateInput {
 func ToUpdateInput(req UpdateUserRequest) serviceuser.UpdateInput {
 	return serviceuser.UpdateInput{FirstName: req.FirstName, LastName: req.LastName, Email: req.Email}
 }
-func ToUserResponse(u domainuser.User) UserResponse {
+func ToUserResponse(u user.User) UserResponse {
 	return UserResponse{ID: u.ID.String(), FirstName: u.FirstName, LastName: u.LastName, Email: u.Email, CreatedAt: u.CreatedAt, UpdatedAt: u.UpdatedAt}
 }
-func ToUserResponses(users []domainuser.User) []UserResponse {
+func ToUserResponses(users []user.User) []UserResponse {
 	res := make([]UserResponse, 0, len(users))
 	for _, u := range users {
 		res = append(res, ToUserResponse(u))

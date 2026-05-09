@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 )
 
 func toDomainBase(
@@ -17,13 +17,13 @@ func toDomainBase(
 	role sqlc.UserRole,
 	createdAt time.Time,
 	updatedAt time.Time,
-) domainuser.User {
-	return domainuser.User{
+) user.User {
+	return user.User{
 		ID:        id,
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
-		Role:      domainuser.Role(role),
+		Role:      user.Role(role),
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 	}

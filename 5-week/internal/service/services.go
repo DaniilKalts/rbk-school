@@ -11,16 +11,16 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 
-	serviceauth "github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 	servicecity "github.com/DaniilKalts/rbk-school/5-week/internal/service/city"
 	serviceuser "github.com/DaniilKalts/rbk-school/5-week/internal/service/user"
 	serviceweather "github.com/DaniilKalts/rbk-school/5-week/internal/service/weather"
 )
 
 type AuthService interface {
-	Register(ctx context.Context, input serviceauth.RegisterInput) (*serviceauth.Token, error)
-	Login(ctx context.Context, input serviceauth.LoginInput) (*serviceauth.Token, error)
+	Register(ctx context.Context, input auth.RegisterInput) (*auth.Token, error)
+	Login(ctx context.Context, input auth.LoginInput) (*auth.Token, error)
 	Logout(ctx context.Context, accessToken string) error
 }
 
@@ -59,8 +59,8 @@ func NewServices(auth AuthService, user UserService, city CityService, weather W
 	}
 }
 
-func NewServicesFromDependencies(repositories *repository.Repositories, clients *client.Clients, tokenManager serviceauth.TokenManager) *Services {
-	auth := serviceauth.NewService(repositories.User, tokenManager)
+func NewServicesFromDependencies(repositories *repository.Repositories, clients *client.Clients, tokenManager auth.TokenManager) *Services {
+	authService := auth.NewService(repositories.User, tokenManager)
 	userService := serviceuser.NewService(repositories.User)
 	cityService := servicecity.NewService(repositories.City, repositories.User)
 	weatherService := serviceweather.NewService(
@@ -72,5 +72,5 @@ func NewServicesFromDependencies(repositories *repository.Repositories, clients 
 		clients.WeatherCache,
 	)
 
-	return NewServices(auth, userService, cityService, weatherService)
+	return NewServices(authService, userService, cityService, weatherService)
 }

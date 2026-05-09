@@ -3,7 +3,8 @@ package dto
 import (
 	"time"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+
 	servicecity "github.com/DaniilKalts/rbk-school/5-week/internal/service/city"
 )
 
@@ -21,10 +22,10 @@ type CityResponse struct {
 func ToCreateInput(req CreateCityRequest) servicecity.CreateInput {
 	return servicecity.CreateInput{Name: req.City}
 }
-func ToCityResponse(c domaincity.City) CityResponse {
+func ToCityResponse(c city.City) CityResponse {
 	return CityResponse{ID: c.ID.String(), UserID: c.UserID.String(), City: c.Name, CreatedAt: c.CreatedAt}
 }
-func ToCityResponses(cities []domaincity.City) []CityResponse {
+func ToCityResponses(cities []city.City) []CityResponse {
 	res := make([]CityResponse, 0, len(cities))
 	for _, c := range cities {
 		res = append(res, ToCityResponse(c))

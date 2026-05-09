@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	redisclient "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 
 	configredis "github.com/DaniilKalts/rbk-school/5-week/internal/config/redis"
 )
 
-func NewClient(ctx context.Context, cfg *configredis.Config) (*redisclient.Client, error) {
-	client := redisclient.NewClient(&redisclient.Options{
+func NewClient(ctx context.Context, cfg *configredis.Config) (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
 		Addr:         cfg.Addr,
 		Password:     cfg.Password,
 		DB:           cfg.DB,

@@ -7,13 +7,13 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	serviceauth "github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 )
 
 type Service interface {
-	Register(ctx context.Context, input serviceauth.RegisterInput) (*serviceauth.Token, error)
-	Login(ctx context.Context, input serviceauth.LoginInput) (*serviceauth.Token, error)
+	Register(ctx context.Context, input auth.RegisterInput) (*auth.Token, error)
+	Login(ctx context.Context, input auth.LoginInput) (*auth.Token, error)
 	Logout(ctx context.Context, accessToken string) error
 }
 
@@ -40,7 +40,7 @@ func WriteServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, user.ErrInvalidPassword),
 		errors.Is(err, user.ErrInvalidRole):
 		status, msg = http.StatusBadRequest, err.Error()
-	case errors.Is(err, serviceauth.ErrInvalidCredentials), errors.Is(err, utils.ErrInvalidToken):
+	case errors.Is(err, auth.ErrInvalidCredentials), errors.Is(err, utils.ErrInvalidToken):
 		status, msg = http.StatusUnauthorized, err.Error()
 	}
 	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))

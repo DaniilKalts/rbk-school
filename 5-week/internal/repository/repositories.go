@@ -8,10 +8,10 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/weather"
 
 	cityrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/city"
-	userrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
 )
 
 type CityRepository interface {
@@ -26,14 +26,14 @@ type WeatherRepository interface {
 }
 
 type Repositories struct {
-	User    *userrepo.Repository
+	User    *user.Repository
 	City    CityRepository
 	Weather WeatherRepository
 }
 
 func NewRepositories(db sqlc.DBTX) *Repositories {
 	return &Repositories{
-		User:    userrepo.NewRepository(db),
+		User:    user.NewRepository(db),
 		City:    cityrepo.NewRepository(db),
 		Weather: weather.NewRepository(db),
 	}

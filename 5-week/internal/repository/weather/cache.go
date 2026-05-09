@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	redisclient "github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9"
 
 	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
@@ -17,17 +17,17 @@ import (
 const weatherKeyPrefix = "weather:"
 
 type WeatherCache struct {
-	client *redisclient.Client
+	client *redis.Client
 	ttl    time.Duration
 }
 
-func NewWeatherCache(client *redisclient.Client, ttl time.Duration) *WeatherCache {
+func NewWeatherCache(client *redis.Client, ttl time.Duration) *WeatherCache {
 	return &WeatherCache{client: client, ttl: ttl}
 }
 
 func (c *WeatherCache) Get(ctx context.Context, city string) (domainweather.Weather, bool, error) {
 	value, err := c.client.Get(ctx, weatherKey(city)).Result()
-	if errors.Is(err, redisclient.Nil) {
+	if errors.Is(err, redis.Nil) {
 		return domainweather.Weather{}, false, nil
 	}
 	if err != nil {

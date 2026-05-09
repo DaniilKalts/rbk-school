@@ -5,15 +5,15 @@ import (
 
 	"github.com/google/uuid"
 
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 )
 
 type Repository interface {
-	Create(ctx context.Context, u domainuser.User, password domainuser.Password) (*domainuser.User, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error)
-	GetByEmail(ctx context.Context, email string) (*domainuser.User, error)
-	List(ctx context.Context) ([]domainuser.User, error)
-	Update(ctx context.Context, u domainuser.User) (*domainuser.User, error)
+	Create(ctx context.Context, u user.User, password user.Password) (*user.User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*user.User, error)
+	GetByEmail(ctx context.Context, email string) (*user.User, error)
+	List(ctx context.Context) ([]user.User, error)
+	Update(ctx context.Context, u user.User) (*user.User, error)
 	SoftDelete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -38,13 +38,13 @@ func NewService(repository Repository) *Service {
 	return &Service{repository: repository}
 }
 
-func (s *Service) Create(ctx context.Context, input CreateInput) (*domainuser.User, error) {
-	password, err := domainuser.NewPassword(input.Password)
+func (s *Service) Create(ctx context.Context, input CreateInput) (*user.User, error) {
+	password, err := user.NewPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := domainuser.NewUser(input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	u, err := user.NewUser(input.FirstName, input.LastName, input.Email, user.RoleUser)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +57,9 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*domainuser.Us
 	return created, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error) {
+func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*user.User, error) {
 	if id == uuid.Nil {
-		return nil, domainuser.ErrInvalidID
+		return nil, user.ErrInvalidID
 	}
 
 	u, err := s.repository.GetByID(ctx, id)
@@ -70,10 +70,10 @@ func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, 
 	return u, nil
 }
 
-func (s *Service) GetByEmail(ctx context.Context, email string) (*domainuser.User, error) {
-	email = domainuser.NormalizeEmail(email)
+func (s *Service) GetByEmail(ctx context.Context, email string) (*user.User, error) {
+	email = user.NormalizeEmail(email)
 	if email == "" {
-		return nil, domainuser.ErrInvalidEmail
+		return nil, user.ErrInvalidEmail
 	}
 
 	u, err := s.repository.GetByEmail(ctx, email)
@@ -84,7 +84,7 @@ func (s *Service) GetByEmail(ctx context.Context, email string) (*domainuser.Use
 	return u, nil
 }
 
-func (s *Service) List(ctx context.Context) ([]domainuser.User, error) {
+func (s *Service) List(ctx context.Context) ([]user.User, error) {
 	users, err := s.repository.List(ctx)
 	if err != nil {
 		return nil, err
@@ -93,9 +93,9 @@ func (s *Service) List(ctx context.Context) ([]domainuser.User, error) {
 	return users, nil
 }
 
-func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (*domainuser.User, error) {
+func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (*user.User, error) {
 	if id == uuid.Nil {
-		return nil, domainuser.ErrInvalidID
+		return nil, user.ErrInvalidID
 	}
 
 	existing, err := s.repository.GetByID(ctx, id)
@@ -117,7 +117,7 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (
 
 func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
 	if id == uuid.Nil {
-		return domainuser.ErrInvalidID
+		return user.ErrInvalidID
 	}
 
 	if err := s.repository.SoftDelete(ctx, id); err != nil {

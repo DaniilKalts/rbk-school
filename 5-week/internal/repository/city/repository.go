@@ -8,7 +8,7 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 )
 
 const userCityUniqueConstraint = "user_cities_user_id_city_key"
@@ -21,7 +21,7 @@ func NewRepository(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
-func (r *Repository) Create(ctx context.Context, c domaincity.City) (*domaincity.City, error) {
+func (r *Repository) Create(ctx context.Context, c city.City) (*city.City, error) {
 	row, err := r.queries.CreateUserCity(ctx, sqlc.CreateUserCityParams{
 		ID:     c.ID,
 		UserID: c.UserID,
@@ -29,7 +29,7 @@ func (r *Repository) Create(ctx context.Context, c domaincity.City) (*domaincity
 	})
 	if err != nil {
 		if postgres.IsUniqueViolation(err, userCityUniqueConstraint) {
-			return nil, domaincity.ErrAlreadyExists
+			return nil, city.ErrAlreadyExists
 		}
 
 		return nil, fmt.Errorf("создание города пользователя: %w", err)
@@ -38,13 +38,13 @@ func (r *Repository) Create(ctx context.Context, c domaincity.City) (*domaincity
 	return new(toDomain(row)), nil
 }
 
-func (r *Repository) ListByUserID(ctx context.Context, userID uuid.UUID) ([]domaincity.City, error) {
+func (r *Repository) ListByUserID(ctx context.Context, userID uuid.UUID) ([]city.City, error) {
 	rows, err := r.queries.ListUserCities(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("получение списка городов пользователя: %w", err)
 	}
 
-	cities := make([]domaincity.City, 0, len(rows))
+	cities := make([]city.City, 0, len(rows))
 	for _, row := range rows {
 		cities = append(cities, toDomain(row))
 	}
@@ -62,7 +62,7 @@ func (r *Repository) Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID)
 	}
 
 	if rowsAffected == 0 {
-		return domaincity.ErrNotFound
+		return city.ErrNotFound
 	}
 
 	return nil

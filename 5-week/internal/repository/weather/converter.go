@@ -2,16 +2,16 @@ package weather
 
 import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
-	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
 )
 
-func toDomain(history sqlc.WeatherHistory) domainhistory.History {
-	return domainhistory.History{
-		ID:          history.ID,
-		UserID:      history.UserID,
-		City:        history.City,
-		Temperature: history.Temperature,
-		Description: history.Description,
-		RequestedAt: history.RequestedAt,
+func toDomain(row sqlc.WeatherHistory) history.History {
+	return history.History{
+		ID:          row.ID,
+		UserID:      row.UserID,
+		City:        row.City,
+		Temperature: row.Temperature,
+		Description: row.Description,
+		RequestedAt: row.RequestedAt,
 	}
 }

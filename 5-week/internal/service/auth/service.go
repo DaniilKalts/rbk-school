@@ -7,21 +7,21 @@ import (
 
 	"github.com/google/uuid"
 
-	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 )
 
 var ErrInvalidCredentials = errors.New("неверный email или пароль")
 
 type Repository interface {
-	Create(ctx context.Context, u domainuser.User, password domainuser.Password) (*domainuser.User, error)
+	Create(ctx context.Context, u user.User, password user.Password) (*user.User, error)
 	GetCredentialsByEmail(ctx context.Context, email string) (*Credentials, error)
 }
 
 type Credentials struct {
 	ID       uuid.UUID
 	Email    string
-	Role     domainuser.Role
-	Password domainuser.Password
+	Role     user.Role
+	Password user.Password
 }
 
 func (c Credentials) Verify(plain string) bool {
@@ -60,12 +60,12 @@ func NewService(repository Repository, tokenManager TokenManager) *Service {
 }
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, error) {
-	password, err := domainuser.NewPassword(input.Password)
+	password, err := user.NewPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := domainuser.NewUser(input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	u, err := user.NewUser(input.FirstName, input.LastName, input.Email, user.RoleUser)
 	if err != nil {
 		return nil, err
 	}
@@ -79,14 +79,14 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, er
 }
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
-	email := domainuser.NormalizeEmail(input.Email)
+	email := user.NormalizeEmail(input.Email)
 	if email == "" || input.Password == "" {
 		return nil, ErrInvalidCredentials
 	}
 
 	credentials, err := s.repository.GetCredentialsByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, domainuser.ErrNotFound) {
+		if errors.Is(err, user.ErrNotFound) {
 			return nil, ErrInvalidCredentials
 		}
 
@@ -104,7 +104,7 @@ func (s *Service) Logout(ctx context.Context, accessToken string) error {
 	return s.tokenManager.Revoke(ctx, accessToken)
 }
 
-func (s *Service) generateToken(userID uuid.UUID, email string, role domainuser.Role) (*Token, error) {
+func (s *Service) generateToken(userID uuid.UUID, email string, role user.Role) (*Token, error) {
 	accessToken, expiresAt, err := s.tokenManager.Generate(userID, email, string(role))
 	if err != nil {
 		return nil, err
