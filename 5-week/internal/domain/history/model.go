@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 )
 
 type History struct {
@@ -16,24 +18,21 @@ type History struct {
 	RequestedAt time.Time
 }
 
-func NewHistory(id uuid.UUID, userID uuid.UUID, city string, temperature float64, description string) (*History, error) {
-	if id == uuid.Nil {
-		return nil, ErrInvalidID
+func NewHistory(userID uuid.UUID, city string, temperature float64, description string) (*History, error) {
+	h := &History{
+		ID:          uuid.New(),
+		UserID:      userID,
+		City:        domaincity.NormalizeCityName(city),
+		Temperature: temperature,
+		Description: strings.TrimSpace(description),
 	}
-	if userID == uuid.Nil {
+
+	if h.UserID == uuid.Nil {
 		return nil, ErrInvalidUserID
 	}
-	
-	city = strings.TrimSpace(city)
-	if city == "" {
+	if h.City == "" {
 		return nil, ErrInvalidCity
 	}
 
-	return &History{
-		ID:          id,
-		UserID:      userID,
-		City:        city,
-		Temperature: temperature,
-		Description: strings.TrimSpace(description),
-	}, nil
+	return h, nil
 }

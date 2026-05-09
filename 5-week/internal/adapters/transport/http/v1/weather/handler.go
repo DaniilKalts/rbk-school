@@ -42,8 +42,6 @@ func WriteServiceError(w http.ResponseWriter, err error) {
 		status, msg = http.StatusNotFound, err.Error()
 	case errors.Is(err, domainuser.ErrInvalidID),
 		errors.Is(err, domainweather.ErrInvalidCity),
-		errors.Is(err, domainweather.ErrInvalidLatitude),
-		errors.Is(err, domainweather.ErrInvalidLongitude),
 		errors.Is(err, domainweather.ErrInvalidLimit),
 		errors.Is(err, domainweather.ErrInvalidOffset):
 		status, msg = http.StatusBadRequest, err.Error()

@@ -1,8 +1,14 @@
 package weather
 
 import (
-	"strings"
 	"time"
+
+	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+)
+
+const (
+	temperatureMinCelsius = -100.0
+	temperatureMaxCelsius = 60.0
 )
 
 type Weather struct {
@@ -13,25 +19,28 @@ type Weather struct {
 	RequestedAt time.Time
 }
 
-func NewWeather(city string, latitude, longitude float64, temperature, feelsLike float64, weatherCode int) (Weather, error) {
-	city = NormalizeCityName(city)
+func NewWeather(city string, temperature, feelsLike float64, weatherCode int) (Weather, error) {
+	city = domaincity.NormalizeCityName(city)
 	if city == "" {
 		return Weather{}, ErrInvalidCity
 	}
-
-	if err := validateCoordinates(latitude, longitude); err != nil {
-		return Weather{}, err
+	if !validTemperature(temperature) || !validTemperature(feelsLike) {
+		return Weather{}, ErrInvalidTemperature
 	}
 
 	return Weather{
 		City:        city,
 		Temperature: temperature,
 		FeelsLike:   feelsLike,
-		Description: DescriptionByCode(weatherCode),
+		Description: descriptionByCode(weatherCode),
 	}, nil
 }
 
-func DescriptionByCode(code int) string {
+func validTemperature(t float64) bool {
+	return t >= temperatureMinCelsius && t <= temperatureMaxCelsius
+}
+
+func descriptionByCode(code int) string {
 	switch code {
 	case 0:
 		return "clear sky"
@@ -54,25 +63,4 @@ func DescriptionByCode(code int) string {
 	default:
 		return "unknown"
 	}
-}
-
-func validateCoordinates(latitude, longitude float64) error {
-	if latitude < -90 || latitude > 90 {
-		return ErrInvalidLatitude
-	}
-	if longitude < -180 || longitude > 180 {
-		return ErrInvalidLongitude
-	}
-
-	return nil
-}
-
-func NormalizeCityName(city string) string {
-	city = strings.TrimSpace(city)
-	if city == "" {
-		return city
-	}
-	city = strings.ToLower(city)
-
-	return strings.ToUpper(city[:1]) + city[1:]
 }

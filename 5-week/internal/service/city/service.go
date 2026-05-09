@@ -37,7 +37,7 @@ func (s *Service) Create(ctx context.Context, userID uuid.UUID, input CreateInpu
 		return nil, domaincity.ErrInvalidUserID
 	}
 
-	c, err := domaincity.NewCity(uuid.New(), userID, input.Name)
+	c, err := domaincity.NewCity(userID, input.Name)
 	if err != nil {
 		return nil, err
 	}

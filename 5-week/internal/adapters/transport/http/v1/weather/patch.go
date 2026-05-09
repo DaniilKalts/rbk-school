@@ -8,7 +8,7 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1/weather/dto"
-	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 )
 
 func (h *Handler) History() http.HandlerFunc {
@@ -34,7 +34,7 @@ func (h *Handler) History() http.HandlerFunc {
 			return
 		}
 
-		helpers.JSON(w, http.StatusOK, dto.ToUserWeatherHistoryResponse(userID, domainweather.NormalizeCityName(city), history))
+		helpers.JSON(w, http.StatusOK, dto.ToUserWeatherHistoryResponse(userID, domaincity.NormalizeCityName(city), history))
 	}
 }
 

@@ -9,8 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var validate = validator.New(validator.WithRequiredStructEnabled())
-
 type Role string
 
 const (
@@ -27,46 +25,37 @@ type User struct {
 
 	FirstName string `validate:"required,min=2,max=50"`
 	LastName  string `validate:"required,min=2,max=50"`
-	Email     string `validate:"required,email"`
+	Email     string `validate:"required,email,max=254"`
 	Role      Role   `validate:"required"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type Credentials struct {
-	ID           uuid.UUID
-	Email        string
-	Role         Role
-	PasswordHash string
-	Salt         string
-}
-
-func NewUser(id uuid.UUID, firstName string, lastName string, email string, role Role) (*User, error) {
+func NewUser(firstName, lastName, email string, role Role) (*User, error) {
 	u := &User{
-		ID:        id,
-		FirstName: strings.TrimSpace(firstName),
-		LastName:  strings.TrimSpace(lastName),
-		Email:     strings.ToLower(strings.TrimSpace(email)),
-		Role:      role,
+		ID:   uuid.New(),
+		Role: role,
 	}
-
-	if u.ID == uuid.Nil {
-		return nil, ErrInvalidID
-	}
-
-	if err := u.Validate(); err != nil {
+	if err := u.UpdateProfile(firstName, lastName, email); err != nil {
 		return nil, err
 	}
 
 	return u, nil
 }
 
-func (u User) Validate() error {
+func (u *User) UpdateProfile(firstName, lastName, email string) error {
+	u.FirstName = strings.TrimSpace(firstName)
+	u.LastName = strings.TrimSpace(lastName)
+	u.Email = NormalizeEmail(email)
+
+	return u.Validate()
+}
+
+func (u *User) Validate() error {
 	if err := mapValidationError(validate.Struct(u)); err != nil {
 		return err
 	}
-
 	if !u.Role.IsValid() {
 		return ErrInvalidRole
 	}
@@ -74,13 +63,11 @@ func (u User) Validate() error {
 	return nil
 }
 
-func ValidatePassword(password string) error {
-	if err := validate.Var(password, "required"); err != nil {
-		return ErrInvalidPassword
-	}
-
-	return nil
+func NormalizeEmail(email string) string {
+	return strings.ToLower(strings.TrimSpace(email))
 }
+
+var validate = validator.New(validator.WithRequiredStructEnabled())
 
 func mapValidationError(err error) error {
 	if err == nil {
@@ -93,8 +80,8 @@ func mapValidationError(err error) error {
 	}
 
 	for _, fieldErr := range validationErrors {
-		if err, ok := fieldErrors[fieldErr.Field()]; ok {
-			return err
+		if mapped, ok := fieldErrors[fieldErr.Field()]; ok {
+			return mapped
 		}
 	}
 

@@ -16,6 +16,7 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
+	userrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/service"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 )
@@ -104,7 +105,7 @@ func (c *Container) TokenBlacklist() repository.TokenBlacklist {
 	return c.Caches().TokenBlacklist
 }
 
-func (c *Container) UserRepository() repository.UserRepository {
+func (c *Container) UserRepository() *userrepo.Repository {
 	return c.Repositories().User
 }
 

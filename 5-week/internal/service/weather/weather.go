@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 
+	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
@@ -61,7 +62,7 @@ func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainwe
 }
 
 func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweather.Weather, error) {
-	cacheKey := domainweather.NormalizeCityName(city)
+	cacheKey := domaincity.NormalizeCityName(city)
 	if s.weatherCache != nil {
 		weather, ok, err := s.weatherCache.Get(ctx, cacheKey)
 		if err != nil {
@@ -83,8 +84,6 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 
 	weather, err := domainweather.NewWeather(
 		city,
-		coords.Latitude,
-		coords.Longitude,
 		weatherResponse.Current.Temperature2M,
 		weatherResponse.Current.ApparentTemperature,
 		weatherResponse.Current.WeatherCode,
@@ -103,7 +102,7 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 }
 
 func (s *Service) createHistory(ctx context.Context, userID uuid.UUID, weather domainweather.Weather) (domainhistory.History, error) {
-	historyModel, err := domainhistory.NewHistory(uuid.New(), userID, weather.City, weather.Temperature, weather.Description)
+	historyModel, err := domainhistory.NewHistory(userID, weather.City, weather.Temperature, weather.Description)
 	if err != nil {
 		return domainhistory.History{}, err
 	}

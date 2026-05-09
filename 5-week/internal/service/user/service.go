@@ -2,16 +2,14 @@ package user
 
 import (
 	"context"
-	"strings"
 
 	"github.com/google/uuid"
 
 	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 )
 
 type Repository interface {
-	Create(ctx context.Context, u domainuser.User, passwordHash string, salt string) (*domainuser.User, error)
+	Create(ctx context.Context, u domainuser.User, password domainuser.Password) (*domainuser.User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error)
 	GetByEmail(ctx context.Context, email string) (*domainuser.User, error)
 	List(ctx context.Context) ([]domainuser.User, error)
@@ -41,26 +39,17 @@ func NewService(repository Repository) *Service {
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*domainuser.User, error) {
-	if err := domainuser.ValidatePassword(input.Password); err != nil {
-		return nil, err
-	}
-
-	u, err := domainuser.NewUser(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	password, err := domainuser.NewPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	salt, err := utils.GenerateSalt()
+	u, err := domainuser.NewUser(input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}
 
-	passwordHash, err := utils.HashPassword(input.Password, salt)
-	if err != nil {
-		return nil, err
-	}
-
-	created, err := s.repository.Create(ctx, *u, passwordHash, salt)
+	created, err := s.repository.Create(ctx, *u, password)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +71,7 @@ func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, 
 }
 
 func (s *Service) GetByEmail(ctx context.Context, email string) (*domainuser.User, error) {
-	email = strings.ToLower(strings.TrimSpace(email))
+	email = domainuser.NormalizeEmail(email)
 	if email == "" {
 		return nil, domainuser.ErrInvalidEmail
 	}
@@ -114,12 +103,11 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (
 		return nil, err
 	}
 
-	u, err := domainuser.NewUser(id, input.FirstName, input.LastName, input.Email, existing.Role)
-	if err != nil {
+	if err := existing.UpdateProfile(input.FirstName, input.LastName, input.Email); err != nil {
 		return nil, err
 	}
 
-	updated, err := s.repository.Update(ctx, *u)
+	updated, err := s.repository.Update(ctx, *existing)
 	if err != nil {
 		return nil, err
 	}

@@ -3,20 +3,29 @@ package auth
 import (
 	"context"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
 
 	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 )
 
 var ErrInvalidCredentials = errors.New("неверный email или пароль")
 
 type Repository interface {
-	Create(ctx context.Context, u domainuser.User, passwordHash string, salt string) (*domainuser.User, error)
-	GetCredentialsByEmail(ctx context.Context, email string) (*domainuser.Credentials, error)
+	Create(ctx context.Context, u domainuser.User, password domainuser.Password) (*domainuser.User, error)
+	GetCredentialsByEmail(ctx context.Context, email string) (*Credentials, error)
+}
+
+type Credentials struct {
+	ID       uuid.UUID
+	Email    string
+	Role     domainuser.Role
+	Password domainuser.Password
+}
+
+func (c Credentials) Verify(plain string) bool {
+	return c.Password.Matches(plain)
 }
 
 type TokenManager interface {
@@ -51,26 +60,17 @@ func NewService(repository Repository, tokenManager TokenManager) *Service {
 }
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, error) {
-	if err := domainuser.ValidatePassword(input.Password); err != nil {
-		return nil, err
-	}
-
-	u, err := domainuser.NewUser(uuid.New(), input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
+	password, err := domainuser.NewPassword(input.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	salt, err := utils.GenerateSalt()
+	u, err := domainuser.NewUser(input.FirstName, input.LastName, input.Email, domainuser.RoleUser)
 	if err != nil {
 		return nil, err
 	}
 
-	passwordHash, err := utils.HashPassword(input.Password, salt)
-	if err != nil {
-		return nil, err
-	}
-
-	created, err := s.repository.Create(ctx, *u, passwordHash, salt)
+	created, err := s.repository.Create(ctx, *u, password)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, er
 }
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
-	email := strings.ToLower(strings.TrimSpace(input.Email))
+	email := domainuser.NormalizeEmail(input.Email)
 	if email == "" || input.Password == "" {
 		return nil, ErrInvalidCredentials
 	}
@@ -93,7 +93,7 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {
 		return nil, err
 	}
 
-	if !utils.VerifyPassword(input.Password, credentials.Salt, credentials.PasswordHash) {
+	if !credentials.Verify(input.Password) {
 		return nil, ErrInvalidCredentials
 	}
 

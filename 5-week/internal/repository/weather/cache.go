@@ -10,6 +10,7 @@ import (
 
 	redisclient "github.com/redis/go-redis/v9"
 
+	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
 )
 
@@ -57,5 +58,5 @@ func (c *WeatherCache) Set(ctx context.Context, city string, weather domainweath
 }
 
 func weatherKey(city string) string {
-	return weatherKeyPrefix + strings.ToLower(domainweather.NormalizeCityName(city))
+	return weatherKeyPrefix + strings.ToLower(domaincity.NormalizeCityName(city))
 }

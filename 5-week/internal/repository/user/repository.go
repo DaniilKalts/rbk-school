@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -12,6 +11,7 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
 	domainuser "github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	serviceauth "github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
 )
 
 const emailUniqueIndex = "users_email_idx"
@@ -24,14 +24,14 @@ func NewRepository(db sqlc.DBTX) *Repository {
 	return &Repository{queries: sqlc.New(db)}
 }
 
-func (r *Repository) Create(ctx context.Context, u domainuser.User, passwordHash string, salt string) (*domainuser.User, error) {
+func (r *Repository) Create(ctx context.Context, u domainuser.User, password domainuser.Password) (*domainuser.User, error) {
 	row, err := r.queries.CreateUser(ctx, sqlc.CreateUserParams{
 		ID:           u.ID,
 		FirstName:    u.FirstName,
 		LastName:     u.LastName,
 		Email:        u.Email,
-		PasswordHash: passwordHash,
-		Salt:         salt,
+		PasswordHash: password.Hash,
+		Salt:         password.Salt,
 		Role:         sqlc.UserRole(u.Role),
 	})
 	if err != nil {
@@ -75,7 +75,7 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.Use
 }
 
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.User, error) {
-	row, err := r.queries.GetUserByEmail(ctx, strings.ToLower(strings.TrimSpace(email)))
+	row, err := r.queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domainuser.ErrNotFound
@@ -95,8 +95,8 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*domainuser.
 	)), nil
 }
 
-func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*domainuser.Credentials, error) {
-	row, err := r.queries.GetUserCredentialsByEmail(ctx, strings.ToLower(strings.TrimSpace(email)))
+func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*serviceauth.Credentials, error) {
+	row, err := r.queries.GetUserCredentialsByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, domainuser.ErrNotFound
@@ -105,12 +105,11 @@ func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*
 		return nil, fmt.Errorf("получение учетных данных пользователя по email: %w", err)
 	}
 
-	return &domainuser.Credentials{
-		ID:           row.ID,
-		Email:        row.Email,
-		Role:         domainuser.Role(row.Role),
-		PasswordHash: row.PasswordHash,
-		Salt:         row.Salt,
+	return &serviceauth.Credentials{
+		ID:       row.ID,
+		Email:    row.Email,
+		Role:     domainuser.Role(row.Role),
+		Password: domainuser.Password{Hash: row.PasswordHash, Salt: row.Salt},
 	}, nil
 }
 

@@ -8,22 +8,11 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres/sqlc"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/weather"
 
 	cityrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/city"
 	userrepo "github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
 )
-
-type UserRepository interface {
-	Create(ctx context.Context, u user.User, passwordHash string, salt string) (*user.User, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*user.User, error)
-	GetByEmail(ctx context.Context, email string) (*user.User, error)
-	GetCredentialsByEmail(ctx context.Context, email string) (*user.Credentials, error)
-	List(ctx context.Context) ([]user.User, error)
-	Update(ctx context.Context, u user.User) (*user.User, error)
-	SoftDelete(ctx context.Context, id uuid.UUID) error
-}
 
 type CityRepository interface {
 	Create(ctx context.Context, c city.City) (*city.City, error)
@@ -37,7 +26,7 @@ type WeatherRepository interface {
 }
 
 type Repositories struct {
-	User    UserRepository
+	User    *userrepo.Repository
 	City    CityRepository
 	Weather WeatherRepository
 }
