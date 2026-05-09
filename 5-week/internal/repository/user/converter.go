@@ -9,22 +9,25 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
 )
 
-func toDomainBase(
-	id uuid.UUID,
-	firstName string,
-	lastName string,
-	email string,
-	role sqlc.UserRole,
-	createdAt time.Time,
-	updatedAt time.Time,
-) user.User {
-	return user.User{
-		ID:        id,
-		FirstName: firstName,
-		LastName:  lastName,
-		Email:     email,
-		Role:      user.Role(role),
-		CreatedAt: createdAt,
-		UpdatedAt: updatedAt,
+type userRow struct {
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Role      sqlc.UserRole
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
+func toDomain(r userRow) *user.User {
+	return &user.User{
+		ID:        r.ID,
+		FirstName: r.FirstName,
+		LastName:  r.LastName,
+		Email:     r.Email,
+		Role:      user.Role(r.Role),
+		CreatedAt: r.CreatedAt,
+		UpdatedAt: r.UpdatedAt,
 	}
 }

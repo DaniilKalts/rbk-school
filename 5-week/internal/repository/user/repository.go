@@ -41,15 +41,7 @@ func (r *Repository) Create(ctx context.Context, u user.User, password user.Pass
 		return nil, fmt.Errorf("создание пользователя: %w", err)
 	}
 
-	return new(toDomainBase(
-		row.ID,
-		row.FirstName,
-		row.LastName,
-		row.Email,
-		row.Role,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)), nil
+	return toDomain(userRow(row)), nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*user.User, error) {
@@ -62,15 +54,7 @@ func (r *Repository) GetByID(ctx context.Context, id uuid.UUID) (*user.User, err
 		return nil, fmt.Errorf("получение пользователя по id: %w", err)
 	}
 
-	return new(toDomainBase(
-		row.ID,
-		row.FirstName,
-		row.LastName,
-		row.Email,
-		row.Role,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)), nil
+	return toDomain(userRow(row)), nil
 }
 
 func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, error) {
@@ -83,15 +67,7 @@ func (r *Repository) GetByEmail(ctx context.Context, email string) (*user.User, 
 		return nil, fmt.Errorf("получение пользователя по email: %w", err)
 	}
 
-	return new(toDomainBase(
-		row.ID,
-		row.FirstName,
-		row.LastName,
-		row.Email,
-		row.Role,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)), nil
+	return toDomain(userRow(row)), nil
 }
 
 func (r *Repository) GetCredentialsByEmail(ctx context.Context, email string) (*user.User, user.Password, error) {
@@ -122,15 +98,7 @@ func (r *Repository) List(ctx context.Context) ([]user.User, error) {
 
 	users := make([]user.User, 0, len(rows))
 	for _, row := range rows {
-		users = append(users, toDomainBase(
-			row.ID,
-			row.FirstName,
-			row.LastName,
-			row.Email,
-			row.Role,
-			row.CreatedAt,
-			row.UpdatedAt,
-		))
+		users = append(users, *toDomain(userRow(row)))
 	}
 
 	return users, nil
@@ -155,15 +123,7 @@ func (r *Repository) Update(ctx context.Context, u user.User) (*user.User, error
 		return nil, fmt.Errorf("обновление пользователя: %w", err)
 	}
 
-	return new(toDomainBase(
-		row.ID,
-		row.FirstName,
-		row.LastName,
-		row.Email,
-		row.Role,
-		row.CreatedAt,
-		row.UpdatedAt,
-	)), nil
+	return toDomain(userRow(row)), nil
 }
 
 func (r *Repository) SoftDelete(ctx context.Context, id uuid.UUID) error {
