@@ -16,16 +16,16 @@ import (
 
 const weatherKeyPrefix = "weather:"
 
-type WeatherCache struct {
+type Cache struct {
 	client *redis.Client
 	ttl    time.Duration
 }
 
-func NewWeatherCache(client *redis.Client, ttl time.Duration) *WeatherCache {
-	return &WeatherCache{client: client, ttl: ttl}
+func NewCache(client *redis.Client, ttl time.Duration) *Cache {
+	return &Cache{client: client, ttl: ttl}
 }
 
-func (c *WeatherCache) Get(ctx context.Context, city string) (domainweather.Weather, bool, error) {
+func (c *Cache) Get(ctx context.Context, city string) (domainweather.Weather, bool, error) {
 	value, err := c.client.Get(ctx, weatherKey(city)).Result()
 	if errors.Is(err, redis.Nil) {
 		return domainweather.Weather{}, false, nil
@@ -42,7 +42,7 @@ func (c *WeatherCache) Get(ctx context.Context, city string) (domainweather.Weat
 	return weather, true, nil
 }
 
-func (c *WeatherCache) Set(ctx context.Context, city string, weather domainweather.Weather) error {
+func (c *Cache) Set(ctx context.Context, city string, weather domainweather.Weather) error {
 	weather.RequestedAt = time.Time{}
 
 	data, err := json.Marshal(weather)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
@@ -59,7 +60,7 @@ func NewServices(auth AuthService, user UserService, city CityService, weather W
 	}
 }
 
-func NewServicesFromDependencies(repositories *repository.Repositories, clients *client.Clients, tokenManager auth.TokenManager) *Services {
+func NewServicesFromDependencies(repositories *repository.Repositories, caches *cache.Caches, clients *client.Clients, tokenManager auth.TokenManager) *Services {
 	authService := auth.NewService(repositories.User, tokenManager)
 	userService := serviceuser.NewService(repositories.User)
 	cityService := servicecity.NewService(repositories.City, repositories.User)
@@ -69,7 +70,7 @@ func NewServicesFromDependencies(repositories *repository.Repositories, clients 
 		repositories.Weather,
 		clients.Geocoding,
 		clients.OpenMeteo,
-		clients.WeatherCache,
+		caches.Weather,
 	)
 
 	return NewServices(authService, userService, cityService, weatherService)

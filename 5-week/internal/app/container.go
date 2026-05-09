@@ -11,6 +11,8 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/database/postgres"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapters/transport/http/v1"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/cache/blacklist"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
@@ -23,28 +25,19 @@ import (
 )
 
 type Container struct {
-	// Конфигурация приложения.
 	config *config.Config
 
-	// Инфраструктурные зависимости.
 	db         *pgxpool.Pool
 	redis      *redis.Client
 	httpClient *http.Client
 
-	// Внешние клиенты.
-	clients *client.Clients
-
-	// Репозитории.
+	clients      *client.Clients
 	repositories *repository.Repositories
+	caches       *cache.Caches
 
-	// Кеши.
-	caches *repository.Caches
-
-	// Сервисы и безопасность.
 	tokenManager *utils.JWTManager
 	services     *service.Services
 
-	// Транспортный слой.
 	router http.Handler
 }
 
@@ -75,12 +68,12 @@ func (c *Container) DB() *pgxpool.Pool {
 
 func (c *Container) Redis() *redis.Client {
 	if c.redis == nil {
-		redisClient, err := redisclient.NewClient(context.Background(), &c.config.Redis)
+		client, err := redisclient.NewClient(context.Background(), &c.config.Redis)
 		if err != nil {
 			log.Fatalf("не удалось создать клиент redis: %v", err)
 		}
 
-		c.redis = redisClient
+		c.redis = client
 	}
 
 	return c.redis
@@ -96,13 +89,29 @@ func (c *Container) HTTPClient() *http.Client {
 
 func (c *Container) Clients() *client.Clients {
 	if c.clients == nil {
-		c.clients = client.NewClients(c.HTTPClient(), c.Redis(), c.config.Redis.WeatherCacheTTL)
+		c.clients = client.NewClients(c.HTTPClient())
 	}
 
 	return c.clients
 }
 
-func (c *Container) TokenBlacklist() repository.TokenBlacklist {
+func (c *Container) Repositories() *repository.Repositories {
+	if c.repositories == nil {
+		c.repositories = repository.NewRepositories(c.DB())
+	}
+
+	return c.repositories
+}
+
+func (c *Container) Caches() *cache.Caches {
+	if c.caches == nil {
+		c.caches = cache.NewCaches(c.Redis(), c.config.Redis.WeatherCacheTTL)
+	}
+
+	return c.caches
+}
+
+func (c *Container) TokenBlacklist() *blacklist.Blacklist {
 	return c.Caches().TokenBlacklist
 }
 
@@ -116,22 +125,6 @@ func (c *Container) CityRepository() repository.CityRepository {
 
 func (c *Container) WeatherRepository() repository.WeatherRepository {
 	return c.Repositories().Weather
-}
-
-func (c *Container) Repositories() *repository.Repositories {
-	if c.repositories == nil {
-		c.repositories = repository.NewRepositories(c.DB())
-	}
-
-	return c.repositories
-}
-
-func (c *Container) Caches() *repository.Caches {
-	if c.caches == nil {
-		c.caches = repository.NewCaches(c.Redis())
-	}
-
-	return c.caches
 }
 
 func (c *Container) TokenManager() *utils.JWTManager {
@@ -160,7 +153,7 @@ func (c *Container) WeatherService() service.WeatherService {
 
 func (c *Container) Services() *service.Services {
 	if c.services == nil {
-		c.services = service.NewServicesFromDependencies(c.Repositories(), c.Clients(), c.TokenManager())
+		c.services = service.NewServicesFromDependencies(c.Repositories(), c.Caches(), c.Clients(), c.TokenManager())
 	}
 
 	return c.services
