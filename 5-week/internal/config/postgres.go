@@ -1,4 +1,4 @@
-package postgres
+package config
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type Config struct {
+type Postgres struct {
 	Host            string        `env:"HOST" envDefault:"localhost"`
 	Port            int           `env:"PORT" envDefault:"5432"`
 	User            string        `env:"USER" envDefault:"postgres"`
@@ -20,7 +20,7 @@ type Config struct {
 	MaxConnIdleTime time.Duration `env:"MAX_CONN_IDLE_TIME" envDefault:"30m"`
 }
 
-func (c Config) Validate() error {
+func (c Postgres) Validate() error {
 	if strings.TrimSpace(c.Host) == "" {
 		return fmt.Errorf("host обязателен")
 	}
@@ -64,7 +64,7 @@ func (c Config) Validate() error {
 	return nil
 }
 
-func (c Config) DSN() string {
+func (c Postgres) DSN() string {
 	dsn := url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(c.User, c.Password),

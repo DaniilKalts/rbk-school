@@ -1,4 +1,4 @@
-package redis
+package config
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Config struct {
+type Redis struct {
 	Addr            string        `env:"ADDR" envDefault:"localhost:6379"`
 	Password        string        `env:"PASSWORD"`
 	DB              int           `env:"DB" envDefault:"0"`
@@ -16,7 +16,7 @@ type Config struct {
 	WeatherCacheTTL time.Duration `env:"WEATHER_CACHE_TTL" envDefault:"10m"`
 }
 
-func (c Config) Validate() error {
+func (c Redis) Validate() error {
 	if strings.TrimSpace(c.Addr) == "" {
 		return fmt.Errorf("адрес обязателен")
 	}

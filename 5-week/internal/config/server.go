@@ -1,4 +1,4 @@
-package server
+package config
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-type Config struct {
+type Server struct {
 	Addr        string        `env:"ADDR" envDefault:":8080"`
 	HTTPTimeout time.Duration `env:"HTTP_TIMEOUT" envDefault:"15s"`
 }
 
-func (c Config) Validate() error {
+func (c Server) Validate() error {
 	if strings.TrimSpace(c.Addr) == "" {
 		return fmt.Errorf("адрес обязателен")
 	}

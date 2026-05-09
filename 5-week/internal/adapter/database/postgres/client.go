@@ -9,12 +9,12 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config/postgres"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 )
 
 const migrationsDir = "./database/migrations"
 
-func NewClient(ctx context.Context, cfg *postgres.Config) (*pgxpool.Pool, error) {
+func NewClient(ctx context.Context, cfg *config.Postgres) (*pgxpool.Pool, error) {
 	if err := runMigrations(cfg); err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func NewClient(ctx context.Context, cfg *postgres.Config) (*pgxpool.Pool, error)
 	return pool, nil
 }
 
-func runMigrations(cfg *postgres.Config) error {
+func runMigrations(cfg *config.Postgres) error {
 	db, err := sql.Open("pgx", cfg.DSN())
 	if err != nil {
 		return fmt.Errorf("открытие подключения для миграций postgres: %w", err)

@@ -6,10 +6,10 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	configredis "github.com/DaniilKalts/rbk-school/5-week/internal/config/redis"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 )
 
-func NewClient(ctx context.Context, cfg *configredis.Config) (*redis.Client, error) {
+func NewClient(ctx context.Context, cfg *config.Redis) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:         cfg.Addr,
 		Password:     cfg.Password,
@@ -20,7 +20,7 @@ func NewClient(ctx context.Context, cfg *configredis.Config) (*redis.Client, err
 	})
 
 	if err := client.Ping(ctx).Err(); err != nil {
-		client.Close()
+		_ = client.Close()
 		return nil, fmt.Errorf("проверка подключения к redis %s: %w", cfg.Addr, err)
 	}
 

@@ -1,4 +1,4 @@
-package jwt
+package config
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-type Config struct {
+type JWT struct {
 	Secret         string        `env:"SECRET"`
 	AccessTokenTTL time.Duration `env:"ACCESS_TOKEN_TTL" envDefault:"15m"`
 }
 
-func (c Config) Validate() error {
+func (c JWT) Validate() error {
 	if strings.TrimSpace(c.Secret) == "" {
 		return fmt.Errorf("секрет обязателен")
 	}

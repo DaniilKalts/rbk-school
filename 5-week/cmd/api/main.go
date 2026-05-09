@@ -18,7 +18,7 @@ func main() {
 		log.Fatalf("не удалось загрузить конфигурацию: %v", err)
 	}
 
-	a := app.NewApp(cfg)
+	a := app.NewApp(&cfg)
 
 	if err := a.Run(); err != nil {
 		log.Fatalf("не удалось запустить приложение: %v", err)

@@ -1,19 +1,12 @@
 package config
 
-import (
-	"fmt"
-
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config/jwt"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config/postgres"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config/redis"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config/server"
-)
+import "fmt"
 
 type Config struct {
-	Server   server.Config   `envPrefix:"SERVER_"`
-	Postgres postgres.Config `envPrefix:"POSTGRES_"`
-	Redis    redis.Config    `envPrefix:"REDIS_"`
-	JWT      jwt.Config      `envPrefix:"JWT_"`
+	Server   Server   `envPrefix:"SERVER_"`
+	Postgres Postgres `envPrefix:"POSTGRES_"`
+	Redis    Redis    `envPrefix:"REDIS_"`
+	JWT      JWT      `envPrefix:"JWT_"`
 }
 
 func (c Config) Validate() error {
