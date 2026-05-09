@@ -11,12 +11,12 @@ import (
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/client"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/service"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 
 	redisclient "github.com/DaniilKalts/rbk-school/5-week/internal/adapter/cache/redis"
 	transporthttp "github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http"
@@ -33,7 +33,7 @@ type Container struct {
 	repositories *repository.Repositories
 	caches       *cache.Caches
 
-	tokenManager *utils.JWTManager
+	tokenManager *jwt.Manager
 	services     *service.Services
 
 	router http.Handler
@@ -125,9 +125,9 @@ func (c *Container) WeatherRepository() repository.WeatherRepository {
 	return c.Repositories().Weather
 }
 
-func (c *Container) TokenManager() *utils.JWTManager {
+func (c *Container) TokenManager() *jwt.Manager {
 	if c.tokenManager == nil {
-		c.tokenManager = utils.NewJWTManager([]byte(c.config.JWT.Secret), c.config.JWT.AccessTokenTTL, c.TokenBlacklist())
+		c.tokenManager = jwt.NewManager([]byte(c.config.JWT.Secret), c.config.JWT.AccessTokenTTL, c.TokenBlacklist())
 	}
 
 	return c.tokenManager

@@ -7,9 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/helpers"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
 
 	serviceuser "github.com/DaniilKalts/rbk-school/5-week/internal/service/user"
 )
@@ -44,7 +44,7 @@ func WriteServiceError(w http.ResponseWriter, err error) {
 		status, msg = http.StatusConflict, err.Error()
 	case errors.Is(err, user.ErrInvalidID), errors.Is(err, user.ErrInvalidFirstName), errors.Is(err, user.ErrInvalidLastName), errors.Is(err, user.ErrInvalidEmail), errors.Is(err, user.ErrInvalidPassword), errors.Is(err, user.ErrInvalidRole):
 		status, msg = http.StatusBadRequest, err.Error()
-	case errors.Is(err, utils.ErrInvalidToken):
+	case errors.Is(err, jwt.ErrInvalidToken):
 		status, msg = http.StatusUnauthorized, err.Error()
 	}
 	helpers.JSON(w, status, helpers.NewErrorResponse(status, msg))

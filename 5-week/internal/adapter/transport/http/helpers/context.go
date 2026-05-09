@@ -3,10 +3,10 @@ package helpers
 import (
 	"context"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/utils"
+	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
 )
 
-type Claims = utils.Claims
+type Claims = jwt.Claims
 
 type contextKey string
 
