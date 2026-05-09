@@ -13,7 +13,6 @@ import (
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/cache/blacklist"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/repository/user"
@@ -111,7 +110,7 @@ func (c *Container) Caches() *cache.Caches {
 	return c.caches
 }
 
-func (c *Container) TokenBlacklist() *blacklist.Blacklist {
+func (c *Container) TokenBlacklist() cache.TokenBlacklist {
 	return c.Caches().TokenBlacklist
 }
 
