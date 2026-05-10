@@ -8,16 +8,17 @@ import (
 )
 
 type Postgres struct {
-	Host            string        `env:"HOST" envDefault:"localhost"`
-	Port            int           `env:"PORT" envDefault:"5432"`
-	User            string        `env:"USER" envDefault:"postgres"`
-	Password        string        `env:"PASSWORD" envDefault:"postgres"`
-	Database        string        `env:"DATABASE" envDefault:"weather_api"`
-	SSLMode         string        `env:"SSL_MODE" envDefault:"disable"`
-	MaxConns        int32         `env:"MAX_CONNS" envDefault:"10"`
-	MinConns        int32         `env:"MIN_CONNS" envDefault:"1"`
-	MaxConnLifetime time.Duration `env:"MAX_CONN_LIFETIME" envDefault:"1h"`
-	MaxConnIdleTime time.Duration `env:"MAX_CONN_IDLE_TIME" envDefault:"30m"`
+	Host             string        `env:"HOST" envDefault:"localhost"`
+	Port             int           `env:"PORT" envDefault:"5432"`
+	User             string        `env:"USER" envDefault:"postgres"`
+	Password         string        `env:"PASSWORD" envDefault:"postgres"`
+	Database         string        `env:"DATABASE" envDefault:"weather_api"`
+	SSLMode          string        `env:"SSL_MODE" envDefault:"disable"`
+	MaxConns         int32         `env:"MAX_CONNS" envDefault:"10"`
+	MinConns         int32         `env:"MIN_CONNS" envDefault:"1"`
+	MaxConnLifetime  time.Duration `env:"MAX_CONN_LIFETIME" envDefault:"1h"`
+	MaxConnIdleTime  time.Duration `env:"MAX_CONN_IDLE_TIME" envDefault:"30m"`
+	StatementTimeout time.Duration `env:"STATEMENT_TIMEOUT" envDefault:"3s"`
 }
 
 func (c Postgres) Validate() error {
@@ -59,6 +60,10 @@ func (c Postgres) Validate() error {
 
 	if c.MaxConnIdleTime <= 0 {
 		return fmt.Errorf("max conn idle time должен быть положительным")
+	}
+
+	if c.StatementTimeout <= 0 {
+		return fmt.Errorf("statement timeout должен быть положительным")
 	}
 
 	return nil

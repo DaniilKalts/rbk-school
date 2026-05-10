@@ -2,14 +2,16 @@ package transporthttp
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/swagger"
 	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1"
 )
 
-func NewRouter(deps v1.Dependencies) http.Handler {
+func NewRouter(deps v1.Dependencies, handlerTimeout time.Duration) http.Handler {
 	r := chi.NewRouter()
 	swagger.RegisterRoutes(r)
 
@@ -19,7 +21,10 @@ func NewRouter(deps v1.Dependencies) http.Handler {
 		_, _ = w.Write([]byte("ok"))
 	})
 
-	v1.RegisterRoutes(r, deps)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Timeout(handlerTimeout))
+		v1.RegisterRoutes(r, deps)
+	})
 
 	return r
 }

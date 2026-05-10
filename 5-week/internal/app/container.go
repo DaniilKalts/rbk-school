@@ -153,7 +153,7 @@ func (c *Container) Router() http.Handler {
 			WeatherService: c.WeatherService(),
 			UserService:    c.UserService(),
 			TokenManager:   c.TokenManager(),
-		})
+		}, c.config.Server.HandlerTimeout)
 	}
 
 	return c.router
