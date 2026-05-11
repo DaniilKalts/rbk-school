@@ -1,0 +1,60 @@
+weather:
+  get:
+    tags: ["Погода 🌦️"]
+    summary: Погода пользователя
+    description: |
+      Возвращает погоду по всем городам, которые отслеживает текущий пользователь из JWT.
+
+      Сервис проверяет пользователя через `deleted_at IS NULL`, получает список городов, запрашивает погоду во внешнем API Open-Meteo и сохраняет каждую запись в `weather_history`.
+    operationId: getUserWeather
+    responses:
+      '200':
+        description: Агрегированная погода по городам пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/weather.yaml#/UserWeatherResponse'
+            examples:
+              weather:
+                $ref: '../components/examples/weather.yaml#/userWeather'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+history:
+  get:
+    tags: ["Погода 🌦️"]
+    summary: История погоды
+    description: |
+      Возвращает историю погодных запросов текущего пользователя из JWT.
+
+      Query-параметр `city` необязателен: если он передан, история фильтруется по городу; если не передан, возвращается вся история пользователя. Результат сортируется по `requested_at DESC`, а `limit` и `offset` управляют пагинацией.
+    operationId: getUserWeatherHistory
+    parameters:
+      - $ref: '../components/parameters.yaml#/HistoryCity'
+      - $ref: '../components/parameters.yaml#/HistoryLimit'
+      - $ref: '../components/parameters.yaml#/HistoryOffset'
+    responses:
+      '200':
+        description: История погоды пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/weather.yaml#/UserWeatherHistoryResponse'
+            examples:
+              almaty:
+                $ref: '../components/examples/weather.yaml#/historyByCity'
+              allCities:
+                $ref: '../components/examples/weather.yaml#/historyAllCities'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'

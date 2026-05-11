@@ -1,0 +1,46 @@
+userRegister:
+  summary: Новый пользователь
+  value:
+    first_name: Daniil
+    last_name: Kalts
+    email: daniil@example.com
+    password: strong-password
+userUpdate:
+  summary: Новые данные пользователя
+  value:
+    first_name: Daniil
+    last_name: Kalts
+    email: daniil.new@example.com
+userResponse:
+  summary: Пользователь Daniil
+  value:
+    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    first_name: Daniil
+    last_name: Kalts
+    email: daniil@example.com
+    created_at: '2026-04-26T10:00:00Z'
+    updated_at: '2026-04-26T10:00:00Z'
+userResponseUpdated:
+  summary: Обновленный пользователь
+  value:
+    id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    first_name: Daniil
+    last_name: Kalts
+    email: daniil.new@example.com
+    created_at: '2026-04-26T10:00:00Z'
+    updated_at: '2026-04-26T11:00:00Z'
+userList:
+  summary: Активные пользователи
+  value:
+    - id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+      first_name: Daniil
+      last_name: Kalts
+      email: daniil@example.com
+      created_at: '2026-04-26T10:00:00Z'
+      updated_at: '2026-04-26T10:00:00Z'
+    - id: 018f1b79-9f77-7a4f-92b7-8c2de04b9c1a
+      first_name: Alina
+      last_name: Smirnova
+      email: alina@example.com
+      created_at: '2026-04-26T10:05:00Z'
+      updated_at: '2026-04-26T10:05:00Z'

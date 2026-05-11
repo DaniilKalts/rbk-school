@@ -1,0 +1,15 @@
+ErrorResponse:
+  type: object
+  description: Ответ с понятным сообщением об ошибке.
+  required:
+    - code
+    - message
+  properties:
+    code:
+      type: integer
+      description: HTTP-код ошибки.
+      example: 400
+    message:
+      type: string
+      description: Описание ошибки.
+      example: некорректное тело запроса

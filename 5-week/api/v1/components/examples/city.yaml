@@ -1,0 +1,22 @@
+cityRequest:
+  summary: Новый город
+  value:
+    city: Almaty
+cityResponse:
+  summary: Добавленный город
+  value:
+    id: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    city: Almaty
+    created_at: '2026-04-26T10:20:00Z'
+cityList:
+  summary: Отслеживаемые города
+  value:
+    - id: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+      user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+      city: Almaty
+      created_at: '2026-04-26T10:20:00Z'
+    - id: 018f1b79-b67c-73c1-870c-116037ab7846
+      user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+      city: Astana
+      created_at: '2026-04-26T10:25:00Z'

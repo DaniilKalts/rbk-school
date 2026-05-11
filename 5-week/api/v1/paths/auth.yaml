@@ -1,0 +1,75 @@
+register:
+  post:
+    tags: ["Аутентификация 🔐"]
+    summary: Регистрация пользователя
+    description: Создает нового пользователя и возвращает access token.
+    operationId: register
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/auth.yaml#/RegisterRequest'
+          examples:
+            daniil:
+              $ref: '../components/examples/user.yaml#/userRegister'
+    responses:
+      '201':
+        description: Пользователь зарегистрирован, токен выдан.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/auth.yaml#/AuthTokenResponse'
+            examples:
+              token:
+                $ref: '../components/examples/auth.yaml#/accessToken'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '409':
+        $ref: '../components/responses.yaml#/Conflict'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+login:
+  post:
+    tags: ["Аутентификация 🔐"]
+    summary: Вход пользователя
+    description: Проверяет email и пароль, затем возвращает access token.
+    operationId: login
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/auth.yaml#/LoginRequest'
+          examples:
+            daniil:
+              $ref: '../components/examples/auth.yaml#/credentials'
+    responses:
+      '200':
+        description: Пользователь вошел, токен выдан.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/auth.yaml#/AuthTokenResponse'
+            examples:
+              token:
+                $ref: '../components/examples/auth.yaml#/accessToken'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+logout:
+  post:
+    tags: ["Аутентификация 🔐"]
+    summary: Выход пользователя
+    description: Добавляет текущий access token в blacklist и делает его недействительным для последующей аутентификации.
+    operationId: logout
+    responses:
+      '204':
+        description: Пользователь успешно вышел. Тело ответа пустое.
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'

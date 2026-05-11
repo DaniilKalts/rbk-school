@@ -1,0 +1,68 @@
+me:
+  get:
+    tags: ["Профиль 👤"]
+    summary: Текущий пользователь
+    description: Возвращает текущего пользователя, определенного по JWT claims.
+    operationId: getCurrentUser
+    responses:
+      '200':
+        description: Текущий пользователь найден.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/user.yaml#/UserResponse'
+            examples:
+              user:
+                $ref: '../components/examples/user.yaml#/userResponse'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+  patch:
+    tags: ["Профиль 👤"]
+    summary: Обновить текущего пользователя
+    description: Обновляет имя, фамилию и email текущего пользователя, определенного по JWT claims.
+    operationId: updateCurrentUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/user.yaml#/UpdateUserRequest'
+          examples:
+            update:
+              $ref: '../components/examples/user.yaml#/userUpdate'
+    responses:
+      '200':
+        description: Текущий пользователь успешно обновлен.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/user.yaml#/UserResponse'
+            examples:
+              user:
+                $ref: '../components/examples/user.yaml#/userResponseUpdated'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+  delete:
+    tags: ["Профиль 👤"]
+    summary: Удалить текущего пользователя
+    description: Выполняет мягкое удаление текущего пользователя, определенного по JWT claims.
+    operationId: deleteCurrentUser
+    responses:
+      '204':
+        description: Текущий пользователь успешно удален. Тело ответа пустое.
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'

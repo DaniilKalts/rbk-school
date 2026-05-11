@@ -1,0 +1,85 @@
+cities:
+  post:
+    tags: ["Города 🏙️"]
+    summary: Добавить отслеживаемый город
+    description: |
+      Добавляет город в список отслеживания текущего пользователя из JWT.
+
+      Один и тот же город нельзя добавить одному пользователю дважды.
+    operationId: createUserCity
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/city.yaml#/CreateCityRequest'
+          examples:
+            almaty:
+              $ref: '../components/examples/city.yaml#/cityRequest'
+    responses:
+      '201':
+        description: Город успешно добавлен.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/city.yaml#/CityResponse'
+            examples:
+              created:
+                $ref: '../components/examples/city.yaml#/cityResponse'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '409':
+        $ref: '../components/responses.yaml#/Conflict'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+  get:
+    tags: ["Города 🏙️"]
+    summary: Отслеживаемые города
+    description: Возвращает список городов, за погодой в которых следит текущий пользователь из JWT.
+    operationId: listUserCities
+    responses:
+      '200':
+        description: Список городов пользователя.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../components/schemas/city.yaml#/CityResponse'
+            examples:
+              cities:
+                $ref: '../components/examples/city.yaml#/cityList'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+cityByID:
+  delete:
+    tags: ["Города 🏙️"]
+    summary: Удалить отслеживаемый город
+    description: |
+      Удаляет город из списка отслеживания текущего пользователя из JWT.
+
+      Это обычное удаление записи из `user_cities`: история погоды при этом остается в `weather_history`.
+    operationId: deleteUserCity
+    parameters:
+      - $ref: '../components/parameters.yaml#/CityID'
+    responses:
+      '204':
+        description: Город успешно удален. Тело ответа пустое.
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
