@@ -15,8 +15,8 @@ const (
 )
 
 func RegisterRoutes(r chi.Router) {
-	swaggerDir := firstExistingPath(filepath.Join("web", "swagger"), filepath.Join("5-week", "web", "swagger"))
-	openAPIDir := firstExistingPath(filepath.Join("api", "v1"), filepath.Join("5-week", "api", "v1"))
+	swaggerDir := firstExistingPath(filepath.Join("web", "swagger"), filepath.Join("6-week", "web", "swagger"))
+	openAPIDir := firstExistingPath(filepath.Join("api", "v1"), filepath.Join("6-week", "api", "v1"))
 
 	r.Get("/swagger", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/swagger/", http.StatusMovedPermanently)

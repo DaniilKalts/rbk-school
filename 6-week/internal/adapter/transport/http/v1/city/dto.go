@@ -3,9 +3,9 @@ package city
 import (
 	"time"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 
-	servicecity "github.com/DaniilKalts/rbk-school/5-week/internal/service/city"
+	servicecity "github.com/DaniilKalts/rbk-school/6-week/internal/service/city"
 )
 
 type CreateCityRequest struct {

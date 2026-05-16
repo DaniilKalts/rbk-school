@@ -1,8 +1,8 @@
 package weather
 
 import (
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres/sqlc"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/database/postgres/sqlc"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/history"
 )
 
 func toDomain(row sqlc.WeatherHistory) history.History {

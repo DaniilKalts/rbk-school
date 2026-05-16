@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 
-	serviceuser "github.com/DaniilKalts/rbk-school/5-week/internal/service/user"
+	serviceuser "github.com/DaniilKalts/rbk-school/6-week/internal/service/user"
 )
 
 type Service interface {

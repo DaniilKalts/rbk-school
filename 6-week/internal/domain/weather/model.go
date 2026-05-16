@@ -3,7 +3,7 @@ package weather
 import (
 	"time"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 )
 
 const (

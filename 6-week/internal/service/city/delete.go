@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 )
 
 func (s *Service) Delete(ctx context.Context, userID uuid.UUID, id uuid.UUID) error {

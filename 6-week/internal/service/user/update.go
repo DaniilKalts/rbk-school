@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (s *Service) Update(ctx context.Context, id uuid.UUID, input UpdateInput) (*user.User, error) {

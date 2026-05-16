@@ -9,17 +9,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/client"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/service"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/database/postgres"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/jwt"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/cache"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/config"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/repository"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/service"
 
-	redisclient "github.com/DaniilKalts/rbk-school/5-week/internal/adapter/cache/redis"
-	transporthttp "github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http"
+	redisclient "github.com/DaniilKalts/rbk-school/6-week/internal/adapter/cache/redis"
+	transporthttp "github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http"
 )
 
 type Container struct {

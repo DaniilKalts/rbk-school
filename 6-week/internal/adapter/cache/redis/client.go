@@ -6,7 +6,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/config"
 )
 
 func NewClient(ctx context.Context, cfg *config.Redis) (*redis.Client, error) {

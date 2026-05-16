@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (s *Service) Login(ctx context.Context, input LoginInput) (*Token, error) {

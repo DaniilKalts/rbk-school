@@ -5,18 +5,18 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/client"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/cache"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/repository"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/cache"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/repository"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/service/auth"
 
-	servicecity "github.com/DaniilKalts/rbk-school/5-week/internal/service/city"
-	serviceuser "github.com/DaniilKalts/rbk-school/5-week/internal/service/user"
-	serviceweather "github.com/DaniilKalts/rbk-school/5-week/internal/service/weather"
+	servicecity "github.com/DaniilKalts/rbk-school/6-week/internal/service/city"
+	serviceuser "github.com/DaniilKalts/rbk-school/6-week/internal/service/user"
+	serviceweather "github.com/DaniilKalts/rbk-school/6-week/internal/service/weather"
 )
 
 type AuthService interface {

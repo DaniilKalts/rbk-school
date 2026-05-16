@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/service/auth"
 )
 
 type Service interface {
