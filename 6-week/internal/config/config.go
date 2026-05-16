@@ -7,6 +7,7 @@ type Config struct {
 	Postgres Postgres `envPrefix:"POSTGRES_"`
 	Redis    Redis    `envPrefix:"REDIS_"`
 	JWT      JWT      `envPrefix:"JWT_"`
+	Logger   Logger   `envPrefix:"LOG_"`
 }
 
 func (c Config) Validate() error {
@@ -24,6 +25,10 @@ func (c Config) Validate() error {
 
 	if err := c.JWT.Validate(); err != nil {
 		return fmt.Errorf("конфигурация jwt: %w", err)
+	}
+
+	if err := c.Logger.Validate(); err != nil {
+		return fmt.Errorf("конфигурация логгера: %w", err)
 	}
 
 	return nil
