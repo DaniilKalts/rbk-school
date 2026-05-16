@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (s *Service) List(ctx context.Context) ([]user.User, error) {

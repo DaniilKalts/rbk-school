@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 )
 
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {

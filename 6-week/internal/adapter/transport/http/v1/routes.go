@@ -3,12 +3,12 @@ package v1
 import (
 	"github.com/go-chi/chi/v5"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/middleware"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1/auth"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1/city"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1/weather"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/jwt"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/middleware"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1/auth"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1/city"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1/weather"
 )
 
 type Dependencies struct {

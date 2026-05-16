@@ -10,7 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/config"
 )
 
 const migrationsDir = "./database/migrations"

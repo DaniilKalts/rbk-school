@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (s *Service) Register(ctx context.Context, input RegisterInput) (*Token, error) {

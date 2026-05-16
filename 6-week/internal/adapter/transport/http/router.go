@@ -7,8 +7,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/swagger"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/v1"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/swagger"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1"
 )
 
 func NewRouter(deps v1.Dependencies, handlerTimeout time.Duration) http.Handler {

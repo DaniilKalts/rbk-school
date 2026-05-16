@@ -8,11 +8,11 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
-	domainhistory "github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	domainweather "github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
+	domainhistory "github.com/DaniilKalts/rbk-school/6-week/internal/domain/history"
+	domainweather "github.com/DaniilKalts/rbk-school/6-week/internal/domain/weather"
 )
 
 func (s *Service) GetByUserID(ctx context.Context, userID uuid.UUID) ([]domainweather.Weather, error) {

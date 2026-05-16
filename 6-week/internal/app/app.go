@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/config"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/config"
 )
 
 type App struct {

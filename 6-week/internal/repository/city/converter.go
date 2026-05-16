@@ -1,8 +1,8 @@
 package city
 
 import (
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/database/postgres/sqlc"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/database/postgres/sqlc"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 )
 
 func toDomain(c sqlc.UserCity) city.City {

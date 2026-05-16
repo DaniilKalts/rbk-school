@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 )
 
 type History struct {

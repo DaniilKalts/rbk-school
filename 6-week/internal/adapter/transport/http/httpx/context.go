@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/jwt"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/jwt"
 )
 
 type Claims = jwt.Claims

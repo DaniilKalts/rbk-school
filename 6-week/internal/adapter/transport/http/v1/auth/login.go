@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
 )
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {

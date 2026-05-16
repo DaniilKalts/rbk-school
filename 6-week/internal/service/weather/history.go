@@ -5,11 +5,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/5-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/weather"
 
-	domaincity "github.com/DaniilKalts/rbk-school/5-week/internal/domain/city"
+	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 )
 
 func (s *Service) GetHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]history.History, error) {
