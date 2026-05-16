@@ -1,0 +1,70 @@
+invalidID:
+  summary: Некорректный UUID
+  value:
+    code: 400
+    message: некорректный id пользователя
+invalidBody:
+  summary: Некорректное тело запроса
+  value:
+    code: 400
+    message: некорректное тело запроса
+invalidUser:
+  summary: Некорректные данные пользователя
+  value:
+    code: 400
+    message: некорректный email пользователя
+invalidLimit:
+  summary: Некорректный limit
+  value:
+    code: 400
+    message: некорректный limit
+invalidOffset:
+  summary: Некорректный offset
+  value:
+    code: 400
+    message: некорректный offset
+invalidCredentials:
+  summary: Неверные учетные данные
+  value:
+    code: 401
+    message: неверный email или пароль
+missingToken:
+  summary: Токен не передан
+  value:
+    code: 401
+    message: отсутствует или некорректный заголовок Authorization
+invalidToken:
+  summary: Токен недействителен
+  value:
+    code: 401
+    message: некорректный или просроченный токен
+forbidden:
+  summary: Доступ запрещен
+  value:
+    code: 403
+    message: доступ запрещен
+userNotFound:
+  summary: Пользователь не найден
+  value:
+    code: 404
+    message: пользователь не найден
+cityNotFound:
+  summary: Город не найден
+  value:
+    code: 404
+    message: город не найден
+emailExists:
+  summary: Email уже используется
+  value:
+    code: 409
+    message: пользователь с таким email уже существует
+cityExists:
+  summary: Город уже добавлен
+  value:
+    code: 409
+    message: город уже существует
+internal:
+  summary: Внутренняя ошибка сервера
+  value:
+    code: 500
+    message: internal server error

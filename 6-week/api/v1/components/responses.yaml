@@ -1,0 +1,70 @@
+BadRequest:
+  description: Запрос отклонен из-за некорректных данных или параметров.
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/common.yaml#/ErrorResponse'
+      examples:
+        invalidID:
+          $ref: './examples/error.yaml#/invalidID'
+        invalidBody:
+          $ref: './examples/error.yaml#/invalidBody'
+        invalidUser:
+          $ref: './examples/error.yaml#/invalidUser'
+        invalidLimit:
+          $ref: './examples/error.yaml#/invalidLimit'
+        invalidOffset:
+          $ref: './examples/error.yaml#/invalidOffset'
+Unauthorized:
+  description: "Запрос не аутентифицирован: учетные данные неверны, токен отсутствует или недействителен."
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/common.yaml#/ErrorResponse'
+      examples:
+        invalidCredentials:
+          $ref: './examples/error.yaml#/invalidCredentials'
+        missingToken:
+          $ref: './examples/error.yaml#/missingToken'
+        invalidToken:
+          $ref: './examples/error.yaml#/invalidToken'
+Forbidden:
+  description: У пользователя нет прав для выполнения операции.
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/common.yaml#/ErrorResponse'
+      examples:
+        forbidden:
+          $ref: './examples/error.yaml#/forbidden'
+NotFound:
+  description: Запрашиваемый ресурс не найден.
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/common.yaml#/ErrorResponse'
+      examples:
+        userNotFound:
+          $ref: './examples/error.yaml#/userNotFound'
+        cityNotFound:
+          $ref: './examples/error.yaml#/cityNotFound'
+Conflict:
+  description: Ресурс с такими уникальными данными уже существует.
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/common.yaml#/ErrorResponse'
+      examples:
+        emailExists:
+          $ref: './examples/error.yaml#/emailExists'
+        cityExists:
+          $ref: './examples/error.yaml#/cityExists'
+InternalServerError:
+  description: Внутренняя ошибка сервера.
+  content:
+    application/json:
+      schema:
+        $ref: './schemas/common.yaml#/ErrorResponse'
+      examples:
+        internal:
+          $ref: './examples/error.yaml#/internal'

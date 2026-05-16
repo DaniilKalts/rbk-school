@@ -1,0 +1,39 @@
+CreateCityRequest:
+  type: object
+  description: Данные для добавления города в список отслеживания.
+  required:
+    - city
+  properties:
+    city:
+      type: string
+      minLength: 1
+      description: Название города, за которым будет следить пользователь.
+      example: Almaty
+CityResponse:
+  type: object
+  description: Город из списка отслеживания пользователя.
+  required:
+    - id
+    - user_id
+    - city
+    - created_at
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Уникальный идентификатор записи в `user_cities`.
+      example: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+    user_id:
+      type: string
+      format: uuid
+      description: UUID пользователя, который отслеживает город.
+      example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    city:
+      type: string
+      description: Название города.
+      example: Almaty
+    created_at:
+      type: string
+      format: date-time
+      description: Время добавления города в список отслеживания.
+      example: '2026-04-26T10:20:00Z'

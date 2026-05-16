@@ -1,0 +1,58 @@
+UserID:
+  name: id
+  in: path
+  required: true
+  description: "UUID пользователя. Пример: 018f1b79-38f8-7a72-a64b-7c58a85f60f3."
+  schema:
+    type: string
+    format: uuid
+  examples:
+    daniil:
+      value: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+CityID:
+  name: city_id
+  in: path
+  required: true
+  description: "UUID записи города в списке отслеживания. Пример: 018f1b79-a83f-7f8d-93e1-31db8fcce245."
+  schema:
+    type: string
+    format: uuid
+  examples:
+    almaty:
+      value: 018f1b79-a83f-7f8d-93e1-31db8fcce245
+HistoryCity:
+  name: city
+  in: query
+  required: false
+  description: "Название города для фильтрации истории. Если не передать, вернется вся история пользователя. Пример: Almaty."
+  schema:
+    type: string
+    minLength: 1
+  examples:
+    almaty:
+      value: Almaty
+    lowerCase:
+      value: almaty
+HistoryLimit:
+  name: limit
+  in: query
+  required: false
+  description: Количество записей в ответе. Должно быть положительным числом.
+  schema:
+    type: integer
+    minimum: 1
+  examples:
+    ten:
+      value: 10
+HistoryOffset:
+  name: offset
+  in: query
+  required: false
+  description: Количество записей, которое нужно пропустить. Используется для пагинации.
+  schema:
+    type: integer
+    minimum: 0
+    default: 0
+  examples:
+    nextPage:
+      value: 10

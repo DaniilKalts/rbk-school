@@ -1,0 +1,97 @@
+WeatherResponse:
+  type: object
+  description: Погода по одному городу пользователя.
+  required:
+    - city
+    - temperature
+    - feels_like
+    - description
+    - requested_at
+  properties:
+    city:
+      type: string
+      description: Нормализованное название города.
+      example: Almaty
+    temperature:
+      type: number
+      format: double
+      description: Температура воздуха в градусах Цельсия.
+      example: 18.4
+    feels_like:
+      type: number
+      format: double
+      description: Ощущаемая температура в градусах Цельсия.
+      example: 17.9
+    description:
+      type: string
+      description: Краткое описание погодных условий по коду Open-Meteo.
+      example: partly cloudy
+    requested_at:
+      type: string
+      format: date-time
+      description: Время сохранения записи в `weather_history`.
+      example: '2026-04-26T10:30:00Z'
+UserWeatherResponse:
+  type: object
+  description: Агрегированная погода по отслеживаемым городам пользователя.
+  required:
+    - user_id
+    - weather
+  properties:
+    user_id:
+      type: string
+      format: uuid
+      description: UUID активного пользователя.
+      example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    weather:
+      type: array
+      description: Погода по каждому отслеживаемому городу.
+      items:
+        $ref: './weather.yaml#/WeatherResponse'
+WeatherHistoryResponse:
+  type: object
+  description: Одна сохраненная запись истории погоды.
+  required:
+    - temperature
+    - description
+    - requested_at
+  properties:
+    city:
+      type: string
+      description: Город записи. Поле используется, когда история возвращается без фильтра по городу.
+      example: Almaty
+    temperature:
+      type: number
+      format: double
+      description: Температура воздуха в градусах Цельсия.
+      example: 18.4
+    description:
+      type: string
+      description: Краткое описание погодных условий.
+      example: partly cloudy
+    requested_at:
+      type: string
+      format: date-time
+      description: Время сохранения записи в историю.
+      example: '2026-04-26T10:30:00Z'
+UserWeatherHistoryResponse:
+  type: object
+  description: История погоды пользователя с необязательной фильтрацией по городу.
+  required:
+    - user_id
+    - history
+  properties:
+    user_id:
+      type: string
+      format: uuid
+      description: UUID активного пользователя.
+      example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    city:
+      type: string
+      description: Нормализованное название города, по которому выполнена фильтрация. Поле отсутствует, если фильтр не передан.
+      example: Almaty
+    history:
+      type: array
+      description: Записи истории, отсортированные от новых к старым.
+      items:
+        $ref: './weather.yaml#/WeatherHistoryResponse'
