@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: "Weather Tracker API 🌦️"
+  version: 1.0.0
+  description: |
+    HTTP API для трекинга погоды по городам пользователя.
+
+    Сервис позволяет создавать пользователей, добавлять города в список отслеживания, получать актуальную погоду по этим городам и просматривать историю погодных запросов.
+    Данные пользователей, городов и истории хранятся в PostgreSQL, а актуальная погода кешируется в Redis, чтобы не дергать внешний Open-Meteo API без необходимости.
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+security:
+  - JWT: []
+tags:
+  - name: "Сервис ⚙️"
+    description: Служебные ручки для проверки состояния API
+  - name: "Аутентификация 🔐"
+    description: Регистрация, вход и получение access token
+  - name: "Профиль 👤"
+    description: Получение и изменение профиля текущего пользователя
+  - name: "Пользователи 👥"
+    description: Операции с пользователями (только для админов)
+  - name: "Города 🏙️"
+    description: Управление городами, за которыми следит пользователь
+  - name: "Погода 🌦️"
+    description: Получение погоды по всем отслеживаемым городам пользователя
+paths:
+  /health:
+    $ref: './paths/health.yaml#/health'
+  /api/v1/auth/register:
+    $ref: './paths/auth.yaml#/register'
+  /api/v1/auth/login:
+    $ref: './paths/auth.yaml#/login'
+  /api/v1/auth/logout:
+    $ref: './paths/auth.yaml#/logout'
+  /api/v1/users:
+    $ref: './paths/users.yaml#/users'
+  /api/v1/users/me:
+    $ref: './paths/profile.yaml#/me'
+  /api/v1/users/{id}:
+    $ref: './paths/users.yaml#/userByID'
+  /api/v1/cities:
+    $ref: './paths/cities.yaml#/cities'
+  /api/v1/cities/{city_id}:
+    $ref: './paths/cities.yaml#/cityByID'
+  /api/v1/weather:
+    $ref: './paths/weather.yaml#/weather'
+  /api/v1/weather/history:
+    $ref: './paths/weather.yaml#/history'
+components:
+  securitySchemes:
+    JWT:
+      $ref: './components/securitySchemes.yaml#/JWT'
+  parameters:
+    UserID:
+      $ref: './components/parameters.yaml#/UserID'
+    CityID:
+      $ref: './components/parameters.yaml#/CityID'
+    HistoryCity:
+      $ref: './components/parameters.yaml#/HistoryCity'
+    HistoryLimit:
+      $ref: './components/parameters.yaml#/HistoryLimit'
+    HistoryOffset:
+      $ref: './components/parameters.yaml#/HistoryOffset'
+  examples:
+    userRegister:
+      $ref: './components/examples/user.yaml#/userRegister'
+    userUpdate:
+      $ref: './components/examples/user.yaml#/userUpdate'
+    userResponse:
+      $ref: './components/examples/user.yaml#/userResponse'
+    userResponseUpdated:
+      $ref: './components/examples/user.yaml#/userResponseUpdated'
+    userList:
+      $ref: './components/examples/user.yaml#/userList'
+    credentials:
+      $ref: './components/examples/auth.yaml#/credentials'
+    accessToken:
+      $ref: './components/examples/auth.yaml#/accessToken'
+    cityRequest:
+      $ref: './components/examples/city.yaml#/cityRequest'
+    cityResponse:
+      $ref: './components/examples/city.yaml#/cityResponse'
+    cityList:
+      $ref: './components/examples/city.yaml#/cityList'
+    userWeather:
+      $ref: './components/examples/weather.yaml#/userWeather'
+    historyByCity:
+      $ref: './components/examples/weather.yaml#/historyByCity'
+    historyAllCities:
+      $ref: './components/examples/weather.yaml#/historyAllCities'
+  responses:
+    BadRequest:
+      $ref: './components/responses.yaml#/BadRequest'
+    Unauthorized:
+      $ref: './components/responses.yaml#/Unauthorized'
+    Forbidden:
+      $ref: './components/responses.yaml#/Forbidden'
+    NotFound:
+      $ref: './components/responses.yaml#/NotFound'
+    Conflict:
+      $ref: './components/responses.yaml#/Conflict'
+    InternalServerError:
+      $ref: './components/responses.yaml#/InternalServerError'
+  schemas:
+    ErrorResponse:
+      $ref: './components/schemas/common.yaml#/ErrorResponse'
+    RegisterRequest:
+      $ref: './components/schemas/auth.yaml#/RegisterRequest'
+    LoginRequest:
+      $ref: './components/schemas/auth.yaml#/LoginRequest'
+    AuthTokenResponse:
+      $ref: './components/schemas/auth.yaml#/AuthTokenResponse'
+    CreateUserRequest:
+      $ref: './components/schemas/user.yaml#/CreateUserRequest'
+    UpdateUserRequest:
+      $ref: './components/schemas/user.yaml#/UpdateUserRequest'
+    UserResponse:
+      $ref: './components/schemas/user.yaml#/UserResponse'
+    CreateCityRequest:
+      $ref: './components/schemas/city.yaml#/CreateCityRequest'
+    CityResponse:
+      $ref: './components/schemas/city.yaml#/CityResponse'
+    WeatherResponse:
+      $ref: './components/schemas/weather.yaml#/WeatherResponse'
+    UserWeatherResponse:
+      $ref: './components/schemas/weather.yaml#/UserWeatherResponse'
+    WeatherHistoryResponse:
+      $ref: './components/schemas/weather.yaml#/WeatherHistoryResponse'
+    UserWeatherHistoryResponse:
+      $ref: './components/schemas/weather.yaml#/UserWeatherHistoryResponse'

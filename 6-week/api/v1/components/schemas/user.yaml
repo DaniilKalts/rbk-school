@@ -1,0 +1,91 @@
+CreateUserRequest:
+  type: object
+  description: Данные для создания пользователя через admin API.
+  required:
+    - first_name
+    - last_name
+    - email
+    - password
+  properties:
+    first_name:
+      type: string
+      minLength: 1
+      description: Имя пользователя.
+      example: Daniil
+    last_name:
+      type: string
+      minLength: 1
+      description: Фамилия пользователя.
+      example: Kalts
+    email:
+      type: string
+      format: email
+      description: Уникальный email пользователя.
+      example: daniil@example.com
+    password:
+      type: string
+      minLength: 1
+      description: Пароль пользователя.
+      example: strong-password
+UpdateUserRequest:
+  type: object
+  description: Данные для обновления пользователя через admin API.
+  required:
+    - first_name
+    - last_name
+    - email
+  properties:
+    first_name:
+      type: string
+      minLength: 1
+      description: Имя пользователя.
+      example: Daniil
+    last_name:
+      type: string
+      minLength: 1
+      description: Фамилия пользователя.
+      example: Kalts
+    email:
+      type: string
+      format: email
+      description: Уникальный email пользователя.
+      example: daniil@example.com
+UserResponse:
+  type: object
+  description: Активный пользователь, который хранится в системе.
+  required:
+    - id
+    - first_name
+    - last_name
+    - email
+    - created_at
+    - updated_at
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Уникальный идентификатор пользователя.
+      example: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    first_name:
+      type: string
+      description: Имя пользователя.
+      example: Daniil
+    last_name:
+      type: string
+      description: Фамилия пользователя.
+      example: Kalts
+    email:
+      type: string
+      format: email
+      description: Email пользователя.
+      example: daniil@example.com
+    created_at:
+      type: string
+      format: date-time
+      description: Время создания пользователя.
+      example: '2026-04-26T10:00:00Z'
+    updated_at:
+      type: string
+      format: date-time
+      description: Время последнего обновления пользователя.
+      example: '2026-04-26T10:00:00Z'

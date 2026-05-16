@@ -1,0 +1,10 @@
+credentials:
+  summary: Учетные данные
+  value:
+    email: daniil@example.com
+    password: strong-password
+accessToken:
+  summary: Токен доступа
+  value:
+    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    expires_at: '2026-04-26T10:15:00Z'

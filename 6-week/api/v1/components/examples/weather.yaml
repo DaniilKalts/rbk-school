@@ -1,0 +1,40 @@
+userWeather:
+  summary: Погода по отслеживаемым городам
+  value:
+    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    weather:
+      - city: Almaty
+        temperature: 18.4
+        feels_like: 17.9
+        description: partly cloudy
+        requested_at: '2026-04-26T10:30:00Z'
+      - city: Astana
+        temperature: 9.1
+        feels_like: 5.8
+        description: rain
+        requested_at: '2026-04-26T10:30:01Z'
+historyByCity:
+  summary: История по одному городу
+  value:
+    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    city: Almaty
+    history:
+      - temperature: 18.4
+        description: partly cloudy
+        requested_at: '2026-04-26T10:30:00Z'
+      - temperature: 17.8
+        description: rain
+        requested_at: '2026-04-25T10:30:00Z'
+historyAllCities:
+  summary: Вся история пользователя
+  value:
+    user_id: 018f1b79-38f8-7a72-a64b-7c58a85f60f3
+    history:
+      - city: Almaty
+        temperature: 18.4
+        description: partly cloudy
+        requested_at: '2026-04-26T10:30:00Z'
+      - city: Astana
+        temperature: 9.1
+        description: rain
+        requested_at: '2026-04-26T10:25:00Z'

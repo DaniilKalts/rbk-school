@@ -1,0 +1,15 @@
+health:
+  get:
+    tags: ["Сервис ⚙️"]
+    summary: Проверка сервиса
+    description: Проверяет, что сервис запущен и отвечает.
+    operationId: getHealth
+    security: []
+    responses:
+      '200':
+        description: Сервис работает корректно.
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: ok

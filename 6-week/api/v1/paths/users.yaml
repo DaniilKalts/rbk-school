@@ -1,0 +1,150 @@
+users:
+  post:
+    tags: ["Пользователи 👥"]
+    summary: Создать пользователя
+    description: Только для админов. Создает нового пользователя с ролью `user`.
+    operationId: createUser
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/user.yaml#/CreateUserRequest'
+          examples:
+            user:
+              $ref: '../components/examples/user.yaml#/userRegister'
+    responses:
+      '201':
+        description: Пользователь успешно создан.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/user.yaml#/UserResponse'
+            examples:
+              created:
+                $ref: '../components/examples/user.yaml#/userResponse'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/Forbidden'
+      '409':
+        $ref: '../components/responses.yaml#/Conflict'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+  get:
+    tags: ["Пользователи 👥"]
+    summary: Активные пользователи
+    description: Только для админов. Возвращает только активных пользователей, у которых `deleted_at IS NULL`.
+    operationId: listUsers
+    responses:
+      '200':
+        description: Список пользователей.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '../components/schemas/user.yaml#/UserResponse'
+            examples:
+              users:
+                $ref: '../components/examples/user.yaml#/userList'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/Forbidden'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+userByID:
+  get:
+    tags: ["Пользователи 👥"]
+    summary: Пользователь по UUID
+    description: |
+      Только для админов. Возвращает одного активного пользователя по UUID.
+
+      Если пользователь не найден или уже был мягко удален, API вернет ошибку `404`.
+    operationId: getUserByID
+    parameters:
+      - $ref: '../components/parameters.yaml#/UserID'
+    responses:
+      '200':
+        description: Пользователь найден.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/user.yaml#/UserResponse'
+            examples:
+              user:
+                $ref: '../components/examples/user.yaml#/userResponse'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+  delete:
+    tags: ["Пользователи 👥"]
+    summary: Мягкое удаление пользователя
+    description: |
+      Только для админов. Выполняет мягкое удаление пользователя по UUID.
+
+      Запись остается в базе данных с заполненным `deleted_at`, но больше не возвращается в пользовательских ручках.
+    operationId: deleteUser
+    parameters:
+      - $ref: '../components/parameters.yaml#/UserID'
+    responses:
+      '204':
+        description: Пользователь успешно удален. Тело ответа пустое.
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
+  patch:
+    tags: ["Пользователи 👥"]
+    summary: Обновить пользователя
+    description: Только для админов. Обновляет имя, фамилию и email пользователя.
+    operationId: updateUser
+    parameters:
+      - $ref: '../components/parameters.yaml#/UserID'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/user.yaml#/UpdateUserRequest'
+          examples:
+            update:
+              $ref: '../components/examples/user.yaml#/userUpdate'
+    responses:
+      '200':
+        description: Пользователь успешно обновлен.
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/user.yaml#/UserResponse'
+            examples:
+              updated:
+                $ref: '../components/examples/user.yaml#/userResponseUpdated'
+      '400':
+        $ref: '../components/responses.yaml#/BadRequest'
+      '401':
+        $ref: '../components/responses.yaml#/Unauthorized'
+      '403':
+        $ref: '../components/responses.yaml#/Forbidden'
+      '404':
+        $ref: '../components/responses.yaml#/NotFound'
+      '409':
+        $ref: '../components/responses.yaml#/Conflict'
+      '500':
+        $ref: '../components/responses.yaml#/InternalServerError'
