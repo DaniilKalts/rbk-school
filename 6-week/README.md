@@ -334,14 +334,14 @@ go test -cover ./...
 - [x] handler получает service через конструктор.
 - [x] service получает repository через интерфейс.
 - [x] зависимости не создаются внутри business logic.
-- [ ] Unit-тесты для одного service метода (happy path).
-- [ ] Unit-тесты для одного service метода (негативные сценарии: пустые данные, invalid ID, not found, ошибки repository).
-- [ ] Mock repository через `testify/mock`.
-- [ ] Unit-тест для одного GET endpoint.
-- [ ] Unit-тест для одного POST endpoint.
-- [ ] В handler-тестах проверены HTTP status code, JSON response, validation, ошибки.
+- [x] Unit-тесты для одного service метода (happy path).
+- [x] Unit-тесты для одного service метода (негативные сценарии: пустые данные, invalid ID, not found, ошибки repository).
+- [x] Mock repository через `testify/mock`.
+- [x] Unit-тест для одного GET endpoint.
+- [x] Unit-тест для одного POST endpoint.
+- [x] В handler-тестах проверены HTTP status code, JSON response, validation, ошибки.
 - [x] Logging middleware на Uber Zap (method, path, status, duration, request_id).
 - [x] Все новые логи structured (Uber Zap).
 - [ ] Integration test для repository (сохранение, чтение, SQL).
-- [ ] Проверены bad request, invalid JSON, not found, internal error.
-- [ ] Coverage service слоя ≥ 60% (`go test -cover ./...`).
+- [x] Проверены bad request, invalid JSON, not found, internal error.
+- [x] Coverage service слоя ≥ 60% (`go test -cover ./...`).
