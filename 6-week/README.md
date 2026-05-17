@@ -340,8 +340,8 @@ go test -cover ./...
 - [ ] Unit-тест для одного GET endpoint.
 - [ ] Unit-тест для одного POST endpoint.
 - [ ] В handler-тестах проверены HTTP status code, JSON response, validation, ошибки.
-- [ ] Logging middleware на Uber Zap (method, path, status, duration, request_id).
-- [ ] Все новые логи structured (Uber Zap).
+- [x] Logging middleware на Uber Zap (method, path, status, duration, request_id).
+- [x] Все новые логи structured (Uber Zap).
 - [ ] Integration test для repository (сохранение, чтение, SQL).
 - [ ] Проверены bad request, invalid JSON, not found, internal error.
 - [ ] Coverage service слоя ≥ 60% (`go test -cover ./...`).

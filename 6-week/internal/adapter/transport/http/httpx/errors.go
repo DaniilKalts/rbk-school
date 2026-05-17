@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/jwt"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/weather"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/6-week/pkg/jwt"
 )
 
 func WriteServiceError(w http.ResponseWriter, err error) {

@@ -5,14 +5,18 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/middleware"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/swagger"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1"
 )
 
-func NewRouter(deps v1.Dependencies, handlerTimeout time.Duration) http.Handler {
+func NewRouter(logger *zap.Logger, deps v1.Dependencies, handlerTimeout time.Duration) http.Handler {
 	r := chi.NewRouter()
+	r.Use(middleware.Logger(logger))
+
 	swagger.RegisterRoutes(r)
 
 	r.Get("/health", func(w http.ResponseWriter, _ *http.Request) {
@@ -22,7 +26,7 @@ func NewRouter(deps v1.Dependencies, handlerTimeout time.Duration) http.Handler 
 	})
 
 	r.Group(func(r chi.Router) {
-		r.Use(middleware.Timeout(handlerTimeout))
+		r.Use(chimiddleware.Timeout(handlerTimeout))
 		v1.RegisterRoutes(r, deps)
 	})
 
