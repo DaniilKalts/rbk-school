@@ -1,0 +1,75 @@
+package weather_test
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+
+	geocodingdto "github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client/geocoding/dto"
+	openmeteodto "github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client/openmeteo/dto"
+	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
+	domainhistory "github.com/DaniilKalts/rbk-school/6-week/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
+	domainweather "github.com/DaniilKalts/rbk-school/6-week/internal/domain/weather"
+)
+
+type mockUserRepository struct{ mock.Mock }
+
+func (m *mockUserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domainuser.User, error) {
+	args := m.Called(ctx, id)
+	out, _ := args.Get(0).(*domainuser.User)
+	return out, args.Error(1)
+}
+
+type mockCityRepository struct{ mock.Mock }
+
+func (m *mockCityRepository) ListByUserID(ctx context.Context, userID uuid.UUID) ([]domaincity.City, error) {
+	args := m.Called(ctx, userID)
+	out, _ := args.Get(0).([]domaincity.City)
+	return out, args.Error(1)
+}
+
+type mockHistoryRepository struct{ mock.Mock }
+
+func (m *mockHistoryRepository) CreateHistory(ctx context.Context, h domainhistory.History) (*domainhistory.History, error) {
+	args := m.Called(ctx, h)
+	out, _ := args.Get(0).(*domainhistory.History)
+	return out, args.Error(1)
+}
+
+func (m *mockHistoryRepository) ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]domainhistory.History, error) {
+	args := m.Called(ctx, userID, city, limit, offset)
+	out, _ := args.Get(0).([]domainhistory.History)
+	return out, args.Error(1)
+}
+
+type mockGeocodingClient struct{ mock.Mock }
+
+func (m *mockGeocodingClient) GetCoordsByCity(ctx context.Context, city string) (geocodingdto.CoordsResponse, error) {
+	args := m.Called(ctx, city)
+	out, _ := args.Get(0).(geocodingdto.CoordsResponse)
+	return out, args.Error(1)
+}
+
+type mockWeatherClient struct{ mock.Mock }
+
+func (m *mockWeatherClient) GetWeatherByCoords(ctx context.Context, latitude, longitude float64) (openmeteodto.WeatherResponse, error) {
+	args := m.Called(ctx, latitude, longitude)
+	out, _ := args.Get(0).(openmeteodto.WeatherResponse)
+	return out, args.Error(1)
+}
+
+type mockWeatherCache struct{ mock.Mock }
+
+func (m *mockWeatherCache) Get(ctx context.Context, city string) (domainweather.Weather, bool, error) {
+	args := m.Called(ctx, city)
+	w, _ := args.Get(0).(domainweather.Weather)
+	ok, _ := args.Get(1).(bool)
+	return w, ok, args.Error(2)
+}
+
+func (m *mockWeatherCache) Set(ctx context.Context, city string, w domainweather.Weather) error {
+	args := m.Called(ctx, city, w)
+	return args.Error(0)
+}
