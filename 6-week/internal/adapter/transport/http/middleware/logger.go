@@ -21,6 +21,7 @@ func Logger(logger *zap.Logger) func(http.Handler) http.Handler {
 				}
 
 				fields := []zap.Field{
+					zap.String("request_id", RequestIDFromContext(r.Context())),
 					zap.String("method", r.Method),
 					zap.String("path", r.URL.Path),
 					zap.Int("status", status),

@@ -1,4 +1,4 @@
-package transporthttp
+package http
 
 import (
 	"net/http"
@@ -15,6 +15,7 @@ import (
 
 func NewRouter(logger *zap.Logger, deps v1.Dependencies, handlerTimeout time.Duration) http.Handler {
 	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger(logger))
 
 	swagger.RegisterRoutes(r)
