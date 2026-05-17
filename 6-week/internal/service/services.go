@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/cache"
@@ -51,27 +52,19 @@ type Services struct {
 	Weather WeatherService
 }
 
-func NewServices(auth AuthService, user UserService, city CityService, weather WeatherService) *Services {
+func NewServices(repositories *repository.Repositories, caches *cache.Caches, clients *client.Clients, tokenManager auth.TokenManager, logger *zap.Logger) *Services {
 	return &Services{
-		Auth:    auth,
-		User:    user,
-		City:    city,
-		Weather: weather,
+		Auth: auth.NewService(repositories.User, tokenManager),
+		User: serviceuser.NewService(repositories.User),
+		City: servicecity.NewService(repositories.City, repositories.User),
+		Weather: serviceweather.NewService(
+			repositories.User,
+			repositories.City,
+			repositories.Weather,
+			clients.Geocoding,
+			clients.OpenMeteo,
+			caches.Weather,
+			logger,
+		),
 	}
-}
-
-func NewServicesFromDependencies(repositories *repository.Repositories, caches *cache.Caches, clients *client.Clients, tokenManager auth.TokenManager) *Services {
-	authService := auth.NewService(repositories.User, tokenManager)
-	userService := serviceuser.NewService(repositories.User)
-	cityService := servicecity.NewService(repositories.City, repositories.User)
-	weatherService := serviceweather.NewService(
-		repositories.User,
-		repositories.City,
-		repositories.Weather,
-		clients.Geocoding,
-		clients.OpenMeteo,
-		caches.Weather,
-	)
-
-	return NewServices(authService, userService, cityService, weatherService)
 }

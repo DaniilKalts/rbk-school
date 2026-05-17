@@ -3,9 +3,9 @@ package weather
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
@@ -67,7 +67,7 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 	if s.weatherCache != nil {
 		weather, ok, err := s.weatherCache.Get(ctx, cacheKey)
 		if err != nil {
-			log.Printf("weather cache get %q: %v", cacheKey, err)
+			s.logger.Warn("кеш погоды: чтение", zap.String("key", cacheKey), zap.Error(err))
 		} else if ok {
 			return weather, nil
 		}
@@ -95,7 +95,7 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 
 	if s.weatherCache != nil {
 		if err := s.weatherCache.Set(ctx, cacheKey, weather); err != nil {
-			log.Printf("weather cache set %q: %v", cacheKey, err)
+			s.logger.Warn("кеш погоды: запись", zap.String("key", cacheKey), zap.Error(err))
 		}
 	}
 

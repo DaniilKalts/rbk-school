@@ -4,11 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
 
+	"go.uber.org/zap"
+
+	transporthttp "github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/v1"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/config"
 )
 
@@ -17,46 +20,46 @@ type App struct {
 	server    *http.Server
 }
 
-func NewApp(cfg *config.Config) *App {
-	container, err := NewContainer(cfg)
+func NewApp(cfg *config.Config, logger *zap.Logger) (*App, error) {
+	c, err := NewContainer(cfg, logger)
 	if err != nil {
-		log.Fatalf("не удалось собрать DI-контейнер приложения: %v", err)
+		return nil, err
 	}
 
-	a := &App{container: container}
-	a.initHTTPServer()
+	router := transporthttp.NewRouter(c.Logger, v1.Dependencies{
+		AuthService:    c.Services.Auth,
+		CityService:    c.Services.City,
+		WeatherService: c.Services.Weather,
+		UserService:    c.Services.User,
+		TokenManager:   c.TokenManager,
+	}, c.Config.Server.HandlerTimeout)
 
-	return a
-}
-
-func (a *App) initHTTPServer() {
-	cfg := a.container.Config()
-	a.server = &http.Server{
-		Addr:         cfg.Server.Addr,
-		Handler:      a.container.Router(),
-		ReadTimeout:  cfg.Server.HTTPTimeout,
-		WriteTimeout: cfg.Server.HTTPTimeout,
-		IdleTimeout:  cfg.Server.HTTPTimeout,
-	}
+	return &App{
+		container: c,
+		server: &http.Server{
+			Addr:         c.Config.Server.Addr,
+			Handler:      router,
+			ReadTimeout:  c.Config.Server.HTTPTimeout,
+			WriteTimeout: c.Config.Server.HTTPTimeout,
+			IdleTimeout:  c.Config.Server.HTTPTimeout,
+		},
+	}, nil
 }
 
 func (a *App) Run() error {
-	if a == nil || a.server == nil {
-		return fmt.Errorf("app: сервер не инициализирован")
-	}
-	if a.container != nil {
-		defer a.container.Close()
-	}
+	defer a.container.Close()
+
+	logger := a.container.Logger
 
 	sigCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	errCh := make(chan error, 1)
-	log.Printf("server is running on %s", a.server.Addr)
+	logger.Info("сервер запущен", zap.String("addr", a.server.Addr))
 
 	go func() {
 		if err := a.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			errCh <- fmt.Errorf("app: ошибка запуска сервера: %w", err)
+			errCh <- fmt.Errorf("сервер: %w", err)
 		}
 		close(errCh)
 	}()
@@ -67,18 +70,18 @@ func (a *App) Run() error {
 	case <-sigCtx.Done():
 	}
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.server.ReadTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), a.container.Config.Server.ShutdownTimeout)
 	defer cancel()
 
 	if err := a.server.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("app: ошибка остановки сервера: %w", err)
+		return fmt.Errorf("остановка сервера: %w", err)
 	}
 
 	if err := <-errCh; err != nil {
 		return err
 	}
 
-	log.Print("server is stopped")
+	logger.Info("сервер остановлен")
 
 	return nil
 }
