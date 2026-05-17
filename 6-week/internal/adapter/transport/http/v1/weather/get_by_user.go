@@ -1,9 +1,11 @@
 package weather
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (h *Handler) GetByUser(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +16,12 @@ func (h *Handler) GetByUser(w http.ResponseWriter, r *http.Request) {
 
 	weathers, err := h.service.GetByUserID(r.Context(), userID)
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 

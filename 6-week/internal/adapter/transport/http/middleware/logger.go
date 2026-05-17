@@ -6,13 +6,19 @@ import (
 
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
+
+	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/pkg/logger"
 )
 
-func Logger(logger *zap.Logger) func(http.Handler) http.Handler {
+func Logger(base *zap.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			wrapped := chimiddleware.NewWrapResponseWriter(w, r.ProtoMajor)
 			start := time.Now()
+
+			scoped := base.With(zap.String("request_id", httpx.RequestIDFromContext(r.Context())))
+			r = r.WithContext(logger.WithContext(r.Context(), scoped))
 
 			defer func() {
 				status := wrapped.Status()
@@ -21,7 +27,6 @@ func Logger(logger *zap.Logger) func(http.Handler) http.Handler {
 				}
 
 				fields := []zap.Field{
-					zap.String("request_id", RequestIDFromContext(r.Context())),
 					zap.String("method", r.Method),
 					zap.String("path", r.URL.Path),
 					zap.Int("status", status),
@@ -32,11 +37,11 @@ func Logger(logger *zap.Logger) func(http.Handler) http.Handler {
 
 				switch {
 				case status >= 500:
-					logger.Error("HTTP-запрос", fields...)
+					scoped.Error("HTTP-запрос", fields...)
 				case status >= 400:
-					logger.Warn("HTTP-запрос", fields...)
+					scoped.Warn("HTTP-запрос", fields...)
 				default:
-					logger.Info("HTTP-запрос", fields...)
+					scoped.Info("HTTP-запрос", fields...)
 				}
 			}()
 

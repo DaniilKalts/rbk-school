@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/pkg/jwt"
 )
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +16,12 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Logout(r.Context(), token); err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, jwt.ErrInvalidToken):
+			httpx.WriteError(w, http.StatusUnauthorized, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 

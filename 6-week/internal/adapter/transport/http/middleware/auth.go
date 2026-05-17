@@ -4,7 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/pkg/logger"
 )
 
 type JWTManager interface {
@@ -29,6 +32,7 @@ func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 
 			revoked, err := jwtManager.IsRevoked(r.Context(), token)
 			if err != nil {
+				logger.FromContext(r.Context()).Warn("проверка отозванности токена", zap.Error(err))
 				httpx.WriteError(w, http.StatusServiceUnavailable, "сервис временно недоступен")
 				return
 			}
@@ -38,6 +42,7 @@ func Auth(jwtManager JWTManager) func(http.Handler) http.Handler {
 			}
 
 			ctx := httpx.WithClaims(r.Context(), claims)
+			ctx = logger.WithContext(ctx, logger.FromContext(ctx).With(zap.String("user_id", claims.UserID.String())))
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

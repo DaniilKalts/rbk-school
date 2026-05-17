@@ -1,12 +1,15 @@
 package city
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +25,12 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), userID, cityID); err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, city.ErrNotFound), errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client/geocoding/dto"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
@@ -48,7 +47,6 @@ type Service struct {
 	geocodingClient   GeocodingClient
 	weatherClient     WeatherClient
 	weatherCache      WeatherCache
-	logger            *zap.Logger
 }
 
 func NewService(
@@ -58,7 +56,6 @@ func NewService(
 	geocodingClient GeocodingClient,
 	weatherClient WeatherClient,
 	weatherCache WeatherCache,
-	logger *zap.Logger,
 ) *Service {
 	return &Service{
 		userRepository:    userRepository,
@@ -67,6 +64,5 @@ func NewService(
 		geocodingClient:   geocodingClient,
 		weatherClient:     weatherClient,
 		weatherCache:      weatherCache,
-		logger:            logger,
 	}
 }

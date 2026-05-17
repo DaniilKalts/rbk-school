@@ -1,12 +1,14 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
 )
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +19,18 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	created, err := h.service.Create(r.Context(), ToCreateInput(body))
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrInvalidFirstName),
+			errors.Is(err, user.ErrInvalidLastName),
+			errors.Is(err, user.ErrInvalidEmail),
+			errors.Is(err, user.ErrInvalidPassword),
+			errors.Is(err, user.ErrInvalidRole):
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, user.ErrEmailAlreadyExists):
+			httpx.WriteError(w, http.StatusConflict, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
@@ -27,7 +40,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	users, err := h.service.List(r.Context())
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		httpx.WriteInternalError(w, r, err)
 		return
 	}
 
@@ -43,7 +56,12 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	found, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
@@ -64,7 +82,20 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	updated, err := h.service.Update(r.Context(), id, ToUpdateInput(body))
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrInvalidFirstName),
+			errors.Is(err, user.ErrInvalidLastName),
+			errors.Is(err, user.ErrInvalidEmail),
+			errors.Is(err, user.ErrInvalidPassword),
+			errors.Is(err, user.ErrInvalidRole):
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, user.ErrEmailAlreadyExists):
+			httpx.WriteError(w, http.StatusConflict, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
@@ -79,7 +110,12 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.service.Delete(r.Context(), id); err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
