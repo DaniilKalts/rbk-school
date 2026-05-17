@@ -62,7 +62,7 @@ func NewContainer(cfg *config.Config, logger *zap.Logger) (_ *Container, err err
 
 	clients := client.NewClients(&http.Client{Timeout: cfg.Server.HTTPTimeout})
 	tokenManager := jwt.NewManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL, caches.TokenBlacklist)
-	services := service.NewServices(repositories, caches, clients, tokenManager, logger)
+	services := service.NewServices(repositories, caches, clients, tokenManager)
 
 	return &Container{
 		Config:       cfg,

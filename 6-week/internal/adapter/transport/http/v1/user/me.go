@@ -1,9 +1,12 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/pkg/jwt"
 )
 
 func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +17,12 @@ func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
 
 	found, err := h.service.GetByID(r.Context(), userID)
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
@@ -34,7 +42,20 @@ func (h *Handler) UpdateMe(w http.ResponseWriter, r *http.Request) {
 
 	updated, err := h.service.Update(r.Context(), userID, ToUpdateInput(body))
 	if err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrInvalidFirstName),
+			errors.Is(err, user.ErrInvalidLastName),
+			errors.Is(err, user.ErrInvalidEmail),
+			errors.Is(err, user.ErrInvalidPassword),
+			errors.Is(err, user.ErrInvalidRole):
+			httpx.WriteError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, user.ErrEmailAlreadyExists):
+			httpx.WriteError(w, http.StatusConflict, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
@@ -54,12 +75,22 @@ func (h *Handler) DeleteMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.tokenRevoker.Revoke(r.Context(), token); err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, jwt.ErrInvalidToken):
+			httpx.WriteError(w, http.StatusUnauthorized, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 
 	if err := h.service.Delete(r.Context(), userID); err != nil {
-		httpx.WriteServiceError(w, err)
+		switch {
+		case errors.Is(err, user.ErrNotFound):
+			httpx.WriteError(w, http.StatusNotFound, err.Error())
+		default:
+			httpx.WriteInternalError(w, r, err)
+		}
 		return
 	}
 

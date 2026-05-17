@@ -1,12 +1,26 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+type ctxKey struct{}
+
+func WithContext(ctx context.Context, l *zap.Logger) context.Context {
+	return context.WithValue(ctx, ctxKey{}, l)
+}
+
+func FromContext(ctx context.Context) *zap.Logger {
+	if l, ok := ctx.Value(ctxKey{}).(*zap.Logger); ok && l != nil {
+		return l
+	}
+	return zap.NewNop()
+}
 
 var supportedLevels = map[string]zapcore.Level{
 	"debug": zapcore.DebugLevel,

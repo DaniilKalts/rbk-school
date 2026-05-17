@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/6-week/pkg/logger"
 
 	domaincity "github.com/DaniilKalts/rbk-school/6-week/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/6-week/internal/domain/history"
@@ -67,7 +68,7 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 	if s.weatherCache != nil {
 		weather, ok, err := s.weatherCache.Get(ctx, cacheKey)
 		if err != nil {
-			s.logger.Warn("кеш погоды: чтение", zap.String("key", cacheKey), zap.Error(err))
+			logger.FromContext(ctx).Warn("кеш погоды: чтение", zap.String("key", cacheKey), zap.Error(err))
 		} else if ok {
 			return weather, nil
 		}
@@ -95,7 +96,7 @@ func (s *Service) getWeatherByCity(ctx context.Context, city string) (domainweat
 
 	if s.weatherCache != nil {
 		if err := s.weatherCache.Set(ctx, cacheKey, weather); err != nil {
-			s.logger.Warn("кеш погоды: запись", zap.String("key", cacheKey), zap.Error(err))
+			logger.FromContext(ctx).Warn("кеш погоды: запись", zap.String("key", cacheKey), zap.Error(err))
 		}
 	}
 

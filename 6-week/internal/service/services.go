@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 
 	"github.com/DaniilKalts/rbk-school/6-week/internal/adapter/client"
 	"github.com/DaniilKalts/rbk-school/6-week/internal/cache"
@@ -52,7 +51,7 @@ type Services struct {
 	Weather WeatherService
 }
 
-func NewServices(repositories *repository.Repositories, caches *cache.Caches, clients *client.Clients, tokenManager auth.TokenManager, logger *zap.Logger) *Services {
+func NewServices(repositories *repository.Repositories, caches *cache.Caches, clients *client.Clients, tokenManager auth.TokenManager) *Services {
 	return &Services{
 		Auth: auth.NewService(repositories.User, tokenManager),
 		User: serviceuser.NewService(repositories.User),
@@ -64,7 +63,6 @@ func NewServices(repositories *repository.Repositories, caches *cache.Caches, cl
 			clients.Geocoding,
 			clients.OpenMeteo,
 			caches.Weather,
-			logger,
 		),
 	}
 }
