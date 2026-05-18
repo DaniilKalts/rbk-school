@@ -150,6 +150,23 @@ func TestService_GetByUserID(t *testing.T) {
 			wantErr: cityErr,
 		},
 		{
+			name:   "user has no cities returns empty result",
+			userID: userID,
+			setupMock: func(m *weatherMocks) {
+				m.user.On("GetByID", mock.Anything, userID).
+					Return(&domainuser.User{ID: userID}, nil).Once()
+				m.city.On("ListByUserID", mock.Anything, userID).
+					Return([]domaincity.City{}, nil).Once()
+			},
+			assertExtra: func(t *testing.T, m *weatherMocks, got []domainweather.Weather) {
+				assert.Empty(t, got)
+				m.cache.AssertNotCalled(t, "Get")
+				m.geocoding.AssertNotCalled(t, "GetCoordsByCity")
+				m.weather.AssertNotCalled(t, "GetWeatherByCoords")
+				m.history.AssertNotCalled(t, "CreateHistory")
+			},
+		},
+		{
 			name:   "geocoding error",
 			userID: userID,
 			setupMock: func(m *weatherMocks) {

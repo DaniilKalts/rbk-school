@@ -226,7 +226,10 @@ func TestService_GetByEmail(t *testing.T) {
 }
 
 func TestService_List(t *testing.T) {
-	expected := []domainuser.User{{Email: "a@example.com"}, {Email: "b@example.com"}}
+	expected := []domainuser.User{
+		{FirstName: "Daniil", LastName: "Kalts", Email: "daniil@example.com", Role: domainuser.RoleAdmin},
+		{FirstName: "Martin", LastName: "Kalts", Email: "martin@example.com", Role: domainuser.RoleUser},
+	}
 	repoErr := errors.New("db down")
 
 	tests := []struct {
@@ -254,7 +257,9 @@ func TestService_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo, svc := newService(t)
-			tt.setupMock(repo)
+			if tt.setupMock != nil {
+				tt.setupMock(repo)
+			}
 
 			got, err := svc.List(context.Background())
 
