@@ -57,7 +57,9 @@ func userResponseJSON(u *domainuser.User) string {
 		`","created_at":"2026-05-17T12:00:00Z","updated_at":"2026-05-17T12:00:00Z"}`
 }
 
-func authedRequest(method, path, body string, claimsID uuid.UUID, bearer string) *http.Request {
+func do(t *testing.T, r http.Handler, method, path, body string, claimsID uuid.UUID, bearer string) *httptest.ResponseRecorder {
+	t.Helper()
+
 	var req *http.Request
 	if body != "" {
 		req = httptest.NewRequest(method, path, strings.NewReader(body))
@@ -71,7 +73,9 @@ func authedRequest(method, path, body string, claimsID uuid.UUID, bearer string)
 	if bearer != "" {
 		req.Header.Set("Authorization", "Bearer "+bearer)
 	}
-	return req
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	return w
 }
 
 func TestHandler_GetMe(t *testing.T) {
@@ -127,11 +131,10 @@ func TestHandler_GetMe(t *testing.T) {
 				tt.setupMock(svc)
 			}
 
-			req := authedRequest(http.MethodGet, "/users/me", "", tt.claimsID, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodGet, "/users/me", "", tt.claimsID, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 		})
 	}
@@ -231,11 +234,10 @@ func TestHandler_UpdateMe(t *testing.T) {
 				tt.setupMock(svc)
 			}
 
-			req := authedRequest(http.MethodPatch, "/users/me", tt.body, tt.claimsID, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodPatch, "/users/me", tt.body, tt.claimsID, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 		})
 	}
@@ -327,12 +329,11 @@ func TestHandler_DeleteMe(t *testing.T) {
 				tt.setupMock(svc, tr)
 			}
 
-			req := authedRequest(http.MethodDelete, "/users/me", "", tt.claimsID, tt.bearer)
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodDelete, "/users/me", "", tt.claimsID, tt.bearer)
 
 			require.Equal(t, tt.wantStatus, w.Code)
 			if tt.wantBody != "" {
+				assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 				assert.JSONEq(t, tt.wantBody, w.Body.String())
 			} else {
 				assert.Empty(t, w.Body.String())
@@ -412,11 +413,10 @@ func TestHandler_Create(t *testing.T) {
 				tt.setupMock(svc)
 			}
 
-			req := authedRequest(http.MethodPost, "/users", tt.body, uuid.Nil, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodPost, "/users", tt.body, uuid.Nil, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 		})
 	}
@@ -453,13 +453,14 @@ func TestHandler_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc, _, r := newRouter(t)
-			tt.setupMock(svc)
+			if tt.setupMock != nil {
+				tt.setupMock(svc)
+			}
 
-			req := authedRequest(http.MethodGet, "/users", "", uuid.Nil, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodGet, "/users", "", uuid.Nil, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 		})
 	}
@@ -518,11 +519,10 @@ func TestHandler_GetByID(t *testing.T) {
 				tt.setupMock(svc)
 			}
 
-			req := authedRequest(http.MethodGet, tt.path, "", uuid.Nil, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodGet, tt.path, "", uuid.Nil, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 		})
 	}
@@ -622,11 +622,10 @@ func TestHandler_Update(t *testing.T) {
 				tt.setupMock(svc)
 			}
 
-			req := authedRequest(http.MethodPatch, tt.path, tt.body, uuid.Nil, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodPatch, tt.path, tt.body, uuid.Nil, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 			assert.JSONEq(t, tt.wantBody, w.Body.String())
 		})
 	}
@@ -683,12 +682,11 @@ func TestHandler_Delete(t *testing.T) {
 				tt.setupMock(svc)
 			}
 
-			req := authedRequest(http.MethodDelete, tt.path, "", uuid.Nil, "")
-			w := httptest.NewRecorder()
-			r.ServeHTTP(w, req)
+			w := do(t, r, http.MethodDelete, tt.path, "", uuid.Nil, "")
 
 			require.Equal(t, tt.wantStatus, w.Code)
 			if tt.wantBody != "" {
+				assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 				assert.JSONEq(t, tt.wantBody, w.Body.String())
 			} else {
 				assert.Empty(t, w.Body.String())
