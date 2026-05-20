@@ -10,8 +10,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	serviceuser "github.com/DaniilKalts/rbk-school/7-week/internal/service/user"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	serviceuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/user"
 )
 
 func newService(t *testing.T) (*mockRepository, *serviceuser.Service) {

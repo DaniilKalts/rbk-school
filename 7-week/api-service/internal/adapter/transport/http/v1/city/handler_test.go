@@ -14,11 +14,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/httpx"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1/city"
-	domaincity "github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	servicecity "github.com/DaniilKalts/rbk-school/7-week/internal/service/city"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1/city"
+	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	servicecity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/city"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/jwt"
 )
 

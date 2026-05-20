@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/httpx"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/auth"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/jwt"
 )
 

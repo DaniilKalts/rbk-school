@@ -13,9 +13,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1/auth"
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	serviceauth "github.com/DaniilKalts/rbk-school/7-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1/auth"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	serviceauth "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/auth"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/jwt"
 )
 

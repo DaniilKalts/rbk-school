@@ -23,8 +23,8 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	userrepo "github.com/DaniilKalts/rbk-school/7-week/internal/repository/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	userrepo "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository/user"
 )
 
 var pool *pgxpool.Pool

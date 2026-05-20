@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 )
 
 type mockRepository struct {

@@ -11,13 +11,13 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	geocodingdto "github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client/geocoding/dto"
-	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client/openmeteo/dto"
-	domaincity "github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	domainhistory "github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
-	serviceweather "github.com/DaniilKalts/rbk-school/7-week/internal/service/weather"
+	geocodingdto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding/dto"
+	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo/dto"
+	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	domainhistory "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	domainweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
+	serviceweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/weather"
 )
 
 type weatherMocks struct {

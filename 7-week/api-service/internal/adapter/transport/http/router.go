@@ -8,9 +8,9 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/middleware"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/swagger"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/middleware"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/swagger"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1"
 )
 
 func NewRouter(logger *zap.Logger, deps v1.Dependencies, handlerTimeout time.Duration) http.Handler {

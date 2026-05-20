@@ -10,9 +10,9 @@ import (
 
 	"go.uber.org/zap"
 
-	transporthttp "github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/config"
+	transporthttp "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/config"
 )
 
 type App struct {

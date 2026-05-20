@@ -6,12 +6,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
-	geocodingdto "github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client/geocoding/dto"
-	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client/openmeteo/dto"
-	domaincity "github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	domainhistory "github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	domainweather "github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	geocodingdto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding/dto"
+	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo/dto"
+	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	domainhistory "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	domainweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 )
 
 type mockUserRepository struct{ mock.Mock }

@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 )
 
 type WeatherResponse struct {

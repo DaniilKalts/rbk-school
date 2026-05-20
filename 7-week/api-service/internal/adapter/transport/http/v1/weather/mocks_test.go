@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
-	domainhistory "github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	domainweather "github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	domainhistory "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	domainweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 )
 
 type mockService struct {

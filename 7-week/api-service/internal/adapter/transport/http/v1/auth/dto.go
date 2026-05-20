@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/service/auth"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/auth"
 )
 
 type RegisterRequest struct {

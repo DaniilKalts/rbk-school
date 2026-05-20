@@ -6,10 +6,10 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/cache/blacklist"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/cache/weather"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/cache/blacklist"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/cache/weather"
 
-	domainweather "github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	domainweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 )
 
 type TokenBlacklist interface {

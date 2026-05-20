@@ -3,11 +3,11 @@ package v1
 import (
 	"github.com/go-chi/chi/v5"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/middleware"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1/auth"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1/city"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1/user"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/v1/weather"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/middleware"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1/auth"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1/city"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/v1/weather"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/jwt"
 )
 

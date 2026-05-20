@@ -10,12 +10,12 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/httpx"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 
-	domaincity "github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
+	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
 )
 
 type Service interface {

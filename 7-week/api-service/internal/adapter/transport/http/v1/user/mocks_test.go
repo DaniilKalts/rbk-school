@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
-	domainuser "github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
-	serviceuser "github.com/DaniilKalts/rbk-school/7-week/internal/service/user"
+	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
+	serviceuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/user"
 )
 
 type mockService struct {

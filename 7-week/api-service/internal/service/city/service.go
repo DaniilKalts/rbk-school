@@ -5,8 +5,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 )
 
 type Repository interface {

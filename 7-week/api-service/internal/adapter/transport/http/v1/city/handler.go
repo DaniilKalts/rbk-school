@@ -8,11 +8,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/transport/http/httpx"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 
-	servicecity "github.com/DaniilKalts/rbk-school/7-week/internal/service/city"
+	servicecity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/city"
 )
 
 type Service interface {

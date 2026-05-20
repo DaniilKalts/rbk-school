@@ -16,7 +16,7 @@ import (
 	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	blacklistcache "github.com/DaniilKalts/rbk-school/7-week/internal/cache/blacklist"
+	blacklistcache "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/cache/blacklist"
 )
 
 var client *redis.Client

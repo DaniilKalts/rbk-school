@@ -22,11 +22,11 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 
-	userrepo "github.com/DaniilKalts/rbk-school/7-week/internal/repository/user"
-	weatherrepo "github.com/DaniilKalts/rbk-school/7-week/internal/repository/weather"
+	userrepo "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository/user"
+	weatherrepo "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository/weather"
 )
 
 var pool *pgxpool.Pool

@@ -10,8 +10,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	domaincity "github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	domainweather "github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	domainweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 )
 
 const weatherKeyPrefix = "weather:"

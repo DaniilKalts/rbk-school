@@ -9,13 +9,13 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 
-	redisclient "github.com/DaniilKalts/rbk-school/7-week/internal/adapter/cache/redis"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/database/postgres"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/cache"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/config"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/repository"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/service"
+	redisclient "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/cache/redis"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/database/postgres"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/cache"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/config"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/jwt"
 )
 

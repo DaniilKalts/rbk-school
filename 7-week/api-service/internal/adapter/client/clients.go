@@ -3,8 +3,8 @@ package client
 import (
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client/geocoding"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/client/openmeteo"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo"
 )
 
 type Clients struct {

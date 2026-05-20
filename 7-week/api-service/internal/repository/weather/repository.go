@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/database/postgres/sqlc"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/database/postgres/sqlc"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
 )
 
 type Repository struct {

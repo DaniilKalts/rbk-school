@@ -16,8 +16,8 @@ import (
 	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	weathercache "github.com/DaniilKalts/rbk-school/7-week/internal/cache/weather"
-	domainweather "github.com/DaniilKalts/rbk-school/7-week/internal/domain/weather"
+	weathercache "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/cache/weather"
+	domainweather "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 )
 
 var client *redis.Client

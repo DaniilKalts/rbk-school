@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 
-	serviceauth "github.com/DaniilKalts/rbk-school/7-week/internal/service/auth"
+	serviceauth "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/service/auth"
 )
 
 type mockService struct {

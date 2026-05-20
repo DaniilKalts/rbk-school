@@ -5,14 +5,14 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/adapter/database/postgres/sqlc"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/city"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/history"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/domain/user"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/database/postgres/sqlc"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 
-	cityrepo "github.com/DaniilKalts/rbk-school/7-week/internal/repository/city"
-	userrepo "github.com/DaniilKalts/rbk-school/7-week/internal/repository/user"
-	weatherrepo "github.com/DaniilKalts/rbk-school/7-week/internal/repository/weather"
+	cityrepo "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository/city"
+	userrepo "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository/user"
+	weatherrepo "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/repository/weather"
 )
 
 type UserRepository interface {

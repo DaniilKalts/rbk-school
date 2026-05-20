@@ -6,8 +6,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/DaniilKalts/rbk-school/7-week/internal/app"
-	"github.com/DaniilKalts/rbk-school/7-week/internal/config"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/app"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/config"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/logger"
 )
 
