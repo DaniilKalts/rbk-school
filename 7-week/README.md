@@ -120,14 +120,14 @@ GET http://localhost:8081/health
 ### Чеклист реализации
 
 - [x] Проект разделен на 2 сервиса: `api-service` и `gateway-service`.
-- [ ] У каждого сервиса свой `Dockerfile`.
-- [ ] В корне проекта общий `docker-compose.yml`.
-- [ ] `docker-compose.yml` поднимает `api-service`, `gateway-service`, `postgres`.
-- [ ] Проект запускается одной командой `docker compose up --build`.
-- [ ] `GET http://localhost:8080/health` работает (API Service).
-- [ ] `GET http://localhost:8081/health` работает (Gateway Service).
-- [ ] API Service перенесен из прошлого проекта (endpoints, PostgreSQL, тесты, DI, logging).
-- [ ] Gateway Service ходит во внешний публичный API через `http.Client` с timeout.
-- [ ] Gateway Service не работает напрямую с БД.
+- [x] У каждого сервиса свой `Dockerfile`.
+- [x] В корне проекта общий `docker-compose.yml`.
+- [x] `docker-compose.yml` поднимает `api-service`, `gateway-service`, `postgres`.
+- [x] Проект запускается одной командой `docker compose up --build`.
+- [x] `GET http://localhost:8080/health` работает (API Service).
+- [x] `GET http://localhost:8081/health` работает (Gateway Service).
+- [x] API Service перенесен из прошлого проекта (endpoints, PostgreSQL, тесты, DI, logging).
+- [x] Gateway Service ходит во внешний публичный API через `http.Client` с timeout.
+- [x] Gateway Service не работает напрямую с БД.
 - [ ] Gateway Service вызывает API Service через внутренний адрес Docker Compose.
 - [ ] API Service вызывает Gateway.

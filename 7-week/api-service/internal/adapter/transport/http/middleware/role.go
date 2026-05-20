@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/pkg/httpx"
 )
 
 func RequireRole(role string) func(http.Handler) http.Handler {

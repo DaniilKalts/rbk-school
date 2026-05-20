@@ -7,7 +7,7 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 
-	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/pkg/httpx"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/logger"
 )
 

@@ -1,0 +1,15 @@
+.git
+.gitignore
+
+.env
+.env.example
+
+docker-compose.yml
+**/Dockerfile
+**/Dockerfile.dockerignore
+.dockerignore
+
+**/README.md
+
+api-service/sqlc.yaml
+api-service/database/queries/

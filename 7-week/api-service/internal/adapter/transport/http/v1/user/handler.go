@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/transport/http/httpx"
+	"github.com/DaniilKalts/rbk-school/7-week/pkg/httpx"
 	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/jwt"
 
