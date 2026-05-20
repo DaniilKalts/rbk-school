@@ -119,7 +119,7 @@ GET http://localhost:8081/health
 
 ### Чеклист реализации
 
-- [ ] Проект разделен на 2 сервиса: `api-service` и `gateway-service`.
+- [x] Проект разделен на 2 сервиса: `api-service` и `gateway-service`.
 - [ ] У каждого сервиса свой `Dockerfile`.
 - [ ] В корне проекта общий `docker-compose.yml`.
 - [ ] `docker-compose.yml` поднимает `api-service`, `gateway-service`, `postgres`.
