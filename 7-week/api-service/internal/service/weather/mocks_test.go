@@ -6,8 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
-	geocodingdto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding/dto"
-	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo/dto"
+	gatewaydto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/gateway/dto"
 	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
@@ -44,19 +43,11 @@ func (m *mockHistoryRepository) ListHistory(ctx context.Context, userID uuid.UUI
 	return out, args.Error(1)
 }
 
-type mockGeocodingClient struct{ mock.Mock }
+type mockGatewayClient struct{ mock.Mock }
 
-func (m *mockGeocodingClient) GetCoordsByCity(ctx context.Context, city string) (geocodingdto.CoordsResponse, error) {
+func (m *mockGatewayClient) GetWeatherByCity(ctx context.Context, city string) (gatewaydto.WeatherResponse, error) {
 	args := m.Called(ctx, city)
-	out, _ := args.Get(0).(geocodingdto.CoordsResponse)
-	return out, args.Error(1)
-}
-
-type mockWeatherClient struct{ mock.Mock }
-
-func (m *mockWeatherClient) GetWeatherByCoords(ctx context.Context, latitude, longitude float64) (openmeteodto.WeatherResponse, error) {
-	args := m.Called(ctx, latitude, longitude)
-	out, _ := args.Get(0).(openmeteodto.WeatherResponse)
+	out, _ := args.Get(0).(gatewaydto.WeatherResponse)
 	return out, args.Error(1)
 }
 

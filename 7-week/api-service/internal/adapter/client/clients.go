@@ -3,18 +3,15 @@ package client
 import (
 	"net/http"
 
-	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding"
-	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo"
+	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/gateway"
 )
 
 type Clients struct {
-	Geocoding *geocoding.Client
-	OpenMeteo *openmeteo.Client
+	Gateway *gateway.Client
 }
 
-func NewClients(httpClient *http.Client) *Clients {
+func NewClients(httpClient *http.Client, gatewayBaseURL string) *Clients {
 	return &Clients{
-		Geocoding: geocoding.NewClient(httpClient),
-		OpenMeteo: openmeteo.NewClient(httpClient),
+		Gateway: gateway.NewClient(httpClient, gatewayBaseURL),
 	}
 }

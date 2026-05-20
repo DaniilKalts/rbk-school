@@ -60,7 +60,7 @@ func NewContainer(cfg *config.Config, logger *zap.Logger) (_ *Container, err err
 	repositories := repository.NewRepositories(db)
 	caches := cache.NewCaches(redisClient, cfg.Redis.WeatherCacheTTL)
 
-	clients := client.NewClients(&http.Client{Timeout: cfg.Server.HTTPTimeout})
+	clients := client.NewClients(&http.Client{Timeout: cfg.Gateway.Timeout}, cfg.Gateway.BaseURL)
 	tokenManager := jwt.NewManager([]byte(cfg.JWT.Secret), cfg.JWT.AccessTokenTTL, caches.TokenBlacklist)
 	services := service.NewServices(repositories, caches, clients, tokenManager)
 

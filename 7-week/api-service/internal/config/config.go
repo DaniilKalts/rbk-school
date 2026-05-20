@@ -8,6 +8,7 @@ type Config struct {
 	Redis    Redis    `envPrefix:"REDIS_"`
 	JWT      JWT      `envPrefix:"JWT_"`
 	Logger   Logger   `envPrefix:"LOG_"`
+	Gateway  Gateway  `envPrefix:"GATEWAY_"`
 }
 
 func (c Config) Validate() error {
@@ -29,6 +30,10 @@ func (c Config) Validate() error {
 
 	if err := c.Logger.Validate(); err != nil {
 		return fmt.Errorf("конфигурация логгера: %w", err)
+	}
+
+	if err := c.Gateway.Validate(); err != nil {
+		return fmt.Errorf("конфигурация gateway: %w", err)
 	}
 
 	return nil

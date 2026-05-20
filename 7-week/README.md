@@ -129,5 +129,5 @@ GET http://localhost:8081/health
 - [x] API Service перенесен из прошлого проекта (endpoints, PostgreSQL, тесты, DI, logging).
 - [x] Gateway Service ходит во внешний публичный API через `http.Client` с timeout.
 - [x] Gateway Service не работает напрямую с БД.
-- [ ] Gateway Service вызывает API Service через внутренний адрес Docker Compose.
-- [ ] API Service вызывает Gateway.
+- [x] Gateway Service вызывает API Service через внутренний адрес Docker Compose.
+- [x] API Service вызывает Gateway.

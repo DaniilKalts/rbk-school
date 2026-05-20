@@ -3,9 +3,10 @@ package config
 import "fmt"
 
 type Config struct {
-	Server   Server   `envPrefix:"SERVER_"`
-	Logger   Logger   `envPrefix:"LOG_"`
-	External External `envPrefix:"EXTERNAL_"`
+	Server     Server     `envPrefix:"SERVER_"`
+	Logger     Logger     `envPrefix:"LOG_"`
+	External   External   `envPrefix:"EXTERNAL_"`
+	APIService APIService `envPrefix:"API_SERVICE_"`
 }
 
 func (c Config) Validate() error {
@@ -19,6 +20,10 @@ func (c Config) Validate() error {
 
 	if err := c.External.Validate(); err != nil {
 		return fmt.Errorf("конфигурация внешних API: %w", err)
+	}
+
+	if err := c.APIService.Validate(); err != nil {
+		return fmt.Errorf("конфигурация api-service: %w", err)
 	}
 
 	return nil

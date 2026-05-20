@@ -11,8 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	geocodingdto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding/dto"
-	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo/dto"
+	gatewaydto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/gateway/dto"
 	domaincity "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
 	domainhistory "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
 	domainuser "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
@@ -21,35 +20,32 @@ import (
 )
 
 type weatherMocks struct {
-	user      *mockUserRepository
-	city      *mockCityRepository
-	history   *mockHistoryRepository
-	geocoding *mockGeocodingClient
-	weather   *mockWeatherClient
-	cache     *mockWeatherCache
+	user    *mockUserRepository
+	city    *mockCityRepository
+	history *mockHistoryRepository
+	gateway *mockGatewayClient
+	cache   *mockWeatherCache
 }
 
 func newService(t *testing.T) (*weatherMocks, *serviceweather.Service) {
 	t.Helper()
 
 	m := &weatherMocks{
-		user:      new(mockUserRepository),
-		city:      new(mockCityRepository),
-		history:   new(mockHistoryRepository),
-		geocoding: new(mockGeocodingClient),
-		weather:   new(mockWeatherClient),
-		cache:     new(mockWeatherCache),
+		user:    new(mockUserRepository),
+		city:    new(mockCityRepository),
+		history: new(mockHistoryRepository),
+		gateway: new(mockGatewayClient),
+		cache:   new(mockWeatherCache),
 	}
 	t.Cleanup(func() {
 		m.user.AssertExpectations(t)
 		m.city.AssertExpectations(t)
 		m.history.AssertExpectations(t)
-		m.geocoding.AssertExpectations(t)
-		m.weather.AssertExpectations(t)
+		m.gateway.AssertExpectations(t)
 		m.cache.AssertExpectations(t)
 	})
 
-	svc := serviceweather.NewService(m.user, m.city, m.history, m.geocoding, m.weather, m.cache)
+	svc := serviceweather.NewService(m.user, m.city, m.history, m.gateway, m.cache)
 	return m, svc
 }
 
@@ -59,10 +55,9 @@ func TestService_GetByUserID(t *testing.T) {
 	cached := domainweather.Weather{
 		City: "Almaty", Temperature: 15, FeelsLike: 14, Description: "rain",
 	}
-	geoErr := errors.New("geocoding 500")
+	gatewayErr := errors.New("gateway 500")
 	historyErr := errors.New("history insert failed")
 	cityErr := errors.New("db down")
-	weatherErr := errors.New("openmeteo 500")
 	cacheErr := errors.New("redis down")
 
 	tests := []struct {
@@ -82,13 +77,10 @@ func TestService_GetByUserID(t *testing.T) {
 					Return([]domaincity.City{{UserID: userID, Name: "Almaty"}}, nil).Once()
 				m.cache.On("Get", mock.Anything, "Almaty").
 					Return(domainweather.Weather{}, false, nil).Once()
-				m.geocoding.On("GetCoordsByCity", mock.Anything, "Almaty").
-					Return(geocodingdto.CoordsResponse{Latitude: 43.25, Longitude: 76.95}, nil).Once()
-				m.weather.On("GetWeatherByCoords", mock.Anything, 43.25, 76.95).
-					Return(openmeteodto.WeatherResponse{
-						Current: openmeteodto.CurrentWeather{
-							Temperature2M: 20, ApparentTemperature: 19, WeatherCode: 0,
-						},
+				m.gateway.On("GetWeatherByCity", mock.Anything, "Almaty").
+					Return(gatewaydto.WeatherResponse{
+						City: "Almaty", Latitude: 43.25, Longitude: 76.95,
+						Temperature: 20, ApparentTemperature: 19, WeatherCode: 0,
 					}, nil).Once()
 				m.cache.On("Set", mock.Anything, "Almaty", mock.AnythingOfType("weather.Weather")).
 					Return(nil).Once()
@@ -105,7 +97,7 @@ func TestService_GetByUserID(t *testing.T) {
 			},
 		},
 		{
-			name:   "success cache hit skips external calls",
+			name:   "success cache hit skips gateway",
 			userID: userID,
 			setupMock: func(m *weatherMocks) {
 				m.user.On("GetByID", mock.Anything, userID).
@@ -121,8 +113,7 @@ func TestService_GetByUserID(t *testing.T) {
 				assert.Equal(t, "Almaty", got[0].City)
 				assert.Equal(t, 15.0, got[0].Temperature)
 				assert.Equal(t, historyAt, got[0].RequestedAt)
-				m.geocoding.AssertNotCalled(t, "GetCoordsByCity")
-				m.weather.AssertNotCalled(t, "GetWeatherByCoords")
+				m.gateway.AssertNotCalled(t, "GetWeatherByCity")
 				m.cache.AssertNotCalled(t, "Set")
 			},
 		},
@@ -161,13 +152,12 @@ func TestService_GetByUserID(t *testing.T) {
 			assertExtra: func(t *testing.T, m *weatherMocks, got []domainweather.Weather) {
 				assert.Empty(t, got)
 				m.cache.AssertNotCalled(t, "Get")
-				m.geocoding.AssertNotCalled(t, "GetCoordsByCity")
-				m.weather.AssertNotCalled(t, "GetWeatherByCoords")
+				m.gateway.AssertNotCalled(t, "GetWeatherByCity")
 				m.history.AssertNotCalled(t, "CreateHistory")
 			},
 		},
 		{
-			name:   "geocoding error",
+			name:   "gateway error",
 			userID: userID,
 			setupMock: func(m *weatherMocks) {
 				m.user.On("GetByID", mock.Anything, userID).
@@ -176,10 +166,10 @@ func TestService_GetByUserID(t *testing.T) {
 					Return([]domaincity.City{{UserID: userID, Name: "Almaty"}}, nil).Once()
 				m.cache.On("Get", mock.Anything, "Almaty").
 					Return(domainweather.Weather{}, false, nil).Once()
-				m.geocoding.On("GetCoordsByCity", mock.Anything, "Almaty").
-					Return(geocodingdto.CoordsResponse{}, geoErr).Once()
+				m.gateway.On("GetWeatherByCity", mock.Anything, "Almaty").
+					Return(gatewaydto.WeatherResponse{}, gatewayErr).Once()
 			},
-			wantErr: geoErr,
+			wantErr: gatewayErr,
 		},
 		{
 			name:   "history error",
@@ -196,7 +186,7 @@ func TestService_GetByUserID(t *testing.T) {
 			wantErr: historyErr,
 		},
 		{
-			name:   "weather client error",
+			name:   "invalid temperature from gateway",
 			userID: userID,
 			setupMock: func(m *weatherMocks) {
 				m.user.On("GetByID", mock.Anything, userID).
@@ -205,36 +195,15 @@ func TestService_GetByUserID(t *testing.T) {
 					Return([]domaincity.City{{UserID: userID, Name: "Almaty"}}, nil).Once()
 				m.cache.On("Get", mock.Anything, "Almaty").
 					Return(domainweather.Weather{}, false, nil).Once()
-				m.geocoding.On("GetCoordsByCity", mock.Anything, "Almaty").
-					Return(geocodingdto.CoordsResponse{Latitude: 43.25, Longitude: 76.95}, nil).Once()
-				m.weather.On("GetWeatherByCoords", mock.Anything, 43.25, 76.95).
-					Return(openmeteodto.WeatherResponse{}, weatherErr).Once()
-			},
-			wantErr: weatherErr,
-		},
-		{
-			name:   "invalid temperature from weather API",
-			userID: userID,
-			setupMock: func(m *weatherMocks) {
-				m.user.On("GetByID", mock.Anything, userID).
-					Return(&domainuser.User{ID: userID}, nil).Once()
-				m.city.On("ListByUserID", mock.Anything, userID).
-					Return([]domaincity.City{{UserID: userID, Name: "Almaty"}}, nil).Once()
-				m.cache.On("Get", mock.Anything, "Almaty").
-					Return(domainweather.Weather{}, false, nil).Once()
-				m.geocoding.On("GetCoordsByCity", mock.Anything, "Almaty").
-					Return(geocodingdto.CoordsResponse{Latitude: 43.25, Longitude: 76.95}, nil).Once()
-				m.weather.On("GetWeatherByCoords", mock.Anything, 43.25, 76.95).
-					Return(openmeteodto.WeatherResponse{
-						Current: openmeteodto.CurrentWeather{
-							Temperature2M: 999, ApparentTemperature: 19, WeatherCode: 0,
-						},
+				m.gateway.On("GetWeatherByCity", mock.Anything, "Almaty").
+					Return(gatewaydto.WeatherResponse{
+						City: "Almaty", Temperature: 999, ApparentTemperature: 19, WeatherCode: 0,
 					}, nil).Once()
 			},
 			wantErr: domainweather.ErrInvalidTemperature,
 		},
 		{
-			name:   "cache get error falls through to API",
+			name:   "cache get error falls through to gateway",
 			userID: userID,
 			setupMock: func(m *weatherMocks) {
 				m.user.On("GetByID", mock.Anything, userID).
@@ -243,11 +212,9 @@ func TestService_GetByUserID(t *testing.T) {
 					Return([]domaincity.City{{UserID: userID, Name: "Almaty"}}, nil).Once()
 				m.cache.On("Get", mock.Anything, "Almaty").
 					Return(domainweather.Weather{}, false, cacheErr).Once()
-				m.geocoding.On("GetCoordsByCity", mock.Anything, "Almaty").
-					Return(geocodingdto.CoordsResponse{Latitude: 43.25, Longitude: 76.95}, nil).Once()
-				m.weather.On("GetWeatherByCoords", mock.Anything, 43.25, 76.95).
-					Return(openmeteodto.WeatherResponse{
-						Current: openmeteodto.CurrentWeather{Temperature2M: 20, ApparentTemperature: 19, WeatherCode: 0},
+				m.gateway.On("GetWeatherByCity", mock.Anything, "Almaty").
+					Return(gatewaydto.WeatherResponse{
+						City: "Almaty", Temperature: 20, ApparentTemperature: 19, WeatherCode: 0,
 					}, nil).Once()
 				m.cache.On("Set", mock.Anything, "Almaty", mock.AnythingOfType("weather.Weather")).
 					Return(nil).Once()
@@ -269,11 +236,9 @@ func TestService_GetByUserID(t *testing.T) {
 					Return([]domaincity.City{{UserID: userID, Name: "Almaty"}}, nil).Once()
 				m.cache.On("Get", mock.Anything, "Almaty").
 					Return(domainweather.Weather{}, false, nil).Once()
-				m.geocoding.On("GetCoordsByCity", mock.Anything, "Almaty").
-					Return(geocodingdto.CoordsResponse{Latitude: 43.25, Longitude: 76.95}, nil).Once()
-				m.weather.On("GetWeatherByCoords", mock.Anything, 43.25, 76.95).
-					Return(openmeteodto.WeatherResponse{
-						Current: openmeteodto.CurrentWeather{Temperature2M: 20, ApparentTemperature: 19, WeatherCode: 0},
+				m.gateway.On("GetWeatherByCity", mock.Anything, "Almaty").
+					Return(gatewaydto.WeatherResponse{
+						City: "Almaty", Temperature: 20, ApparentTemperature: 19, WeatherCode: 0,
 					}, nil).Once()
 				m.cache.On("Set", mock.Anything, "Almaty", mock.AnythingOfType("weather.Weather")).
 					Return(cacheErr).Once()

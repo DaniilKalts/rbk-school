@@ -8,14 +8,12 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/geocoding/dto"
+	gatewaydto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/gateway/dto"
 	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/city"
 	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/history"
 	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/user"
 	"github.com/DaniilKalts/rbk-school/7-week/api-service/internal/domain/weather"
 	"github.com/DaniilKalts/rbk-school/7-week/pkg/logger"
-
-	openmeteodto "github.com/DaniilKalts/rbk-school/7-week/api-service/internal/adapter/client/openmeteo/dto"
 )
 
 type UserRepository interface {
@@ -31,12 +29,8 @@ type HistoryRepository interface {
 	ListHistory(ctx context.Context, userID uuid.UUID, city string, limit int, offset int) ([]history.History, error)
 }
 
-type GeocodingClient interface {
-	GetCoordsByCity(ctx context.Context, city string) (dto.CoordsResponse, error)
-}
-
-type WeatherClient interface {
-	GetWeatherByCoords(ctx context.Context, latitude, longitude float64) (openmeteodto.WeatherResponse, error)
+type GatewayClient interface {
+	GetWeatherByCity(ctx context.Context, city string) (gatewaydto.WeatherResponse, error)
 }
 
 type WeatherCache interface {
@@ -48,8 +42,7 @@ type Service struct {
 	userRepository    UserRepository
 	cityRepository    CityRepository
 	historyRepository HistoryRepository
-	geocodingClient   GeocodingClient
-	weatherClient     WeatherClient
+	gatewayClient     GatewayClient
 	weatherCache      WeatherCache
 }
 
@@ -57,16 +50,14 @@ func NewService(
 	userRepository UserRepository,
 	cityRepository CityRepository,
 	historyRepository HistoryRepository,
-	geocodingClient GeocodingClient,
-	weatherClient WeatherClient,
+	gatewayClient GatewayClient,
 	weatherCache WeatherCache,
 ) *Service {
 	return &Service{
 		userRepository:    userRepository,
 		cityRepository:    cityRepository,
 		historyRepository: historyRepository,
-		geocodingClient:   geocodingClient,
-		weatherClient:     weatherClient,
+		gatewayClient:     gatewayClient,
 		weatherCache:      weatherCache,
 	}
 }
@@ -149,21 +140,16 @@ func (s *Service) getWeatherByCity(ctx context.Context, cityName string) (weathe
 		}
 	}
 
-	coords, err := s.geocodingClient.GetCoordsByCity(ctx, cityName)
+	response, err := s.gatewayClient.GetWeatherByCity(ctx, cityName)
 	if err != nil {
-		return weather.Weather{}, fmt.Errorf("получение координат для города %q: %w", cityName, err)
-	}
-
-	weatherResponse, err := s.weatherClient.GetWeatherByCoords(ctx, coords.Latitude, coords.Longitude)
-	if err != nil {
-		return weather.Weather{}, fmt.Errorf("получение погоды для города %q: %w", cityName, err)
+		return weather.Weather{}, fmt.Errorf("получение погоды для города %q через gateway: %w", cityName, err)
 	}
 
 	w, err := weather.NewWeather(
 		cityName,
-		weatherResponse.Current.Temperature2M,
-		weatherResponse.Current.ApparentTemperature,
-		weatherResponse.Current.WeatherCode,
+		response.Temperature,
+		response.ApparentTemperature,
+		response.WeatherCode,
 	)
 	if err != nil {
 		return weather.Weather{}, fmt.Errorf("сборка модели погоды для города %q: %w", cityName, err)

@@ -60,8 +60,7 @@ func NewServices(repositories *repository.Repositories, caches *cache.Caches, cl
 			repositories.User,
 			repositories.City,
 			repositories.Weather,
-			clients.Geocoding,
-			clients.OpenMeteo,
+			clients.Gateway,
 			caches.Weather,
 		),
 	}
