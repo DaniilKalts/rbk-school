@@ -1,9 +1,9 @@
 services:
-  api:
+  api-service:
     build:
       context: .
-      dockerfile: Dockerfile
-    image: rbk-school-7-week-api:latest
+      dockerfile: ./api-service/Dockerfile
+    image: rbk-school-7-week-api-service:latest
     restart: unless-stopped
     env_file:
       - .env
