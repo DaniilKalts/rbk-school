@@ -1,0 +1,5 @@
+JWT:
+  type: http
+  scheme: bearer
+  bearerFormat: JWT
+  description: Вставьте только `access_token`. Без префикса `Bearer`.

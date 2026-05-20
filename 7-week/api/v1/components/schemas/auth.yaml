@@ -1,0 +1,62 @@
+RegisterRequest:
+  type: object
+  description: Данные для регистрации пользователя.
+  required:
+    - first_name
+    - last_name
+    - email
+    - password
+  properties:
+    first_name:
+      type: string
+      minLength: 1
+      description: Имя пользователя.
+      example: Daniil
+    last_name:
+      type: string
+      minLength: 1
+      description: Фамилия пользователя.
+      example: Kalts
+    email:
+      type: string
+      format: email
+      description: Уникальный email пользователя.
+      example: daniil@example.com
+    password:
+      type: string
+      minLength: 1
+      description: Пароль пользователя.
+      example: strong-password
+LoginRequest:
+  type: object
+  description: Данные для входа пользователя.
+  required:
+    - email
+    - password
+  properties:
+    email:
+      type: string
+      format: email
+      description: Email пользователя.
+      example: daniil@example.com
+    password:
+      type: string
+      minLength: 1
+      description: Пароль пользователя.
+      example: strong-password
+AuthTokenResponse:
+  type: object
+  description: Токен доступа и время его истечения.
+  required:
+    - access_token
+    - expires_at
+  properties:
+    access_token:
+      type: string
+      description: JWT-токен доступа.
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    expires_at:
+      type: string
+      format: date-time
+      description: Время истечения токена доступа.
+      example: '2026-04-26T10:15:00Z'
